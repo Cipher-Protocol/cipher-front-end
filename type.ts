@@ -1,3 +1,8 @@
+export enum Mode {
+  SIMPLE,
+  PRO,
+}
+
 export function getBoolean(str: string | undefined, defaultVal?: boolean) {
   try {
     if (str === "" || typeof str === "undefined")

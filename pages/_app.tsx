@@ -8,6 +8,8 @@ import { publicProvider } from "wagmi/providers/public";
 import { ChakraProvider } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getString } from "@/type";
+import { chakraTheme } from "@/styles/chakraTheme";
+import { rainbowkitTheme } from "@/styles/rainbowkitTheme";
 
 /* ============== rainbowkit & wagmi config ============== */
 
@@ -21,7 +23,7 @@ const { chains, publicClient } = configureChains(
 
 const { connectors } = getDefaultWallets({
   appName: "My RainbowKit App",
-  projectId: "YOUR_PROJECT_ID",
+  projectId: "utxo-front-end",
   chains,
 });
 
@@ -36,10 +38,10 @@ const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={chakraTheme}>
       <QueryClientProvider client={queryClient}>
         <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains}>
+          <RainbowKitProvider chains={chains} theme={rainbowkitTheme}>
             <Component {...pageProps} />
           </RainbowKitProvider>
         </WagmiConfig>

@@ -29,5 +29,8 @@
     "typescript": "5.2.2",
     "viem": "^1.12.1",
     "wagmi": "^1.4.2"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.21"
   }
 }
