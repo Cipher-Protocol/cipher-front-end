@@ -11,7 +11,7 @@ export enum SimpleType {
 }
 
 export type TokenConfig = {
-  iconUri: string;
+  iconUri: StaticImageData;
   address: string;
   symbol: string;
 };

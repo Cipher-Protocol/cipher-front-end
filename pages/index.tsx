@@ -12,9 +12,6 @@ export default function Page() {
   const { xxAccount, isAuthenticated, authUser, breakAuthUser } =
     useXXAccount();
 
-  // console.log("isAuthenticated", isAuthenticated);
-  console.log("xxAccount", xxAccount?.pubKey);
-
   useEffect(() => {
     if (!isAuthenticated) {
       authUser();
