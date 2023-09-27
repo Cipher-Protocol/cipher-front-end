@@ -3,7 +3,7 @@ import React from "react";
 
 export default function Pro() {
   return (
-    <Flex flex={1} justifyContent={"center"} alignItems={"center"}>
+    <Flex flex={1} justify={"center"} align={"center"}>
       Coming soon...
     </Flex>
   );

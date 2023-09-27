@@ -10,11 +10,13 @@ export default function ModeTab(props: Props) {
   const { setMode } = props;
 
   return (
-    <Flex w="full" alignItems="center" gap="2" py="2" pr="8">
+    <Flex w="full" align="center" gap="2" py="2" pr="8">
       <Spacer />
       <Tabs
         variant="soft-rounded"
         colorScheme="green"
+        borderRadius="full"
+        border={"3px solid #38A169"}
         onChange={(index) => setMode(index)}
       >
         <TabList>

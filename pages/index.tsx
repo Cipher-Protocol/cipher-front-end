@@ -1,7 +1,7 @@
-import Header from "@/components/header";
-import ModeTab from "@/components/modeTab";
-import Pro from "@/components/pro";
-import Simple from "@/components/simple";
+import Header from "@/components/Header";
+import ModeTab from "@/components/ModeTab";
+import Pro from "@/components/Pro";
+import Simple from "@/components/Simple";
 import { Mode } from "@/type";
 import { Flex } from "@chakra-ui/react";
 import { useState } from "react";
