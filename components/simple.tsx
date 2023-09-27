@@ -2,7 +2,7 @@ import { Flex, Tab, TabList, Tabs } from "@chakra-ui/react";
 import React, { useState } from "react";
 import DepositCard from "./DepositCard";
 import WithdrawCard from "./WithdrawCard";
-import { SimpleType } from "@/type";
+import { SimpleType } from "@/type.d";
 
 export default function Simple() {
   const [simpleType, setSimpleType] = useState(SimpleType.DEPOSIT);

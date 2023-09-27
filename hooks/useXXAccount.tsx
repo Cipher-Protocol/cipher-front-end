@@ -13,24 +13,14 @@ export const useXXAccount = () => {
   const authUser = async () => {
     if (isConnected) {
       try {
-        const sig = await signAuth();
-        if (sig) {
-          authenticate(sig);
-          setIsAuthenticated(true);
-        }
+        const signature = await signAuth();
+        const privKey = utils.keccak256(signature).replace("0x", "");
+        const privKeyBuf = Buffer.from(privKey, "hex");
+        setxxAccount(new xxSigner(privKeyBuf));
+        setIsAuthenticated(true);
       } catch (error) {
         console.log("error", error);
       }
-    }
-  };
-
-  const authenticate = (signature: string) => {
-    if (signature) {
-      const privKeyBuf = Buffer.from(
-        utils.keccak256(signature).replace("0x", ""),
-        "hex"
-      );
-      setxxAccount(new xxSigner(privKeyBuf));
     }
   };
 

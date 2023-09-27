@@ -8,9 +8,10 @@ import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 import { ChakraProvider } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { getString } from "@/type";
 import { chakraTheme } from "@/styles/chakraTheme";
 import { rainbowkitTheme } from "@/styles/rainbowkitTheme";
+import { getString } from "@/utils/helper";
+import { XxProvider } from "@/providers/xxProvider";
 
 /* ============== rainbowkit & wagmi config ============== */
 
@@ -43,7 +44,9 @@ export default function App({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <WagmiConfig config={wagmiConfig}>
           <RainbowKitProvider chains={chains} theme={rainbowkitTheme}>
-            <Component {...pageProps} />
+            <XxProvider>
+              <Component {...pageProps} />
+            </XxProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </QueryClientProvider>

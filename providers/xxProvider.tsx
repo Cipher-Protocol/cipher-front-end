@@ -2,7 +2,7 @@ import { createContext } from "react";
 import { useXXAccount } from "@/hooks/useXXAccount";
 import { xxSigner } from "@/utils/xxSigner";
 
-export const xxContext = createContext<{
+export const XxContext = createContext<{
   xxAccount: xxSigner | undefined;
   isAuthenticated: boolean;
   authUser: () => void;
@@ -14,15 +14,15 @@ export const xxContext = createContext<{
   breakAuthUser: () => {},
 });
 
-export const xxProvider = ({ children }: { children: React.ReactNode }) => {
+export const XxProvider = ({ children }: { children: React.ReactNode }) => {
   const { xxAccount, isAuthenticated, authUser, breakAuthUser } =
     useXXAccount();
 
   return (
-    <xxContext.Provider
+    <XxContext.Provider
       value={{ xxAccount, isAuthenticated, authUser, breakAuthUser }}
     >
       {children}
-    </xxContext.Provider>
+    </XxContext.Provider>
   );
 };
