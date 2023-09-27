@@ -3,16 +3,15 @@ import { Button } from "@chakra-ui/react";
 
 type Props = {
   colorScheme: string;
-  borderRadius?: string;
   children: React.ReactNode;
-  w?: string;
+  className?: string;
 };
 
 export default function Btn(props: Props) {
-  const { colorScheme, borderRadius, children, w } = props;
+  const { colorScheme, children, className } = props;
   return (
     <Button
-      w={w}
+      className={className}
       colorScheme={colorScheme}
       _hover={{
         transform: "scale(1.1)",
@@ -21,7 +20,7 @@ export default function Btn(props: Props) {
         transform: "scale(0.9)",
       }}
       transitionDuration={"0.2s"}
-      borderRadius={borderRadius || "full"}
+      borderRadius={"full"}
     >
       {children}
     </Button>

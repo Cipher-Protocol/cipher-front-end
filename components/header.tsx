@@ -5,16 +5,16 @@ import Btn from "./Btn";
 
 export default function Header() {
   return (
-    <Flex w="full" align="center" gap="2" p="4">
-      <Box p="2">
+    <Flex className="w-full p-4 gap-2 items-center">
+      <Box className="p-2">
         <Heading size="md">Chakra App</Heading>
       </Box>
       <Spacer />
-      <ButtonGroup gap="2">
-        <Btn colorScheme="teal" w={"8rem"}>
+      <ButtonGroup className="gap-2">
+        <Btn colorScheme="teal" className="w-32">
           Integration
         </Btn>
-        <Btn colorScheme="teal" w={"8rem"}>
+        <Btn colorScheme="teal" className="w-32">
           Docs
         </Btn>
       </ButtonGroup>

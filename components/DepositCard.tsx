@@ -5,15 +5,7 @@ import PublicInput from "./PublicInput";
 
 export default function DepositCard() {
   return (
-    <Flex
-      w="full"
-      p="2rem"
-      flexDirection="row"
-      // bg="green"
-      justify="center"
-      align="center"
-      gap="4rem"
-    >
+    <Flex className="p-8 w-full flex flex-row justify-center items-center gap-8">
       <PublicInput />
       <SelectorBox />
     </Flex>

@@ -22,7 +22,8 @@ export default function Page() {
   }, [isAuthenticated]);
 
   return (
-    <Flex w="full" minHeight="100vh" flexDirection={"column"}>
+    // <Flex w="full" minHeight="100vh" flexDirection={"column"}>
+    <Flex className="w-full flex flex-col min-h-screen">
       <Header />
       <ModeTab setMode={setMode} />
       {mode === Mode.SIMPLE ? <Simple /> : <Pro />}

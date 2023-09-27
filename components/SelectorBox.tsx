@@ -19,32 +19,17 @@ export default function SelectorBox() {
     tokenConfig[0]
   );
   return (
-    <Flex
-      h={"20rem"}
-      w={"25rem"}
-      p={"1rem"}
-      bgColor={"red"}
-      justify={"space-between"}
-      align={"center"}
-      textAlign={"center"}
-      borderRadius={"3xl"}
-      flexDirection={"column"}
-    >
+    <Flex className="flex flex-col justify-between items-center h-[20rem] w-[25rem] p-4 bg-red-500 rounded-3xl">
       <Menu>
         <MenuButton
           as={Button}
           rightIcon={<ChevronDownIcon />}
-          w={"14rem"}
           borderRadius={"3xl"}
+          className="w-56"
         >
-          <Flex
-            flexDirection={"row"}
-            textAlign={"center"}
-            align={"center"}
-            gap={"1rem"}
-          >
+          <Flex className="flex flex-row items-center gap-4">
             <Image
-              borderRadius="full"
+              className="rounded-full"
               boxSize="30px"
               src={selectedToken.iconUri}
               alt=""
@@ -52,12 +37,12 @@ export default function SelectorBox() {
             {selectedToken.symbol}
           </Flex>
         </MenuButton>
-        <MenuList borderRadius={"3xl"} w={"14rem"} px={"0.5rem"}>
+        <MenuList borderRadius={"3xl"} className="rounded-3xl w-56 px-2 py-2">
           {tokenConfig.map((token) => (
             <MenuItem
               key={token.symbol}
               borderRadius={"3xl"}
-              gap={"1rem"}
+              className="flex flex-row items-center gap-4"
               onClick={() => setSelectedToken(token)}
             >
               <Image
@@ -71,7 +56,7 @@ export default function SelectorBox() {
           ))}
         </MenuList>
       </Menu>
-      <Btn colorScheme={"teal"} w={"14rem"} borderRadius={"3xl"}>
+      <Btn colorScheme={"teal"} className="w-56">
         Send Tx
       </Btn>
     </Flex>

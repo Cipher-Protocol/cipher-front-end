@@ -4,7 +4,7 @@ import SelectorBox from "./SelectorBox";
 
 export default function WithdrawCard() {
   return (
-    <Flex p={"2rem"}>
+    <Flex className="p-8">
       <SelectorBox />
     </Flex>
   );

@@ -3,7 +3,7 @@ import React from "react";
 
 export default function Pro() {
   return (
-    <Flex flex={1} justify={"center"} align={"center"}>
+    <Flex className="p-8 w-full flex flex-row justify-center items-center gap-8">
       Coming soon...
     </Flex>
   );

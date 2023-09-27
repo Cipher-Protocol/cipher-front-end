@@ -8,18 +8,16 @@ export default function Simple() {
   const [simpleType, setSimpleType] = useState(SimpleType.DEPOSIT);
 
   return (
-    <Flex w="90%" m="auto" flex={1} align={"center"} flexDirection={"column"}>
+    <Flex className="w-[90%] m-auto flex-1 flex flex-col items-center">
       <Tabs
         variant="soft-rounded"
         colorScheme="green"
-        // p={"0.5rem"}
-        border={"3px solid #38A169"}
-        borderRadius="full"
+        className="rounded-full border-2 border-green-500"
         onChange={(index) => setSimpleType(index)}
       >
         <TabList>
-          <Tab w={"8rem"}>Deposit</Tab>
-          <Tab w={"8rem"}>Withdraw</Tab>
+          <Tab className="w-32">Deposit</Tab>
+          <Tab className="w-32">Withdraw</Tab>
         </TabList>
       </Tabs>
       {simpleType === SimpleType.DEPOSIT ? <DepositCard /> : <WithdrawCard />}
