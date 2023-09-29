@@ -5,10 +5,11 @@ type Props = {
   colorScheme: string;
   children: React.ReactNode;
   className?: string;
+  borderRadius?: string;
 };
 
 export default function Btn(props: Props) {
-  const { colorScheme, children, className } = props;
+  const { colorScheme, children, className, borderRadius } = props;
   return (
     <Button
       className={className}
@@ -20,7 +21,7 @@ export default function Btn(props: Props) {
         transform: "scale(0.9)",
       }}
       transitionDuration={"0.2s"}
-      borderRadius={"full"}
+      borderRadius={borderRadius || "full"}
     >
       {children}
     </Button>

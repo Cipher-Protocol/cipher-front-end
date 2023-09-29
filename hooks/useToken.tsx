@@ -4,29 +4,28 @@ import {
 } from "@/configs/tokenConfig";
 import { TokenConfig } from "@/type";
 import { useQuery } from "@tanstack/react-query";
-import { useNetwork } from "wagmi";
 
-// export const useToken = () => {
-//   const {
-//     data: tokens,
-//     isLoading: isTokensLoading,
-//     refetch: refetchTokens,
-//   } = useQuery({
-//     queryKey: ["getTokens"],
-//     queryFn: () => getTokenConfig(),
-//     enabled: true,
-//   });
+export const useToken = (chainId: number) => {
+  const {
+    data: tokens,
+    isLoading: isLoadingTokens,
+    refetch: refetchTokens,
+  } = useQuery({
+    queryKey: ["getTokens"],
+    queryFn: () => getTokenConfig(chainId),
+    enabled: true,
+  });
 
-//   return { tokens, isTokensLoading, refetchTokens };
-// };
+  return { tokens, isLoadingTokens, refetchTokens };
+};
 
 // TODO: remove and change to use on-chain data
 export function getTokenConfig(chainId: number): TokenConfig[] {
+  // mainnet
   if (chainId === 1) {
-    // mainnet
     return MAINNET_TOKEN_CONFIG;
-  } else if (chainId === 5) {
     // goerli
+  } else if (chainId === 5) {
     return GOERLI_TOKEN_CONFIG;
   } else {
     return MAINNET_TOKEN_CONFIG;

@@ -1,11 +1,34 @@
 import { Flex } from "@chakra-ui/react";
-import React from "react";
-import SelectorBox from "./SelectorBox";
+import React, { useState } from "react";
+import { TokenConfig } from "@/type";
+import CipherCard from "./CipherCard";
+import Btn from "./Btn";
+import TokenSelector from "./TokenSelector";
 
-export default function WithdrawCard() {
+type Props = {
+  tokens: TokenConfig[] | undefined;
+  isLoadingTokens: boolean;
+};
+
+export default function WithdrawCard(props: Props) {
+  const { tokens, isLoadingTokens } = props;
+  const [selectedToken, setSelectedToken] = useState<TokenConfig | undefined>(
+    tokens ? tokens[0] : undefined
+  );
   return (
-    <Flex className="p-8">
-      <SelectorBox />
+    <Flex className="p-8 flex flex-col justify-between items-center gap-8 h-[20rem] w-[25rem] rounded-3xl shadow-md bg-slate-300 m-8">
+      <TokenSelector
+        tokens={tokens}
+        selectedToken={selectedToken}
+        isLoadingTokens={isLoadingTokens}
+        setSelectedToken={setSelectedToken}
+      />
+      <Flex className="w-[20rem]">
+        <CipherCard />
+      </Flex>
+      <Btn colorScheme={"teal"} className="w-56">
+        Withdraw
+      </Btn>
     </Flex>
   );
 }

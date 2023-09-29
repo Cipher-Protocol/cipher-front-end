@@ -1,5 +1,11 @@
 declare module "circomlibjs";
 
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
+
 export enum Mode {
   SIMPLE,
   PRO,
@@ -12,6 +18,14 @@ export enum SimpleType {
 
 export type TokenConfig = {
   iconUri: StaticImageData;
-  address: string;
+  address: `0x${string}`;
   symbol: string;
+};
+
+// from wagmi
+export type FetchBalanceResult = {
+  decimals: number;
+  formatted: string;
+  symbol: string;
+  value: bigint;
 };
