@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import SelectorBox from "./TokenSelector";
 import { Flex } from "@chakra-ui/react";
-// import PublicInput from "./PublicInput";
 import { BigNumber } from "ethers";
 import { TokenConfig } from "@/type";
-import Btn from "./Btn";
 import TokenSelector from "./TokenSelector";
 import dynamic from "next/dynamic";
+import Btn from "./Btn";
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
