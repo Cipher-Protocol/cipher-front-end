@@ -1,6 +1,6 @@
-import { DEFAULT_ETH_ADDRESS } from "@/configs/tokenConfig";
-import { useErc20 } from "@/hooks/useErc20";
-import { TokenConfig } from "@/type";
+import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
+import { useErc20 } from "../hooks/useErc20";
+import { TokenConfig } from "../type";
 import {
   Flex,
   Text,

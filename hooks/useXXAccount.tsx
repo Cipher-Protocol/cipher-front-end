@@ -2,7 +2,7 @@ import { useState } from "react";
 import { utils } from "ethers";
 import { useAccount } from "wagmi";
 import { useSignAuth } from "./useSignAuth";
-import { xxSigner } from "@/utils/xxSigner";
+import { xxSigner } from "../utils/xxSigner";
 
 export const useXXAccount = () => {
   const { isConnected } = useAccount();

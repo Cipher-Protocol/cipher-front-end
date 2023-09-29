@@ -2,9 +2,9 @@ import { Flex, Tab, TabList, Tabs } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import DepositCard from "./DepositCard";
 import WithdrawCard from "./WithdrawCard";
-import { SimpleType } from "@/type.d";
+import { SimpleType } from "../type.d";
 import { useNetwork } from "wagmi";
-import { useToken } from "@/hooks/useToken";
+import { useToken } from "../hooks/useToken";
 
 export default function Simple() {
   const { chain } = useNetwork();

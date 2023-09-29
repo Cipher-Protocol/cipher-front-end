@@ -1,8 +1,8 @@
 import {
   GOERLI_TOKEN_CONFIG,
   MAINNET_TOKEN_CONFIG,
-} from "@/configs/tokenConfig";
-import { TokenConfig } from "@/type";
+} from "../configs/tokenConfig";
+import { TokenConfig } from "../type";
 import { useQuery } from "@tanstack/react-query";
 
 export const useToken = (chainId: number) => {

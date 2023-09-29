@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import React from "react";
-import { TokenConfig } from "@/type";
+import { TokenConfig } from "../type";
 
 type Props = {
   tokens: TokenConfig[] | undefined;

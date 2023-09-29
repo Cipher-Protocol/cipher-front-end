@@ -1,7 +1,7 @@
-import { TokenConfig } from "@/type";
-import ethIcon from "@/assets/icon/eth.png";
-import btcIcon from "@/assets/icon/btc.png";
-import usdcIcon from "@/assets/icon/usdc.png";
+import { TokenConfig } from "../type";
+import ethIcon from "../assets/icon/eth.png";
+import btcIcon from "../assets/icon/btc.png";
+import usdcIcon from "../assets/icon/usdc.png";
 
 // TODO: change to use on-chain data
 export const DEFAULT_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";

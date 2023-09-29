@@ -1,4 +1,4 @@
-import { Mode } from "@/type";
+import { Mode } from "../type";
 import { Flex, Spacer, Tab, TabList, Tabs } from "@chakra-ui/react";
 import React, { Dispatch, SetStateAction } from "react";
 

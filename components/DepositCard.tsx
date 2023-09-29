@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Flex } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
-import { TokenConfig } from "@/type";
+import { TokenConfig } from "../type";
 import TokenSelector from "./TokenSelector";
 import SimpleBtn from "./SimpleBtn";
 import dynamic from "next/dynamic";

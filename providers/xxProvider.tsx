@@ -1,6 +1,6 @@
 import { createContext } from "react";
-import { useXXAccount } from "@/hooks/useXXAccount";
-import { xxSigner } from "@/utils/xxSigner";
+import { useXXAccount } from "../hooks/useXXAccount";
+import { xxSigner } from "../utils/xxSigner";
 
 export const XxContext = createContext<{
   xxAccount: xxSigner | undefined;

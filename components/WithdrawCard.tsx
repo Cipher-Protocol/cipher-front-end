@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { TokenConfig } from "@/type";
+import { TokenConfig } from "../type";
 import CipherCard from "./CipherCard";
 import SimpleBtn from "./SimpleBtn";
 import TokenSelector from "./TokenSelector";

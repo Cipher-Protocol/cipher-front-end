@@ -1,6 +1,6 @@
 import type { AppProps } from "next/app";
 import "@rainbow-me/rainbowkit/styles.css";
-import "@/styles/globals.css";
+import "../styles/globals.css";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { mainnet, goerli } from "wagmi/chains";
@@ -8,10 +8,10 @@ import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 import { ChakraProvider } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { chakraTheme } from "@/styles/chakraTheme";
-import { rainbowkitTheme } from "@/styles/rainbowkitTheme";
-import { getString } from "@/utils/helper";
-import { XxProvider } from "@/providers/xxProvider";
+import { chakraTheme } from "../styles/chakraTheme";
+import { rainbowkitTheme } from "../styles/rainbowkitTheme";
+import { getString } from "../utils/helper";
+import { XxProvider } from "../providers/xxProvider";
 
 /* ============== rainbowkit & wagmi config ============== */
 
