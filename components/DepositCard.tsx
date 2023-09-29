@@ -3,8 +3,8 @@ import { Flex } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { TokenConfig } from "@/type";
 import TokenSelector from "./TokenSelector";
+import SimpleBtn from "./SimpleBtn";
 import dynamic from "next/dynamic";
-import Btn from "./Btn";
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
@@ -41,9 +41,9 @@ export default function DepositCard(props: Props) {
         selectedToken={selectedToken}
         setPubInAmt={setPubInAmt}
       />
-      <Btn colorScheme={"teal"} className="w-56">
+      <SimpleBtn colorScheme={"teal"} className="w-56">
         Deposit
-      </Btn>
+      </SimpleBtn>
     </Flex>
   );
 }

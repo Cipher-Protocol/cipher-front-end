@@ -6,10 +6,10 @@ import usdcIcon from "@/assets/icon/usdc.png";
 // TODO: change to use on-chain data
 export const DEFAULT_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 export const MAINNET_ADDRESS = {
-  BTC: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+  BTC: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" as const,
 };
 export const GOERLI_ADDRESS = {
-  USDC: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+  USDC: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F" as const,
 };
 
 export const MAINNET_TOKEN_CONFIG: TokenConfig[] = [

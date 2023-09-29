@@ -1,7 +1,7 @@
 import { Box, ButtonGroup, Flex, Heading, Spacer } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import React from "react";
-import Btn from "./Btn";
+import SimpleBtn from "./SimpleBtn";
 
 export default function Header() {
   return (
@@ -11,12 +11,12 @@ export default function Header() {
       </Box>
       <Spacer />
       <ButtonGroup className="gap-2">
-        <Btn colorScheme="teal" className="w-32">
+        <SimpleBtn colorScheme="teal" className="w-32">
           Integration
-        </Btn>
-        <Btn colorScheme="teal" className="w-32">
+        </SimpleBtn>
+        <SimpleBtn colorScheme="teal" className="w-32">
           Docs
-        </Btn>
+        </SimpleBtn>
       </ButtonGroup>
       <ConnectButton />
     </Flex>

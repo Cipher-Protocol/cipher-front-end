@@ -8,7 +8,7 @@ type Props = {
   borderRadius?: string;
 };
 
-export default function Btn(props: Props) {
+export default function SimpleBtn(props: Props) {
   const { colorScheme, children, className, borderRadius } = props;
   return (
     <Button

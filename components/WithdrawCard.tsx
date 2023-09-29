@@ -2,7 +2,7 @@ import { Flex } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { TokenConfig } from "@/type";
 import CipherCard from "./CipherCard";
-import Btn from "./Btn";
+import SimpleBtn from "./SimpleBtn";
 import TokenSelector from "./TokenSelector";
 
 type Props = {
@@ -26,9 +26,9 @@ export default function WithdrawCard(props: Props) {
       <Flex className="w-[20rem]">
         <CipherCard />
       </Flex>
-      <Btn colorScheme={"teal"} className="w-56">
+      <SimpleBtn colorScheme={"teal"} className="w-56">
         Withdraw
-      </Btn>
+      </SimpleBtn>
     </Flex>
   );
 }
