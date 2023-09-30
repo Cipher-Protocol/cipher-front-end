@@ -2,13 +2,13 @@ import { useState } from "react";
 import { utils } from "ethers";
 import { useAccount } from "wagmi";
 import { useSignAuth } from "./useSignAuth";
-import { xxSigner } from "../utils/xxSigner";
+import { cipherSigner } from "../utils/cipherSigner";
 
-export const useXXAccount = () => {
+export const useCipherAccount = () => {
   const { isConnected } = useAccount();
   const { signTypedDataAsync: signAuth } = useSignAuth();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [xxAccount, setxxAccount] = useState<xxSigner>();
+  const [cipherAccount, setCipherAccount] = useState<cipherSigner>();
 
   const authUser = async () => {
     if (isConnected) {
@@ -16,7 +16,7 @@ export const useXXAccount = () => {
         const signature = await signAuth();
         const privKey = utils.keccak256(signature).replace("0x", "");
         const privKeyBuf = Buffer.from(privKey, "hex");
-        setxxAccount(new xxSigner(privKeyBuf));
+        setCipherAccount(new cipherSigner(privKeyBuf));
         setIsAuthenticated(true);
       } catch (error) {
         console.log("error", error);
@@ -25,9 +25,9 @@ export const useXXAccount = () => {
   };
 
   const breakAuthUser = () => {
-    setxxAccount(undefined);
+    setCipherAccount(undefined);
     setIsAuthenticated(false);
   };
 
-  return { xxAccount, isAuthenticated, authUser, breakAuthUser };
+  return { cipherAccount, isAuthenticated, authUser, breakAuthUser };
 };

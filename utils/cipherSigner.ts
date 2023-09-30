@@ -1,6 +1,6 @@
 import { EddsaSigner } from "./eddsa";
 
-export class xxSigner {
+export class cipherSigner {
   private signer: EddsaSigner;
 
   get pubKey(): [bigint, bigint] {
