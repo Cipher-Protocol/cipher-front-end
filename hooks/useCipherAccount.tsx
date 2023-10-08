@@ -1,22 +1,24 @@
 import { useState } from "react";
-import { utils } from "ethers";
 import { useAccount } from "wagmi";
 import { useSignAuth } from "./useSignAuth";
-import { cipherSigner } from "../utils/cipherSigner";
+import { CipherAccount } from "../type";
+const poseidon = require("poseidon-encryption");
 
 export const useCipherAccount = () => {
   const { isConnected } = useAccount();
   const { signTypedDataAsync: signAuth } = useSignAuth();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [cipherAccount, setCipherAccount] = useState<cipherSigner>();
+  const [cipherAccount, setCipherAccount] = useState<CipherAccount>();
 
   const authUser = async () => {
     if (isConnected) {
       try {
-        const signature = await signAuth();
-        const privKey = utils.keccak256(signature).replace("0x", "");
-        const privKeyBuf = Buffer.from(privKey, "hex");
-        setCipherAccount(new cipherSigner(privKeyBuf));
+        const seed = await signAuth();
+        const userId = poseidon.poseidon(seed).toString();
+        setCipherAccount({
+          seed: seed,
+          userId: userId,
+        });
         setIsAuthenticated(true);
       } catch (error) {
         console.log("error", error);

@@ -1,9 +1,9 @@
 import { createContext } from "react";
 import { useCipherAccount } from "../hooks/useCipherAccount";
-import { cipherSigner } from "../utils/cipherSigner";
+import { CipherAccount } from "../type";
 
 export const CipherContext = createContext<{
-  cipherAccount: cipherSigner | undefined;
+  cipherAccount: CipherAccount | undefined;
   isAuthenticated: boolean;
   authUser: () => void;
   breakAuthUser: () => void;

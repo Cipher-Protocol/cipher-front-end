@@ -4977,6 +4977,11 @@ pngjs@^5.0.0:
   resolved "https://registry.npmjs.org/pngjs/-/pngjs-5.0.0.tgz"
   integrity sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==
 
+poseidon-encryption@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/poseidon-encryption/-/poseidon-encryption-1.0.2.tgz#611c23c90193ea7cab1bd0eaecc5cf6a5978729e"
+  integrity sha512-buo/lgwUzWXv7DWBkoCaNGnr4KmDj4fofIv7HW2DtY6N5oXWsjy6kmEauY8RwZQAO94cBc86txTP5LU4r2FrtA==
+
 postcss-import@^15.1.0:
   version "15.1.0"
   resolved "https://registry.npmjs.org/postcss-import/-/postcss-import-15.1.0.tgz"

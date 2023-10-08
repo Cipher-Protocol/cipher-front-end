@@ -10,18 +10,18 @@ export default function ModeTab(props: Props) {
   const { setMode } = props;
 
   return (
-    <Flex className="w-full flex flex-row items-center py-2 px-8">
+    <Flex className="">
       <Spacer />
       <Tabs
         variant="soft-rounded"
         colorScheme="green"
         borderRadius="full"
-        className="rounded-full border-2 border-green-500"
+        className="border-2 border-green-500"
         onChange={(index) => setMode(index)}
       >
         <TabList>
-          <Tab className="w-32">Simple</Tab>
-          <Tab className="w-32">Pro</Tab>
+          <Tab className="w-24">Simple</Tab>
+          <Tab className="w-24">Pro</Tab>
         </TabList>
       </Tabs>
     </Flex>

@@ -18,7 +18,7 @@ export default function Simple() {
   }, [chain]);
 
   return (
-    <Flex className="w-[90%] m-auto flex-1 flex flex-col items-center">
+    <Flex className="w-[90%] mx-auto flex-1 flex flex-col items-center my-8">
       <Tabs
         variant="soft-rounded"
         colorScheme="green"

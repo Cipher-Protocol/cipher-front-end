@@ -22,6 +22,11 @@ export type TokenConfig = {
   symbol: string;
 };
 
+export type CipherAccount = {
+  seed: string;
+  userId: string;
+};
+
 // from wagmi
 export type FetchBalanceResult = {
   decimals: number;

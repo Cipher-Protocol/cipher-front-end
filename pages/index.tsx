@@ -1,5 +1,4 @@
 import Header from "../components/Header";
-import ModeTab from "../components/ModeTab";
 import Pro from "../components/Pro";
 import Simple from "../components/Simple";
 import { useCipherAccount } from "../hooks/useCipherAccount";
@@ -12,17 +11,19 @@ export default function Page() {
   const { cipherAccount, isAuthenticated, authUser, breakAuthUser } =
     useCipherAccount();
 
+  console.log("isAuthenticated", isAuthenticated);
+  console.log("cipherAccount", cipherAccount);
+
   useEffect(() => {
+    console.log("test");
     if (!isAuthenticated) {
       authUser();
     }
   }, [isAuthenticated]);
 
   return (
-    // <Flex w="full" minHeight="100vh" flexDirection={"column"}>
     <Flex className="w-full flex flex-col min-h-screen">
-      <Header />
-      <ModeTab setMode={setMode} />
+      <Header setMode={setMode} />
       {mode === Mode.SIMPLE ? <Simple /> : <Pro />}
     </Flex>
   );

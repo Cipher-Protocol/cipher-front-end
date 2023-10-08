@@ -1,13 +1,22 @@
 import { Box, ButtonGroup, Flex, Heading, Spacer } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import SimpleBtn from "./SimpleBtn";
+import { Mode } from "../type";
+import ModeTab from "./ModeTab";
+import CipherProfileBtn from "./CipherProfileBtn";
 
-export default function Header() {
+type Props = {
+  setMode: Dispatch<SetStateAction<Mode>>;
+};
+
+export default function Header(props: Props) {
+  const { setMode } = props;
+
   return (
     <Flex className="w-full p-4 gap-2 items-center">
       <Box className="p-2">
-        <Heading size="md">Chakra App</Heading>
+        <Heading size="md">Cipher</Heading>
       </Box>
       <Spacer />
       <ButtonGroup className="gap-2">
@@ -18,7 +27,9 @@ export default function Header() {
           Docs
         </SimpleBtn>
       </ButtonGroup>
+      <ModeTab setMode={setMode} />
       <ConnectButton />
+      <CipherProfileBtn />
     </Flex>
   );
 }
