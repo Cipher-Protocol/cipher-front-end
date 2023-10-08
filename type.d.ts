@@ -23,8 +23,8 @@ export type TokenConfig = {
 };
 
 export type CipherAccount = {
-  seed: string;
-  userId: string;
+  seed: string | undefined;
+  userId: string | undefined;
 };
 
 // from wagmi

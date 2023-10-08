@@ -28,7 +28,7 @@ export default function Header(props: Props) {
         </SimpleBtn>
       </ButtonGroup>
       <ModeTab setMode={setMode} />
-      <ConnectButton />
+      <ConnectButton accountStatus="address" showBalance={false} />
       <CipherProfileBtn />
     </Flex>
   );

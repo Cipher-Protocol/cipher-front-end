@@ -1,3 +1,4 @@
+import { useAccount } from "wagmi";
 import Header from "../components/Header";
 import Pro from "../components/Pro";
 import Simple from "../components/Simple";
@@ -8,18 +9,14 @@ import { useEffect, useState } from "react";
 
 export default function Page() {
   const [mode, setMode] = useState(Mode.SIMPLE);
-  const { cipherAccount, isAuthenticated, authUser, breakAuthUser } =
-    useCipherAccount();
-
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("cipherAccount", cipherAccount);
+  const { isConnected } = useAccount();
+  const { isAuthenticated, authUser, breakAuthUser } = useCipherAccount();
 
   useEffect(() => {
-    console.log("test");
-    if (!isAuthenticated) {
+    if (isConnected && !isAuthenticated) {
       authUser();
     }
-  }, [isAuthenticated]);
+  }, [isConnected, isAuthenticated]);
 
   return (
     <Flex className="w-full flex flex-col min-h-screen">
