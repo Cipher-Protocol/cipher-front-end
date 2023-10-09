@@ -5,22 +5,22 @@ import { CipherAccount } from "../type";
 export const CipherContext = createContext<{
   cipherAccount: CipherAccount | undefined;
   isAuthenticated: boolean;
-  authUser: () => void;
+  signAuth: () => void;
   breakAuthUser: () => void;
 }>({
   cipherAccount: undefined,
   isAuthenticated: false,
-  authUser: () => {},
+  signAuth: () => {},
   breakAuthUser: () => {},
 });
 
 export const CipherProvider = ({ children }: { children: React.ReactNode }) => {
-  const { cipherAccount, isAuthenticated, authUser, breakAuthUser } =
+  const { cipherAccount, isAuthenticated, signAuth, breakAuthUser } =
     useCipherAccount();
 
   return (
     <CipherContext.Provider
-      value={{ cipherAccount, isAuthenticated, authUser, breakAuthUser }}
+      value={{ cipherAccount, isAuthenticated, signAuth, breakAuthUser }}
     >
       {children}
     </CipherContext.Provider>

@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import { useSignAuth } from "./useSignAuth";
+import { useAccount, useSignMessage } from "wagmi";
 import { CipherAccount } from "../type";
-import { useQuery } from "@tanstack/react-query";
 const poseidon = require("poseidon-encryption");
 
 export const useCipherAccount = () => {
   const { isConnected } = useAccount();
-  const { signTypedDataAsync: signAuth } = useSignAuth();
+  const {
+    data: signature,
+    isSuccess,
+    signMessage: signAuth,
+  } = useSignMessage({
+    message: "Authenticate on Cipher Protocol",
+  });
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [cipherAccount, setCipherAccount] = useState<CipherAccount>({
     seed: undefined,
@@ -20,22 +24,17 @@ export const useCipherAccount = () => {
     }
   }, [isConnected]);
 
-  const authUser = async () => {
-    if (isConnected) {
-      try {
-        const signature = await signAuth();
-        const seed = signature.toString();
-        const userId = poseidon.poseidon([seed]).toString();
-        setCipherAccount({
-          seed: seed,
-          userId: userId,
-        });
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.log("error", error);
-      }
+  useEffect(() => {
+    if (isSuccess && signature) {
+      const seed = signature;
+      const userId = poseidon.poseidon([seed]).toString();
+      setCipherAccount({
+        seed: seed,
+        userId: userId,
+      });
+      setIsAuthenticated(true);
     }
-  };
+  }, [isSuccess]);
 
   const breakAuthUser = () => {
     setCipherAccount({
@@ -45,5 +44,5 @@ export const useCipherAccount = () => {
     setIsAuthenticated(false);
   };
 
-  return { cipherAccount, isAuthenticated, authUser, breakAuthUser };
+  return { cipherAccount, isAuthenticated, signAuth, breakAuthUser };
 };

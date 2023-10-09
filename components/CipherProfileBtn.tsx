@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import {
   Flex,
   IconButton,
@@ -14,7 +14,8 @@ import { CipherContext } from "../providers/CipherProvider";
 
 export default function CipherProfileBtn() {
   const { isOpen, onToggle, onClose } = useDisclosure();
-  const { cipherAccount, isAuthenticated, authUser } = useContext(CipherContext);
+  const { cipherAccount, isAuthenticated, signAuth } =
+    useContext(CipherContext);
   const toast = useToast();
 
   const copy = () => {
@@ -77,7 +78,7 @@ export default function CipherProfileBtn() {
           }}
           _active={{ transform: "scale(0.9)" }}
           transitionDuration={"0.2s"}
-          onClick={authUser}
+          onClick={signAuth}
         />
       )}
     </Flex>

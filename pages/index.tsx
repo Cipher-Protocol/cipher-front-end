@@ -10,11 +10,12 @@ import { CipherContext } from "../providers/CipherProvider";
 export default function Page() {
   const [mode, setMode] = useState(Mode.SIMPLE);
   const { isConnected } = useAccount();
-  const { isAuthenticated, authUser, breakAuthUser } = useContext(CipherContext);
+  const { isAuthenticated, signAuth, breakAuthUser } =
+    useContext(CipherContext);
 
   useEffect(() => {
     if (isConnected && !isAuthenticated) {
-      authUser();
+      signAuth();
     }
   }, [isConnected, isAuthenticated]);
 
