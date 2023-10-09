@@ -2,15 +2,15 @@ import { useAccount } from "wagmi";
 import Header from "../components/Header";
 import Pro from "../components/Pro";
 import Simple from "../components/Simple";
-import { useCipherAccount } from "../hooks/useCipherAccount";
 import { Mode } from "../type.d";
 import { Flex } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { CipherContext } from "../providers/CipherProvider";
 
 export default function Page() {
   const [mode, setMode] = useState(Mode.SIMPLE);
   const { isConnected } = useAccount();
-  const { isAuthenticated, authUser, breakAuthUser } = useCipherAccount();
+  const { isAuthenticated, authUser, breakAuthUser } = useContext(CipherContext);
 
   useEffect(() => {
     if (isConnected && !isAuthenticated) {

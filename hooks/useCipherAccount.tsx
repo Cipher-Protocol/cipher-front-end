@@ -31,7 +31,6 @@ export const useCipherAccount = () => {
           userId: userId,
         });
         setIsAuthenticated(true);
-        console.log("isAuthenticated", isAuthenticated);
       } catch (error) {
         console.log("error", error);
       }

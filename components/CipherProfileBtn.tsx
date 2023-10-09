@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import {
   Flex,
   IconButton,
@@ -10,11 +10,11 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { CopyIcon, LockIcon, StarIcon } from "@chakra-ui/icons";
-import { useCipherAccount } from "../hooks/useCipherAccount";
+import { CipherContext } from "../providers/CipherProvider";
 
 export default function CipherProfileBtn() {
   const { isOpen, onToggle, onClose } = useDisclosure();
-  const { cipherAccount, isAuthenticated, authUser } = useCipherAccount();
+  const { cipherAccount, isAuthenticated, authUser } = useContext(CipherContext);
   const toast = useToast();
 
   const copy = () => {
@@ -63,7 +63,7 @@ export default function CipherProfileBtn() {
               className="whitespace-nowrap"
               onClick={() => copy()}
             >
-              User ID: {cipherAccount.userId}
+              User ID: {cipherAccount && cipherAccount.userId}
             </MenuItem>
           </MenuList>
         </Menu>
