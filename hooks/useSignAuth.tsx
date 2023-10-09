@@ -1,9 +1,10 @@
 import { useSignTypedData } from "wagmi";
+import { getNumber } from "../utils/helper";
 
 const domain = {
   name: "",
   version: "1",
-  chainId: 1,
+  chainId: getNumber(process.env.NEXT_PUBLIC_CHAIN_ID),
   verifyingContract: "0x0000000000000000000000000000000000000000",
 } as const;
 

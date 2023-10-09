@@ -17,9 +17,6 @@ export default function CipherProfileBtn() {
   const { cipherAccount, isAuthenticated, authUser } = useCipherAccount();
   const toast = useToast();
 
-  //TODO: check
-  console.log("isAuthenticated", isAuthenticated);
-
   const copy = () => {
     navigator.clipboard.writeText(cipherAccount?.userId || "");
     onClose();

@@ -5,6 +5,7 @@ import SimpleBtn from "./SimpleBtn";
 import { Mode } from "../type";
 import ModeTab from "./ModeTab";
 import CipherProfileBtn from "./CipherProfileBtn";
+import { useAccount } from "wagmi";
 
 type Props = {
   setMode: Dispatch<SetStateAction<Mode>>;
@@ -12,6 +13,7 @@ type Props = {
 
 export default function Header(props: Props) {
   const { setMode } = props;
+  const { isConnected } = useAccount();
 
   return (
     <Flex className="w-full p-4 gap-2 items-center">
@@ -29,7 +31,7 @@ export default function Header(props: Props) {
       </ButtonGroup>
       <ModeTab setMode={setMode} />
       <ConnectButton accountStatus="address" showBalance={false} />
-      <CipherProfileBtn />
+      {isConnected && <CipherProfileBtn />}
     </Flex>
   );
 }
