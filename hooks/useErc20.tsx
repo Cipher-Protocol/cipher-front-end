@@ -2,6 +2,7 @@ import { erc20ABI, useAccount, useContractRead } from "wagmi";
 import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
 import { use, useEffect, useState } from "react";
 import { BigNumber } from "ethers";
+import { readContract } from '@wagmi/core'
 
 export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
   const { address } = useAccount();
@@ -11,34 +12,45 @@ export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
   );
   const [decimals, setDecimals] = useState<number | undefined>(18);
 
-  if (tokenAddr === DEFAULT_ETH_ADDRESS || tokenAddr === undefined)
-    return { balance: undefined, decimals: undefined, isLoading: false };
-
-  if (address === undefined)
-    return { balance: undefined, decimals: undefined, isLoading: false };
-
   useEffect(() => {
     setIsLoading(true);
-    const { data: erc20Balance } = useContractRead({
-      address: tokenAddr,
+    if (!address || tokenAddr === undefined || tokenAddr === DEFAULT_ETH_ADDRESS) {
+      setBalance(BigNumber.from(0));
+      setIsLoading(false);
+      return;
+    }
+    readContract({
+      address: tokenAddr as `0x${string}`,
       abi: erc20ABI,
       functionName: "balanceOf",
       args: [address || "0x"],
-    });
-    setBalance(BigNumber.from(erc20Balance));
-    setIsLoading(false);
+    }).then((data) => {
+      setBalance(BigNumber.from(data));
+      setIsLoading(false);
+    }).catch((err) => {
+      console.error(err)
+      setIsLoading(false);
+    })
   }, [tokenAddr, address]);
 
   useEffect(() => {
-    setIsLoading(true);
-    const { data: erc20Decimals } = useContractRead({
-      address: tokenAddr,
+    if (!address || tokenAddr === undefined || tokenAddr === DEFAULT_ETH_ADDRESS) {
+      setDecimals(undefined);
+      setIsLoading(false);
+      return;
+    }
+    readContract({
+      address: tokenAddr as `0x${string}`,
       abi: erc20ABI,
       functionName: "decimals",
-    });
-    setDecimals(erc20Decimals);
-    setIsLoading(false);
-  }, [tokenAddr]);
+    }).then((data) => {
+      setDecimals(data);
+      setIsLoading(false);
+    }).catch((err) => {
+      console.error(err)
+      setIsLoading(false);
+    })
+  }, [address, tokenAddr]);
 
   return { balance, decimals, isLoading };
 };

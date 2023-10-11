@@ -22,7 +22,7 @@ export default function PublicInput(props: Props) {
   const { pubInAmt, setPubInAmt, balance, selectedToken } = props;
 
   const handlePubInAmt = (amt: number) => {
-    setPubInAmt(utils.parseEther(amt.toString()));
+    setPubInAmt(utils.parseUnits(amt.toString(), selectedToken?.decimals));
   };
 
   return (
@@ -74,7 +74,7 @@ export default function PublicInput(props: Props) {
             : 0
         }
         onChange={(value) => handlePubInAmt(Number(value))}
-        value={pubInAmt ? Number(utils.formatEther(pubInAmt)) : 0}
+        value={pubInAmt ? Number(utils.formatUnits(pubInAmt, selectedToken?.decimals)) : 0}
       >
         <NumberInputField placeholder="Deposit Amount" borderRadius={"full"} />
       </NumberInput>

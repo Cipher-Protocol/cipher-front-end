@@ -38,14 +38,20 @@ export default function DepositCard(props: Props) {
     selectedToken?.address
   );
 
-  if (!tokens) return null;
-  console.log({
-    address,
-    ethBalance,
-    Erc20Balance,
-    Erc20Decimals,
-    selectedToken,
-  });
+
+  useEffect(() => {
+    if (!tokens) return;
+    setSelectedToken(tokens[0]);
+  }, [tokens])
+
+  // if (!tokens) return null;
+  // console.log({
+  //   address,
+  //   ethBalance,
+  //   Erc20Balance,
+  //   Erc20Decimals,
+  //   selectedToken,
+  // });
 
   useEffect(() => {
     if (!address) return;
@@ -67,6 +73,12 @@ export default function DepositCard(props: Props) {
   }, [selectedToken, ethBalance, Erc20Balance, Erc20Decimals, address]);
 
   const handleOpenDepositModal = () => {
+    console.log({
+      address,
+      balance,
+      pubInAmt,
+      selectedToken,
+    })
     if (address === undefined) {
       toast({
         title: "Please connect wallet",
