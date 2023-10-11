@@ -17,11 +17,13 @@ export const MAINNET_TOKEN_CONFIG: TokenConfig[] = [
     iconUri: ethIcon,
     address: DEFAULT_ETH_ADDRESS,
     symbol: "ETH",
+    decimals: 18,
   },
   {
     iconUri: btcIcon,
     address: MAINNET_ADDRESS.BTC,
     symbol: "BTC",
+    decimals: 8,
   },
 ];
 
@@ -30,10 +32,12 @@ export const GOERLI_TOKEN_CONFIG: TokenConfig[] = [
     iconUri: ethIcon,
     address: DEFAULT_ETH_ADDRESS,
     symbol: "ETH",
+    decimals: 18,
   },
   {
     iconUri: usdcIcon,
     address: GOERLI_ADDRESS.USDC,
     symbol: "USDC",
+    decimals: 8,
   },
 ];
