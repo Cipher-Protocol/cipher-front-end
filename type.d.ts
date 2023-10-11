@@ -20,6 +20,7 @@ export type TokenConfig = {
   iconUri: StaticImageData;
   address: `0x${string}`;
   symbol: string;
+  decimals: number;
 };
 
 export type CipherAccount = {

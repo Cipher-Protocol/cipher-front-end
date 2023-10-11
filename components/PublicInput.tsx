@@ -1,5 +1,3 @@
-import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
-import { useErc20 } from "../hooks/useErc20";
 import { TokenConfig } from "../type";
 import {
   Flex,
@@ -9,38 +7,19 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
-import React, { useEffect, useState } from "react";
-import { useAccount, useBalance } from "wagmi";
+import React from "react";
 
 type Props = {
   pubInAmt: BigNumber | undefined;
   setPubInAmt: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
   selectedToken: TokenConfig | undefined;
+  balance: BigNumber | undefined;
 };
 
 const amountTable = [0.01, 0.1, 1, 10];
 
 export default function PublicInput(props: Props) {
-  const { pubInAmt, setPubInAmt, selectedToken } = props;
-  const { address } = useAccount();
-  const { data: ethBalance } = useBalance({
-    address: address,
-  });
-  const { balance: Erc20Balance, decimals: Erc20Decimals } = useErc20(
-    selectedToken?.address
-  );
-  const [balance, setBalance] = useState<BigInt | undefined>(ethBalance?.value);
-  const [decimals, setDecimals] = useState<number | undefined>(18);
-
-  useEffect(() => {
-    if (selectedToken?.address === DEFAULT_ETH_ADDRESS) {
-      setBalance(ethBalance?.value);
-      setDecimals(18);
-    } else {
-      setBalance(Erc20Balance);
-      setDecimals(Erc20Decimals);
-    }
-  }, [selectedToken, ethBalance, Erc20Balance, Erc20Decimals]);
+  const { pubInAmt, setPubInAmt, balance, selectedToken } = props;
 
   const handlePubInAmt = (amt: number) => {
     setPubInAmt(utils.parseEther(amt.toString()));
@@ -52,7 +31,10 @@ export default function PublicInput(props: Props) {
         Balance: &nbsp;
         {balance
           ? Number(
-              utils.formatUnits(BigNumber.from(balance), decimals)
+              utils.formatUnits(
+                BigNumber.from(balance),
+                selectedToken?.decimals
+              )
             ).toFixed(4)
           : 0}
       </Text>
@@ -83,7 +65,12 @@ export default function PublicInput(props: Props) {
         min={0}
         max={
           balance
-            ? Number(utils.formatUnits(BigNumber.from(balance), decimals))
+            ? Number(
+                utils.formatUnits(
+                  BigNumber.from(balance),
+                  selectedToken?.decimals
+                )
+              )
             : 0
         }
         onChange={(value) => handlePubInAmt(Number(value))}

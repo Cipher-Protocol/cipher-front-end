@@ -6,10 +6,11 @@ type Props = {
   children: React.ReactNode;
   className?: string;
   borderRadius?: string;
+  onClick?: () => void;
 };
 
 export default function SimpleBtn(props: Props) {
-  const { colorScheme, children, className, borderRadius } = props;
+  const { colorScheme, children, className, borderRadius, onClick } = props;
   return (
     <Button
       className={className}
@@ -22,6 +23,7 @@ export default function SimpleBtn(props: Props) {
       }}
       transitionDuration={"0.2s"}
       borderRadius={borderRadius || "full"}
+      onClick={onClick}
     >
       {children}
     </Button>

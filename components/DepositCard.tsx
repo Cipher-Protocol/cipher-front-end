@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Flex } from "@chakra-ui/react";
+import { Flex, useDisclosure, useToast } from "@chakra-ui/react";
 import { BigNumber } from "ethers";
 import { TokenConfig } from "../type";
 import TokenSelector from "./TokenSelector";
 import SimpleBtn from "./SimpleBtn";
 import dynamic from "next/dynamic";
+import DepositModal from "./DepositModal";
+import { useAccount, useBalance } from "wagmi";
+import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
+import { useErc20 } from "../hooks/useErc20";
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
@@ -17,33 +21,117 @@ type Props = {
 
 export default function DepositCard(props: Props) {
   const { tokens, isLoadingTokens } = props;
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { address } = useAccount();
   const [pubInAmt, setPubInAmt] = useState<BigNumber>();
   const [selectedToken, setSelectedToken] = useState<TokenConfig | undefined>(
     tokens ? tokens[0] : undefined
   );
+  const { data: ethBalance } = useBalance({
+    address: address,
+  });
+  const [balance, setBalance] = useState<BigNumber | undefined>(
+    BigNumber.from(ethBalance?.value || 0)
+  );
+  const { balance: Erc20Balance, decimals: Erc20Decimals } = useErc20(
+    selectedToken?.address
+  );
+
+  if (!tokens) return null;
+  console.log({
+    address,
+    ethBalance,
+    Erc20Balance,
+    Erc20Decimals,
+    selectedToken,
+  });
 
   useEffect(() => {
-    if (tokens) {
-      setSelectedToken(tokens[0]);
+    if (!address) return;
+    if (selectedToken?.address === DEFAULT_ETH_ADDRESS) {
+      setBalance(BigNumber.from(ethBalance?.value || 0));
+      setSelectedToken({
+        ...selectedToken,
+        decimals: 18,
+      });
+    } else {
+      if (selectedToken === undefined) return;
+      if (Erc20Balance === undefined || Erc20Decimals === undefined) return;
+      setBalance(Erc20Balance);
+      setSelectedToken({
+        ...selectedToken,
+        decimals: Erc20Decimals,
+      });
     }
-  }, [tokens]);
+  }, [selectedToken, ethBalance, Erc20Balance, Erc20Decimals, address]);
+
+  const handleOpenDepositModal = () => {
+    if (address === undefined) {
+      toast({
+        title: "Please connect wallet",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      return;
+    }
+    if (balance === undefined) return;
+    if (pubInAmt === undefined || pubInAmt.gt(balance)) {
+      toast({
+        title: "Invalid amount",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } else if (selectedToken === undefined) {
+      toast({
+        title: "Please select token",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } else {
+      onOpen();
+    }
+  };
 
   return (
-    <Flex className="p-8 flex flex-col justify-between items-center gap-8 h-[20rem] w-[25rem] rounded-3xl shadow-md bg-slate-300 m-8">
-      <TokenSelector
-        tokens={tokens}
-        selectedToken={selectedToken}
-        isLoadingTokens={isLoadingTokens}
-        setSelectedToken={setSelectedToken}
-      />
-      <PublicInput
+    <>
+      <Flex className="p-8 flex flex-col justify-between items-center gap-8 h-[20rem] w-[25rem] rounded-3xl shadow-md bg-slate-300 m-8">
+        <TokenSelector
+          tokens={tokens}
+          selectedToken={selectedToken}
+          isLoadingTokens={isLoadingTokens}
+          setSelectedToken={setSelectedToken}
+        />
+        <PublicInput
+          pubInAmt={pubInAmt}
+          selectedToken={selectedToken}
+          setPubInAmt={setPubInAmt}
+          balance={balance}
+        />
+        <SimpleBtn
+          colorScheme={"teal"}
+          className="w-56"
+          onClick={handleOpenDepositModal}
+        >
+          Deposit
+        </SimpleBtn>
+      </Flex>
+      <DepositModal
+        isOpen={isOpen}
+        onOpen={onOpen}
+        onClose={onClose}
         pubInAmt={pubInAmt}
-        selectedToken={selectedToken}
-        setPubInAmt={setPubInAmt}
+        token={selectedToken}
       />
-      <SimpleBtn colorScheme={"teal"} className="w-56">
-        Deposit
-      </SimpleBtn>
-    </Flex>
+    </>
   );
 }
