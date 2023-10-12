@@ -40,16 +40,18 @@ export default function DepositCard(props: Props) {
     selectedToken?.address
   );
   const [cipherHex, setCipherHex] = useState<string>("");
+  const [hashedSalt, setHashedSalt] = useState<string>("");
 
   useEffect(() => {
     if (pubInAmt === undefined) return;
     const random = getSnarkFieldRandom();
     const salt = getSnarkFieldRandom();
-    const hashedSalt = BigNumber.from(poseidon.poseidon([salt.toString()]));
+    const hashedSalt = poseidon.poseidon([salt.toString()]);
+    setHashedSalt(hashedSalt);
     const abiCoder = utils.defaultAbiCoder;
     const encodedData = abiCoder.encode(
       ["uint256", "uint256", "uint256"],
-      [pubInAmt, random, hashedSalt]
+      [pubInAmt, salt, random]
     );
     setCipherHex(encodedData);
   }, [pubInAmt]);
@@ -150,6 +152,7 @@ export default function DepositCard(props: Props) {
         pubInAmt={pubInAmt}
         token={selectedToken}
         cipherHex={cipherHex}
+        hashedSalt={hashedSalt}
       />
     </>
   );

@@ -33,6 +33,7 @@ type Props = {
   pubInAmt?: BigNumber;
   token?: TokenConfig;
   cipherHex: string;
+  hashedSalt: string;
 };
 
 const steps = [
