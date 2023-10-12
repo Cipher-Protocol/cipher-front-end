@@ -8,18 +8,25 @@ import {
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 
-export default function CipherCard() {
+type Props = {
+  value?: string;
+  placeholder?: string;
+};
+
+export default function CipherCard(props: Props) {
+  const { placeholder, value } = props;
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
 
   return (
-    <Card className="w-[20rem] h-[6rem]">
+    <Card className="w-[20rem] h-[5rem]">
       <CardBody>
         <InputGroup size="md">
           <Input
             pr="4.5rem"
             type={show ? "text" : "password"}
-            placeholder="Enter your cipher here"
+            placeholder={placeholder}
+            value={value}
           />
           <InputRightElement width="4.5rem">
             <Button h="1.75rem" size="sm" onClick={handleClick}>

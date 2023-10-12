@@ -3,8 +3,10 @@ import ethIcon from "../assets/icon/eth.png";
 import btcIcon from "../assets/icon/btc.png";
 import usdcIcon from "../assets/icon/usdc.png";
 
-// TODO: change to use on-chain data
+export const SNARK_FIELD_SIZE =
+  "21888242871839275222246405745257275088548364400416034343698204186575808495617";
 export const DEFAULT_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+// TODO: change to use on-chain data
 export const MAINNET_ADDRESS = {
   BTC: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" as const,
 };

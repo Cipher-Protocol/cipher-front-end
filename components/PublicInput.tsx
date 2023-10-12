@@ -7,7 +7,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
-import React from "react";
+import React, { useEffect } from "react";
 
 type Props = {
   pubInAmt: BigNumber | undefined;
@@ -74,7 +74,11 @@ export default function PublicInput(props: Props) {
             : 0
         }
         onChange={(value) => handlePubInAmt(Number(value))}
-        value={pubInAmt ? Number(utils.formatUnits(pubInAmt, selectedToken?.decimals)) : 0}
+        value={
+          pubInAmt
+            ? Number(utils.formatUnits(pubInAmt, selectedToken?.decimals))
+            : 0
+        }
       >
         <NumberInputField placeholder="Deposit Amount" borderRadius={"full"} />
       </NumberInput>
