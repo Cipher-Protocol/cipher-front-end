@@ -11,6 +11,7 @@ export const MAINNET_ADDRESS = {
   BTC: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" as const,
 };
 export const GOERLI_ADDRESS = {
+  WBTC: "0xC04B0d3107736C32e19F1c62b2aF67BE61d63a05" as const,
   USDC: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F" as const,
 };
 
