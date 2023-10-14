@@ -38,6 +38,12 @@ export const GOERLI_TOKEN_CONFIG: TokenConfig[] = [
     decimals: 18,
   },
   {
+    iconUri: btcIcon,
+    address: GOERLI_ADDRESS.WBTC,
+    symbol: "WBTC",
+    decimals: 8,
+  },
+  {
     iconUri: usdcIcon,
     address: GOERLI_ADDRESS.USDC,
     symbol: "USDC",
