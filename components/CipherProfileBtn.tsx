@@ -10,12 +10,12 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { CopyIcon, LockIcon, StarIcon } from "@chakra-ui/icons";
-import { CipherContext } from "../providers/CipherProvider";
+import { CipherAccountContext } from "../providers/CipherProvider";
 
 export default function CipherProfileBtn() {
   const { isOpen, onToggle, onClose } = useDisclosure();
   const { cipherAccount, isAuthenticated, signAuth } =
-    useContext(CipherContext);
+    useContext(CipherAccountContext);
   const toast = useToast();
 
   const copy = () => {

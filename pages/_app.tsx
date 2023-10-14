@@ -11,7 +11,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { chakraTheme } from "../styles/chakraTheme";
 import { rainbowkitTheme } from "../styles/rainbowkitTheme";
 import { getString } from "../utils/helper";
-import { CipherProvider } from "../providers/CipherProvider";
+import { CipherAccountProvider } from "../providers/CipherProvider";
+import { CipherTreeProvider } from "../providers/CipherTreeProvider";
 
 /* ============== rainbowkit & wagmi config ============== */
 
@@ -35,6 +36,7 @@ const wagmiConfig = createConfig({
   publicClient,
 });
 
+
 // react-query config
 const queryClient = new QueryClient();
 
@@ -44,9 +46,11 @@ export default function App({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <WagmiConfig config={wagmiConfig}>
           <RainbowKitProvider chains={chains} theme={rainbowkitTheme}>
-            <CipherProvider>
-              <Component {...pageProps} />
-            </CipherProvider>
+            <CipherAccountProvider>
+              <CipherTreeProvider>
+                <Component {...pageProps} />
+              </CipherTreeProvider>
+            </CipherAccountProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </QueryClientProvider>

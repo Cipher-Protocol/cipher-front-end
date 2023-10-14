@@ -1,5 +1,5 @@
 declare module "circomlibjs";
-
+declare module "snarkjs"
 declare global {
   interface Window {
     ethereum: any;

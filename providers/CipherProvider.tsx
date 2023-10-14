@@ -2,7 +2,7 @@ import { createContext } from "react";
 import { useCipherAccount } from "../hooks/useCipherAccount";
 import { CipherAccount } from "../type";
 
-export const CipherContext = createContext<{
+export const CipherAccountContext = createContext<{
   cipherAccount: CipherAccount | undefined;
   isAuthenticated: boolean;
   signAuth: () => void;
@@ -14,15 +14,15 @@ export const CipherContext = createContext<{
   breakAuthUser: () => {},
 });
 
-export const CipherProvider = ({ children }: { children: React.ReactNode }) => {
+export const CipherAccountProvider = ({ children }: { children: React.ReactNode }) => {
   const { cipherAccount, isAuthenticated, signAuth, breakAuthUser } =
     useCipherAccount();
 
   return (
-    <CipherContext.Provider
+    <CipherAccountContext.Provider
       value={{ cipherAccount, isAuthenticated, signAuth, breakAuthUser }}
     >
       {children}
-    </CipherContext.Provider>
+    </CipherAccountContext.Provider>
   );
 };

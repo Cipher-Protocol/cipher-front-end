@@ -10,7 +10,8 @@ import { useAccount, useBalance } from "wagmi";
 import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
 import { useErc20 } from "../hooks/useErc20";
 import { getSnarkFieldRandom } from "../utils/getRandom";
-const poseidon = require("poseidon-encryption");
+import { CipherCoinInfo } from "../lib/cipher/CipherCoin";
+import { encodeCipherCode, toHashedSalt } from "../lib/cipher/CipherHelper";
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
@@ -39,20 +40,37 @@ export default function DepositCard(props: Props) {
   const { balance: Erc20Balance, decimals: Erc20Decimals } = useErc20(
     selectedToken?.address
   );
-  const [cipherHex, setCipherHex] = useState<string>("");
+  const [cipherCode, setCipherCode] = useState<string>("");
+  const [cipherCoinInfo, setCipherCoinInfo] = useState<CipherCoinInfo>({
+    key: {
+      hashedSaltOrUserId: 0n,
+      inSaltOrSeed: 0n,
+      inRandom: 0n
+    },
+    amount: 0n,
+  });
 
   useEffect(() => {
     if (pubInAmt === undefined) return;
-    const random = getSnarkFieldRandom();
-    const salt = getSnarkFieldRandom();
-    const hashedSalt = BigNumber.from(poseidon.poseidon([salt.toString()]));
-    const abiCoder = utils.defaultAbiCoder;
-    const encodedData = abiCoder.encode(
-      ["uint256", "uint256", "uint256"],
-      [pubInAmt, random, hashedSalt]
-    );
-    setCipherHex(encodedData);
-  }, [pubInAmt]);
+    if (selectedToken === undefined) return;
+    const data = {
+      tokenAddress: selectedToken.address,
+      amount: pubInAmt,
+      salt: getSnarkFieldRandom(),
+      random: getSnarkFieldRandom(),
+    };
+    const encodedData = encodeCipherCode(data);
+    setCipherCode(encodedData);
+    const coin: CipherCoinInfo = {
+      key: {
+        hashedSaltOrUserId: toHashedSalt(data.salt.toBigInt()),
+        inSaltOrSeed: data.salt.toBigInt(),
+        inRandom: data.random.toBigInt(),
+      },
+      amount: pubInAmt.toBigInt(),
+    };
+    setCipherCoinInfo(coin);
+  }, [pubInAmt, selectedToken]);
 
   useEffect(() => {
     if (!tokens) return;
@@ -149,7 +167,8 @@ export default function DepositCard(props: Props) {
         onClose={onClose}
         pubInAmt={pubInAmt}
         token={selectedToken}
-        cipherHex={cipherHex}
+        cipherHex={cipherCode}
+        cipherCoinInfo={cipherCoinInfo}
       />
     </>
   );
