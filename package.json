@@ -21,6 +21,7 @@
     "@types/react-no-ssr": "^1.1.4",
     "autoprefixer": "10.4.16",
     "circomlibjs": "^0.1.7",
+    "dayjs": "^1.11.10",
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.2",
     "ethers": "5.7.2",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Flex, useDisclosure, useToast } from "@chakra-ui/react";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { TokenConfig } from "../type";
 import TokenSelector from "./TokenSelector";
 import SimpleBtn from "./SimpleBtn";
@@ -9,6 +9,8 @@ import DepositModal from "./DepositModal";
 import { useAccount, useBalance } from "wagmi";
 import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
 import { useErc20 } from "../hooks/useErc20";
+import { getSnarkFieldRandom } from "../utils/getRandom";
+const poseidon = require("poseidon-encryption");
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
@@ -37,21 +39,25 @@ export default function DepositCard(props: Props) {
   const { balance: Erc20Balance, decimals: Erc20Decimals } = useErc20(
     selectedToken?.address
   );
+  const [cipherHex, setCipherHex] = useState<string>("");
 
+  useEffect(() => {
+    if (pubInAmt === undefined) return;
+    const random = getSnarkFieldRandom();
+    const salt = getSnarkFieldRandom();
+    const hashedSalt = BigNumber.from(poseidon.poseidon([salt.toString()]));
+    const abiCoder = utils.defaultAbiCoder;
+    const encodedData = abiCoder.encode(
+      ["uint256", "uint256", "uint256"],
+      [pubInAmt, random, hashedSalt]
+    );
+    setCipherHex(encodedData);
+  }, [pubInAmt]);
 
   useEffect(() => {
     if (!tokens) return;
     setSelectedToken(tokens[0]);
-  }, [tokens])
-
-  // if (!tokens) return null;
-  // console.log({
-  //   address,
-  //   ethBalance,
-  //   Erc20Balance,
-  //   Erc20Decimals,
-  //   selectedToken,
-  // });
+  }, [tokens]);
 
   useEffect(() => {
     if (!address) return;
@@ -78,7 +84,7 @@ export default function DepositCard(props: Props) {
       balance,
       pubInAmt,
       selectedToken,
-    })
+    });
     if (address === undefined) {
       toast({
         title: "Please connect wallet",
@@ -143,6 +149,7 @@ export default function DepositCard(props: Props) {
         onClose={onClose}
         pubInAmt={pubInAmt}
         token={selectedToken}
+        cipherHex={cipherHex}
       />
     </>
   );
