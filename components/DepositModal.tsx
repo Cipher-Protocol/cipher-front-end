@@ -42,7 +42,7 @@ type Props = {
   onClose: () => void;
   pubInAmt?: BigNumber;
   token?: TokenConfig;
-  cipherHex: string;
+  cipherCode: string;
   cipherCoinInfo: CipherCoinInfo,
 };
 
@@ -53,7 +53,7 @@ const steps = [
 ];
 
 export default function DepositModal(props: Props) {
-  const { isOpen, onOpen, onClose, pubInAmt, token, cipherHex, cipherCoinInfo } = props;
+  const { isOpen, onOpen, onClose, pubInAmt, token, cipherCode: cipherHex, cipherCoinInfo } = props;
   const [isDownloaded, setIsDownloaded] = useState(false);
   const { address } = useAccount();
   const { activeStep } = useSteps({

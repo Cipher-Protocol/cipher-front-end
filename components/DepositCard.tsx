@@ -9,9 +9,10 @@ import DepositModal from "./DepositModal";
 import { useAccount, useBalance } from "wagmi";
 import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
 import { useErc20 } from "../hooks/useErc20";
-import { getSnarkFieldRandom } from "../utils/getRandom";
 import { CipherCoinInfo } from "../lib/cipher/CipherCoin";
 import { encodeCipherCode, toHashedSalt } from "../lib/cipher/CipherHelper";
+import { getRandomSnarkField } from "../utils/getRandom";
+const poseidon = require("poseidon-encryption");
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
@@ -56,8 +57,8 @@ export default function DepositCard(props: Props) {
     const data = {
       tokenAddress: selectedToken.address,
       amount: pubInAmt,
-      salt: getSnarkFieldRandom(),
-      random: getSnarkFieldRandom(),
+      salt: getRandomSnarkField(),
+      random: getRandomSnarkField(),
     };
     const encodedData = encodeCipherCode(data);
     setCipherCode(encodedData);
@@ -97,12 +98,6 @@ export default function DepositCard(props: Props) {
   }, [selectedToken, ethBalance, Erc20Balance, Erc20Decimals, address]);
 
   const handleOpenDepositModal = () => {
-    console.log({
-      address,
-      balance,
-      pubInAmt,
-      selectedToken,
-    });
     if (address === undefined) {
       toast({
         title: "Please connect wallet",
