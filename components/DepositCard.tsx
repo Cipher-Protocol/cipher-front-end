@@ -162,7 +162,7 @@ export default function DepositCard(props: Props) {
         onClose={onClose}
         pubInAmt={pubInAmt}
         token={selectedToken}
-        cipherHex={cipherCode}
+        cipherCode={cipherCode}
         cipherCoinInfo={cipherCoinInfo}
       />
     </>
