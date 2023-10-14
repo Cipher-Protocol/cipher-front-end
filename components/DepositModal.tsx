@@ -60,7 +60,7 @@ export default function DepositModal(props: Props) {
     index: 1,
     count: steps.length,
   });
-  const { syncTree, getTreeDepth: syncTreeDepth } = useContext(CipherTreeProviderContext);
+  const { syncTree, getTreeDepth, getTreeNextLeafIndex } = useContext(CipherTreeProviderContext);
   if (!pubInAmt || !token) return null;
 
   const handleCloseModal = () => {
@@ -109,7 +109,7 @@ export default function DepositModal(props: Props) {
   }
 
   const generateProof = async () => {
-    const depth = await syncTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
+    const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
     console.log({
       depth
     })
@@ -125,7 +125,6 @@ export default function DepositModal(props: Props) {
     if(!address) {
       throw new Error("address is undefined");
     }
-    const coinLeafId = 0;
     const tx = await generateCipherTx(
       tree,
       {
@@ -133,7 +132,7 @@ export default function DepositModal(props: Props) {
         publicOutAmt: 0n,
         privateInCoins: [],
         // TODO: get leafId
-        privateOutCoins: [new CipherBaseCoin(cipherCoinInfo, coinLeafId)],
+        privateOutCoins: [new CipherBaseCoin(cipherCoinInfo)],
       }, {
         // TODO: get maxAllowableFeeRate from relay info
         maxAllowableFeeRate: "0",

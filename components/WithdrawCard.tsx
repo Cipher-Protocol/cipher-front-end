@@ -121,11 +121,11 @@ export default function WithdrawCard(props: Props) {
         salt: salt.toBigInt(),
         random: random.toBigInt(),
       });
-      const leafIndex = tree.findLeafIndexByCommitment(commitment);
-      if(leafIndex === -1) {
-        throw new Error("commitment is not found in tree");
+      const coinLeafIndexs = tree.findLeafIndexsByCommitment(commitment);
+      if(coinLeafIndexs.length === 0) {
+        throw new Error("Commitment is not found");
       }
-
+      // TODO: check coinLeafIndex is paid or not
       const payableCoin = new CipherTransferableCoin({
         key: {
           hashedSaltOrUserId: PoseidonHash([salt.toBigInt()]),
@@ -133,7 +133,7 @@ export default function WithdrawCard(props: Props) {
           inRandom: random.toBigInt(),
         },
         amount: amount.toBigInt(),
-      }, tree, leafIndex);
+      }, tree, coinLeafIndexs[0]);
   
       await doProveAndSendTx(tree, payableCoin);
     } catch (error: any) {

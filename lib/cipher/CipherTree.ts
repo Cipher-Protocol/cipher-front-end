@@ -23,13 +23,14 @@ export class CipherTree extends IncrementalQuinTree {
     return this.getLeaf(leafId);
   }
 
-  findLeafIndexByCommitment(commitment: bigint) {
-    for(let i = this.nextIndex - 1; i >= 0; i--) {
+  findLeafIndexsByCommitment(commitment: bigint): number[] {
+    const results: number[] = []
+    for(let i = 0; i < this.leaves.length; i++) {
       if(this.getLeaf(i) === commitment) {
-        return i;
+        results.push(i);
       }
     }
-    return -1;
+    return results;
   }
 }
 // TODO: save coin;

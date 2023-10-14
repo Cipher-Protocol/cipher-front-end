@@ -22,7 +22,7 @@ export interface CipherCoinInfo {
 export class CipherBaseCoin {
   coinInfo!: CipherCoinInfo;
 
-  constructor({ key, amount }: CipherCoinInfo, leafId: number) {
+  constructor({ key, amount }: CipherCoinInfo) {
     this.coinInfo = {
       key,
       amount,
@@ -51,7 +51,7 @@ export class CipherTransferableCoin extends CipherBaseCoin {
   readonly leafId!: number;
 
   constructor(coinInfo: CipherCoinInfo, tree: CipherTree, leafId: number) {
-    super(coinInfo, leafId);
+    super(coinInfo);
     this.tree = tree;
     this.leafId = leafId;
     // TODO: Implement only hashedSaltOrUserId
