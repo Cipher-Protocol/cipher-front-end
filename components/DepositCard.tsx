@@ -19,34 +19,30 @@ const PublicInput = dynamic(() => import("./PublicInput"), {
 });
 
 type Props = {
-  tokens: TokenConfig[] | undefined;
-  isLoadingTokens: boolean;
+  tokens: TokenConfig[];
+  isLoadingTokens?: boolean;
 };
 
 export default function DepositCard(props: Props) {
-  const { tokens, isLoadingTokens } = props;
+  const { tokens } = props;
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { address } = useAccount();
   const [pubInAmt, setPubInAmt] = useState<BigNumber>();
-  const [selectedToken, setSelectedToken] = useState<TokenConfig | undefined>(
-    tokens ? tokens[0] : undefined
-  );
+  const [selectedToken, setSelectedToken] = useState<TokenConfig>(tokens[0]);
   const { data: ethBalance } = useBalance({
     address: address,
   });
   const [balance, setBalance] = useState<BigNumber | undefined>(
     BigNumber.from(ethBalance?.value || 0)
   );
-  const { balance: Erc20Balance } = useErc20(
-    selectedToken?.address
-  );
+  const { balance: Erc20Balance } = useErc20(selectedToken?.address);
   const [cipherCode, setCipherCode] = useState<string>("");
   const [cipherCoinInfo, setCipherCoinInfo] = useState<CipherCoinInfo>({
     key: {
       hashedSaltOrUserId: 0n,
       inSaltOrSeed: 0n,
-      inRandom: 0n
+      inRandom: 0n,
     },
     amount: 0n,
   });
@@ -133,7 +129,6 @@ export default function DepositCard(props: Props) {
         <TokenSelector
           tokens={tokens}
           selectedToken={selectedToken}
-          isLoadingTokens={isLoadingTokens}
           setSelectedToken={setSelectedToken}
         />
         <PublicInput
@@ -154,7 +149,7 @@ export default function DepositCard(props: Props) {
         isOpen={isOpen}
         onOpen={onOpen}
         onClose={onClose}
-        pubInAmt={pubInAmt}
+        pubInAmt={pubInAmt || BigNumber.from(0)}
         token={selectedToken}
         cipherCode={cipherCode}
         cipherCoinInfo={cipherCoinInfo}

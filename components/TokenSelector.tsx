@@ -15,10 +15,8 @@ import { TokenConfig } from "../type";
 type Props = {
   tokens: TokenConfig[] | undefined;
   selectedToken: TokenConfig | undefined;
-  isLoadingTokens: boolean;
-  setSelectedToken: React.Dispatch<
-    React.SetStateAction<TokenConfig | undefined>
-  >;
+  isLoadingTokens?: boolean;
+  setSelectedToken: React.Dispatch<React.SetStateAction<TokenConfig>>;
 };
 export default function TokenSelector(props: Props) {
   const { tokens, selectedToken, isLoadingTokens, setSelectedToken } = props;

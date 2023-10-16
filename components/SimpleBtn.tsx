@@ -6,24 +6,35 @@ type Props = {
   children: React.ReactNode;
   className?: string;
   borderRadius?: string;
+  disabled?: boolean;
   onClick?: () => void;
 };
 
 export default function SimpleBtn(props: Props) {
-  const { colorScheme, children, className, borderRadius, onClick } = props;
+  const { colorScheme, children, className, borderRadius, disabled, onClick } =
+    props;
   return (
     <Button
+      disabled={disabled}
       className={className}
-      colorScheme={colorScheme}
-      _hover={{
-        transform: "scale(1.1)",
-      }}
-      _active={{
-        transform: "scale(0.9)",
-      }}
+      colorScheme={disabled ? "gray" : colorScheme}
+      _hover={
+        disabled
+          ? { cursor: "not-allowed" }
+          : {
+              transform: "scale(1.1)",
+            }
+      }
+      _active={
+        disabled
+          ? { cursor: "not-allowed" }
+          : {
+              transform: "scale(0.9)",
+            }
+      }
       transitionDuration={"0.2s"}
       borderRadius={borderRadius || "full"}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
     >
       {children}
     </Button>

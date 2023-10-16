@@ -2,19 +2,19 @@ import { Flex, Tab, TabList, Tabs } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import DepositCard from "./DepositCard";
 import WithdrawCard from "./WithdrawCard";
-import { SimpleType } from "../type.d";
+import { SimpleType, TokenConfig } from "../type.d";
 import { useNetwork } from "wagmi";
-import { useToken } from "../hooks/useToken";
+import { getTokenConfig } from "../lib/getTokenConfig";
+import { get } from "lodash";
 
 export default function Simple() {
   const { chain } = useNetwork();
-  const { tokens, isLoadingTokens, refetchTokens } = useToken(chain?.id || 1);
+  const [tokens, setTokens] = useState<TokenConfig[]>(getTokenConfig(1));
   const [simpleType, setSimpleType] = useState(SimpleType.DEPOSIT);
 
   useEffect(() => {
-    if (chain) {
-      refetchTokens();
-    }
+    const tokens = getTokenConfig(chain?.id || 1);
+    setTokens(tokens);
   }, [chain]);
 
   return (
@@ -31,9 +31,9 @@ export default function Simple() {
         </TabList>
       </Tabs>
       {simpleType === SimpleType.DEPOSIT ? (
-        <DepositCard tokens={tokens} isLoadingTokens={isLoadingTokens} />
+        <DepositCard tokens={tokens} />
       ) : (
-        <WithdrawCard tokens={tokens} isLoadingTokens={isLoadingTokens} />
+        <WithdrawCard tokens={tokens} />
       )}
     </Flex>
   );

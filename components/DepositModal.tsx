@@ -20,30 +20,37 @@ import {
   useSteps,
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../type";
 import SimpleBtn from "./SimpleBtn";
 import CipherCard from "./CipherCard";
 import dayjs from "dayjs";
-import { CipherBaseCoin, CipherCoinInfo, CipherTransferableCoin } from "../lib/cipher/CipherCoin";
-import { ethTokenAddress, generateCipherTx } from "../lib/cipher/CipherCore";
+import { CipherBaseCoin, CipherCoinInfo } from "../lib/cipher/CipherCoin";
+import { generateCipherTx } from "../lib/cipher/CipherCore";
 import { CipherTree } from "../lib/cipher/CipherTree";
 import { erc20ABI, useAccount } from "wagmi";
+import { usePrepareContractWrite, useContractWrite } from "wagmi";
 import { writeContract } from "@wagmi/core";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
-import { CIPHER_CONTRACT_ADDRESS, DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
-import CipherAbi from '../assets/Cipher-abi.json';
-import { PoseidonHash } from "../lib/poseidonHash";
+import {
+  CIPHER_CONTRACT_ADDRESS,
+  DEFAULT_ETH_ADDRESS,
+} from "../configs/tokenConfig";
+import CipherAbi from "../assets/Cipher-abi.json";
 import { DEFAULT_LEAF_ZERO_VALUE } from "../lib/cipher/CipherConfig";
+import {
+  ProofStruct,
+  PublicInfoStruct,
+} from "../lib/cipher/types/CipherContract.type";
 
 type Props = {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
-  pubInAmt?: BigNumber;
-  token?: TokenConfig;
+  pubInAmt: BigNumber;
+  token: TokenConfig;
   cipherCode: string;
-  cipherCoinInfo: CipherCoinInfo,
+  cipherCoinInfo: CipherCoinInfo;
 };
 
 const steps = [
@@ -53,21 +60,56 @@ const steps = [
 ];
 
 export default function DepositModal(props: Props) {
-  const { isOpen, onOpen, onClose, pubInAmt, token, cipherCode: cipherHex, cipherCoinInfo } = props;
+  const {
+    isOpen,
+    onOpen,
+    onClose,
+    pubInAmt,
+    token,
+    cipherCode: cipherHex,
+    cipherCoinInfo,
+  } = props;
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [isCollectedData, setIsCollectedData] = useState(false);
+  const [tree, setTree] = useState<CipherTree | undefined>(undefined);
+  const [isApproved, setIsApproved] = useState(false);
+  const [proof, setProof] = useState<ProofStruct>();
+  const [publicInfo, setPublicInfo] = useState<PublicInfoStruct>();
   const { address } = useAccount();
   const { activeStep } = useSteps({
     index: 1,
     count: steps.length,
   });
-  const { syncTree, getTreeDepth, getTreeNextLeafIndex } = useContext(CipherTreeProviderContext);
-  if (!pubInAmt || !token) return null;
+  const { syncTree, getTreeDepth, getTreeNextLeafIndex } = useContext(
+    CipherTreeProviderContext
+  );
 
   const handleCloseModal = () => {
     setIsDownloaded(false);
     onClose();
   };
 
+  // prepare approve
+  const { config: approveConfig } = usePrepareContractWrite({
+    address: token.address,
+    abi: erc20ABI,
+    functionName: "approve",
+    args: [CIPHER_CONTRACT_ADDRESS, pubInAmt.toBigInt()],
+    enabled: token && pubInAmt ? true : false,
+  });
+  // approve
+  const { write: approve } = useContractWrite(approveConfig);
+
+  // prepare initTokenTree
+  const { config: initTokenTreeConfig } = usePrepareContractWrite({
+    address: CIPHER_CONTRACT_ADDRESS,
+    abi: CipherAbi.abi,
+    functionName: "initTokenTree",
+    args: [token.address],
+    enabled: true,
+  });
+  // initTokenTree
+  const { write: initTokenTree } = useContractWrite(initTokenTreeConfig);
 
   const handleDownload = () => {
     const random = Math.random().toString(36).substring(7);
@@ -84,36 +126,38 @@ export default function DepositModal(props: Props) {
     }, 1000);
   };
 
-  const approveToken = async () => {
-    const receipt = await writeContract({
-      address: token.address,
-      abi: erc20ABI,
-      functionName: 'approve',
-      args: [CIPHER_CONTRACT_ADDRESS, pubInAmt.toBigInt()],
-    })
-    console.log(approveToken, {
-      receipt,
-    })
-  }
+  useEffect(() => {
+    if (isDownloaded) {
+      collectData();
+      setIsCollectedData(true);
+    }
+  }, [isDownloaded]);
 
-  const initToken = async () => {
-    const receipt = await writeContract({
-      address: CIPHER_CONTRACT_ADDRESS,
-      abi: CipherAbi.abi,
-      functionName: 'initTokenTree',
-      args: [token.address],
-    })
-    console.log('approveToken', {
-      receipt,
-    })
-  }
+  useEffect(() => {
+    if (isCollectedData) {
+      checkApprove();
+    }
+  }, [isCollectedData]);
 
-  const generateProof = async () => {
+  useEffect(() => {
+    if (isApproved && tree) {
+      genProof(tree);
+    }
+  }, [isApproved]);
+
+  const checkApprove = async () => {
+    if (!address) {
+      throw new Error("address is undefined");
+    }
+    // const allowance = await getAllowance(token.address, address);
+    // if (allowance.lt(pubInAmt)) {
+    //   approve?.();
+    // }
+  };
+
+  const collectData = async () => {
     const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
-    console.log({
-      depth
-    })
-    if(depth === 0) {
+    if (depth === 0) {
       throw new Error(`${token.address} tree is not initialized`);
     }
     // TODO: generate cipher tree
@@ -121,8 +165,12 @@ export default function DepositModal(props: Props) {
       depth: depth,
       zeroLeaf: DEFAULT_LEAF_ZERO_VALUE,
       tokenAddress: token.address,
-    })
-    if(!address) {
+    });
+    setTree(tree);
+  };
+
+  const genProof = async (tree: CipherTree) => {
+    if (!address) {
       throw new Error("address is undefined");
     }
     const tx = await generateCipherTx(
@@ -133,32 +181,35 @@ export default function DepositModal(props: Props) {
         privateInCoins: [],
         // TODO: get leafId
         privateOutCoins: [new CipherBaseCoin(cipherCoinInfo)],
-      }, {
+      },
+      {
         // TODO: get maxAllowableFeeRate from relay info
         maxAllowableFeeRate: "0",
         recipient: address,
         token: token.address,
-        deadline: "2524579200",
+        deadline: dayjs().add(1, "month").unix().toString(),
       }
     );
-    
-    console.log({
-      tx,
-    })
     const { utxoData, publicInfo } = tx.contractCalldata;
+    setProof(utxoData);
+    setPublicInfo(publicInfo);
+  };
 
+  const deposit = async () => {
+    if (!proof || !publicInfo) {
+      throw new Error("proof or publicInfo is undefined");
+    }
     const receipt = await writeContract({
       address: CIPHER_CONTRACT_ADDRESS,
       abi: CipherAbi.abi,
-      functionName: 'cipherTransact',
-      args: [utxoData, publicInfo],
-      value: token.address === DEFAULT_ETH_ADDRESS ? BigNumber.from(pubInAmt.toString()).toBigInt() : 0n,
-    })
-    console.log({
-      receipt,
-    })
-  }
-
+      functionName: "cipherTransact",
+      args: [proof, publicInfo],
+      value:
+        token.address === DEFAULT_ETH_ADDRESS
+          ? BigNumber.from(pubInAmt.toString()).toBigInt()
+          : 0n,
+    });
+  };
 
   return (
     <Modal isOpen={isOpen} size={"lg"} onClose={handleCloseModal}>
@@ -211,13 +262,27 @@ export default function DepositModal(props: Props) {
 
         {isDownloaded ? (
           <ModalFooter>
-            <SimpleBtn colorScheme="blue" className="mx-auto w-40" onClick={() => initToken()}>
-            initToken
+            <SimpleBtn
+              colorScheme="blue"
+              className="mx-auto w-40"
+              onClick={() => initTokenTree?.()}
+            >
+              initToken
             </SimpleBtn>
-            <SimpleBtn colorScheme="blue" className="mx-auto w-40" onClick={() => approveToken()}>
+            <SimpleBtn
+              disabled={!isApproved}
+              colorScheme="blue"
+              className="mx-auto w-40"
+              onClick={() => approve?.()}
+            >
               Approve
             </SimpleBtn>
-            <SimpleBtn colorScheme="blue" className="mx-auto w-40" onClick={() => generateProof()}>
+            <SimpleBtn
+              disabled={true}
+              colorScheme="blue"
+              className="mx-auto w-40"
+              onClick={() => deposit()}
+            >
               Deposit
             </SimpleBtn>
           </ModalFooter>
