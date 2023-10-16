@@ -6,7 +6,7 @@ import {
   generateNullifier,
   toHashedSalt,
 } from "./CipherHelper";
-import { assert } from "chai";
+import { assert } from "../helper";
 
 export interface CipherCoinKey {
   inSaltOrSeed?: bigint;
