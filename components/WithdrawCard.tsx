@@ -11,11 +11,12 @@ import { CipherTransferableCoin } from "../lib/cipher/CipherCoin";
 import { generateCipherTx } from "../lib/cipher/CipherCore";
 import { CipherTree } from "../lib/cipher/CipherTree";
 import { PoseidonHash } from "../lib/poseidonHash";
-import { decodeCipherCode, generateCommitment, getDefaultLeaf } from "../lib/cipher/CipherHelper";
+import { decodeCipherCode, generateCommitment, generateNullifier, indicesToPathIndices } from "../lib/cipher/CipherHelper";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
 import { useAccount } from "wagmi";
 import { writeContract } from "@wagmi/core";
 import CipherAbi from '../assets/Cipher-abi.json';
+import { DEFAULT_LEAF_ZERO_VALUE } from "../lib/cipher/CipherConfig";
 
 type Props = {
   tokens: TokenConfig[] | undefined;
@@ -30,7 +31,7 @@ export default function WithdrawCard(props: Props) {
   const [selectedToken, setSelectedToken] = useState<TokenConfig | undefined>(
     tokens ? tokens[0] : undefined
   );
-  const { syncTree, getTreeDepth: syncTreeDepth } = useContext(CipherTreeProviderContext);
+  const { syncTree, getTreeDepth: syncTreeDepth, getIsNullified } = useContext(CipherTreeProviderContext);
 
   const [ cipherCode, setCipherCode ] = useState<string>("");
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function WithdrawCard(props: Props) {
     const depth = await syncTreeDepth(CIPHER_CONTRACT_ADDRESS, tokenAddress);
     const tree = new CipherTree({
       depth: depth,
-      zeroLeaf: getDefaultLeaf(tokenAddress).toString(),
+      zeroLeaf: DEFAULT_LEAF_ZERO_VALUE,
       tokenAddress,
     });
     // TODO
@@ -125,7 +126,21 @@ export default function WithdrawCard(props: Props) {
       if(coinLeafIndexs.length === 0) {
         throw new Error("Commitment is not found");
       }
-      // TODO: check coinLeafIndex is paid or not
+      let coinLeafIndex = -1;
+      for (let index = 0; index < coinLeafIndexs.length; index++) {
+        const leafIndex = coinLeafIndexs[index];
+        const mkp = tree.genMerklePath(leafIndex);
+        const indices = indicesToPathIndices(mkp.indices);
+        const nullifier = generateNullifier(commitment, indices, salt.toBigInt());
+        const isPaid = await getIsNullified(CIPHER_CONTRACT_ADDRESS, tokenAddress, nullifier);
+        if(!isPaid) {
+          coinLeafIndex = leafIndex;
+          break;
+        }
+      }
+      if(coinLeafIndex === -1) {
+        throw new Error("Commitment is already paid");
+      }
       const payableCoin = new CipherTransferableCoin({
         key: {
           hashedSaltOrUserId: PoseidonHash([salt.toBigInt()]),

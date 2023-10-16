@@ -21,6 +21,7 @@ export default function CipherCard(props: Props) {
   const onChange: ChangeEventHandler = (event: ChangeEvent) => {
     const ele = event.target as HTMLInputElement;
     const data = ele.value;
+    if(value === data) return;
     if(onValueChange) {
       onValueChange(data);
     }

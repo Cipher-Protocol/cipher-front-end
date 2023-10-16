@@ -38,7 +38,7 @@ export default function DepositCard(props: Props) {
   const [balance, setBalance] = useState<BigNumber | undefined>(
     BigNumber.from(ethBalance?.value || 0)
   );
-  const { balance: Erc20Balance, decimals: Erc20Decimals } = useErc20(
+  const { balance: Erc20Balance } = useErc20(
     selectedToken?.address
   );
   const [cipherCode, setCipherCode] = useState<string>("");
@@ -82,20 +82,14 @@ export default function DepositCard(props: Props) {
     if (!address) return;
     if (selectedToken?.address === DEFAULT_ETH_ADDRESS) {
       setBalance(BigNumber.from(ethBalance?.value || 0));
-      setSelectedToken({
-        ...selectedToken,
-        decimals: 18,
-      });
     } else {
-      if (selectedToken === undefined) return;
-      if (Erc20Balance === undefined || Erc20Decimals === undefined) return;
-      setBalance(Erc20Balance);
-      setSelectedToken({
-        ...selectedToken,
-        decimals: Erc20Decimals,
-      });
+      if (selectedToken === undefined || Erc20Balance === undefined) {
+        setBalance(undefined);
+      } else {
+        setBalance(Erc20Balance);
+      }
     }
-  }, [selectedToken, ethBalance, Erc20Balance, Erc20Decimals, address]);
+  }, [ethBalance, Erc20Balance, address, selectedToken]);
 
   const handleOpenDepositModal = () => {
     if (address === undefined) {

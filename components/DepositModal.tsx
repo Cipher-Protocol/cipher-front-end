@@ -28,13 +28,13 @@ import dayjs from "dayjs";
 import { CipherBaseCoin, CipherCoinInfo, CipherTransferableCoin } from "../lib/cipher/CipherCoin";
 import { ethTokenAddress, generateCipherTx } from "../lib/cipher/CipherCore";
 import { CipherTree } from "../lib/cipher/CipherTree";
-import { getDefaultLeaf } from "../lib/cipher/CipherHelper";
 import { erc20ABI, useAccount } from "wagmi";
 import { writeContract } from "@wagmi/core";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
 import { CIPHER_CONTRACT_ADDRESS, DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
 import CipherAbi from '../assets/Cipher-abi.json';
 import { PoseidonHash } from "../lib/poseidonHash";
+import { DEFAULT_LEAF_ZERO_VALUE } from "../lib/cipher/CipherConfig";
 
 type Props = {
   isOpen: boolean;
@@ -119,7 +119,7 @@ export default function DepositModal(props: Props) {
     // TODO: generate cipher tree
     const tree = new CipherTree({
       depth: depth,
-      zeroLeaf: getDefaultLeaf(token.address).toString(),
+      zeroLeaf: DEFAULT_LEAF_ZERO_VALUE,
       tokenAddress: token.address,
     })
     if(!address) {

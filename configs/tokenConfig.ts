@@ -49,6 +49,6 @@ export const GOERLI_TOKEN_CONFIG: TokenConfig[] = [
     iconUri: usdcIcon,
     address: GOERLI_ADDRESS.USDC,
     symbol: "USDC",
-    decimals: 8,
+    decimals: 6,
   },
 ];
