@@ -180,7 +180,7 @@ export default function WithdrawCard(props: Props) {
         title: "Withdraw failed",
         description: error.message,
         status: "error",
-        duration: 10000,
+        duration: 5000,
         isClosable: true,
       });
     }

@@ -18,6 +18,7 @@ import {
   StepTitle,
   Stepper,
   useSteps,
+  useToast,
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
 import React, { useContext, useEffect, useState } from "react";
@@ -28,9 +29,8 @@ import dayjs from "dayjs";
 import { CipherBaseCoin, CipherCoinInfo } from "../lib/cipher/CipherCoin";
 import { generateCipherTx } from "../lib/cipher/CipherCore";
 import { CipherTree } from "../lib/cipher/CipherTree";
-import { erc20ABI, useAccount } from "wagmi";
+import { erc20ABI, useAccount, useWaitForTransaction } from "wagmi";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
-import { writeContract } from "@wagmi/core";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
 import {
   CIPHER_CONTRACT_ADDRESS,
@@ -42,6 +42,7 @@ import {
   ProofStruct,
   PublicInfoStruct,
 } from "../lib/cipher/types/CipherContract.type";
+import { useAllowance } from "../hooks/useAllowance";
 
 type Props = {
   isOpen: boolean;
@@ -54,8 +55,8 @@ type Props = {
 };
 
 const steps = [
-  { title: "Collect Data", description: "Collect data from the network" },
   { title: "Approve Token", description: "Approve token for deposit" },
+  { title: "Collect Data", description: "Collect data from the network" },
   { title: "Generate Proof", description: "Generate proof for deposit" },
 ];
 
@@ -69,25 +70,29 @@ export default function DepositModal(props: Props) {
     cipherCode: cipherHex,
     cipherCoinInfo,
   } = props;
+  const toast = useToast();
   const [isDownloaded, setIsDownloaded] = useState(false);
-  const [isCollectedData, setIsCollectedData] = useState(false);
-  const [tree, setTree] = useState<CipherTree | undefined>(undefined);
   const [isApproved, setIsApproved] = useState(false);
+  const [isCollectedData, setIsCollectedData] = useState(false);
+  const [canDeposit, setCanDeposit] = useState(false);
+  const [tree, setTree] = useState<CipherTree | undefined>(undefined);
   const [proof, setProof] = useState<ProofStruct>();
   const [publicInfo, setPublicInfo] = useState<PublicInfoStruct>();
   const { address } = useAccount();
-  const { activeStep } = useSteps({
-    index: 1,
+  const { activeStep, setActiveStep } = useSteps({
+    index: 0,
     count: steps.length,
   });
-  const { syncTree, getTreeDepth, getTreeNextLeafIndex } = useContext(
-    CipherTreeProviderContext
-  );
+  const { getTreeDepth } = useContext(CipherTreeProviderContext);
+  const { allowance, refetchAllowance } = useAllowance(token.address, address);
 
   const handleCloseModal = () => {
     setIsDownloaded(false);
     onClose();
   };
+
+  console.log("activeStep", activeStep);
+  console.log("allowance", allowance);
 
   // prepare approve
   const { config: approveConfig } = usePrepareContractWrite({
@@ -95,21 +100,46 @@ export default function DepositModal(props: Props) {
     abi: erc20ABI,
     functionName: "approve",
     args: [CIPHER_CONTRACT_ADDRESS, pubInAmt.toBigInt()],
-    enabled: token && pubInAmt ? true : false,
+    enabled:
+      token && pubInAmt && token.address !== DEFAULT_ETH_ADDRESS ? true : false,
   });
   // approve
-  const { write: approve } = useContractWrite(approveConfig);
+  const { data: approveTx, write: approve } = useContractWrite(approveConfig);
 
-  // prepare initTokenTree
-  const { config: initTokenTreeConfig } = usePrepareContractWrite({
+  const { isLoading: isApproving, isSuccess: isApproveSuccess } =
+    useWaitForTransaction({
+      hash: approveTx?.hash,
+    });
+
+  const { config: depositConfig } = usePrepareContractWrite({
     address: CIPHER_CONTRACT_ADDRESS,
     abi: CipherAbi.abi,
-    functionName: "initTokenTree",
-    args: [token.address],
-    enabled: true,
+    functionName: "cipherTransact",
+    args: [proof, publicInfo],
+    value:
+      token.address === DEFAULT_ETH_ADDRESS
+        ? BigNumber.from(pubInAmt.toString()).toBigInt()
+        : 0n,
+    enabled: proof && publicInfo ? true : false,
   });
-  // initTokenTree
-  const { write: initTokenTree } = useContractWrite(initTokenTreeConfig);
+
+  const { data: depositTx, write: deposit } = useContractWrite(depositConfig);
+
+  const { isLoading: isDepositing, isSuccess: isDepositSuccess } =
+    useWaitForTransaction({
+      hash: depositTx?.hash,
+    });
+
+  // // prepare initTokenTree
+  // const { config: initTokenTreeConfig } = usePrepareContractWrite({
+  //   address: CIPHER_CONTRACT_ADDRESS,
+  //   abi: CipherAbi.abi,
+  //   functionName: "initTokenTree",
+  //   args: [token.address],
+  //   enabled: true,
+  // });
+  // // initTokenTree
+  // const { write: initTokenTree } = useContractWrite(initTokenTreeConfig);
 
   const handleDownload = () => {
     const random = Math.random().toString(36).substring(7);
@@ -128,31 +158,84 @@ export default function DepositModal(props: Props) {
 
   useEffect(() => {
     if (isDownloaded) {
-      collectData();
-      setIsCollectedData(true);
+      checkApproval();
     }
   }, [isDownloaded]);
 
   useEffect(() => {
-    if (isCollectedData) {
-      checkApprove();
-    }
-  }, [isCollectedData]);
-
-  useEffect(() => {
-    if (isApproved && tree) {
-      genProof(tree);
+    if (isApproved) {
+      collectData();
     }
   }, [isApproved]);
 
-  const checkApprove = async () => {
+  useEffect(() => {
+    if (isCollectedData) {
+      genProof(tree as CipherTree);
+    }
+  }, [isCollectedData]);
+
+  const checkApproval = async () => {
     if (!address) {
       throw new Error("address is undefined");
     }
-    // const allowance = await getAllowance(token.address, address);
-    // if (allowance.lt(pubInAmt)) {
-    //   approve?.();
-    // }
+    if (token.address === DEFAULT_ETH_ADDRESS) {
+      setIsApproved(true);
+      setActiveStep(1);
+      return;
+    }
+    if (allowance && allowance >= pubInAmt.toBigInt()) {
+      console.log("test");
+      setIsApproved(true);
+      setActiveStep(1);
+      collectData();
+    }
+  };
+
+  useEffect(() => {
+    if (isApproveSuccess) {
+      checkApproval();
+      setIsApproved(isApproveSuccess);
+      setActiveStep(1);
+      toast({
+        title: "Approve success",
+        description: "",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  }, [isApproveSuccess]);
+
+  useEffect(() => {
+    if (isDepositSuccess) {
+      toast({
+        title: "Deposit success",
+        description: "",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  }, [isDepositSuccess]);
+
+  const handleApprove = async () => {
+    if (!address) {
+      throw new Error("address is undefined");
+    }
+    try {
+      approve?.();
+    } catch (err) {
+      toast({
+        title: "Approve failed",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
   };
 
   const collectData = async () => {
@@ -167,6 +250,9 @@ export default function DepositModal(props: Props) {
       tokenAddress: token.address,
     });
     setTree(tree);
+    setIsCollectedData(true);
+    setActiveStep(2);
+    genProof(tree as CipherTree);
   };
 
   const genProof = async (tree: CipherTree) => {
@@ -193,22 +279,26 @@ export default function DepositModal(props: Props) {
     const { utxoData, publicInfo } = tx.contractCalldata;
     setProof(utxoData);
     setPublicInfo(publicInfo);
+    setCanDeposit(true);
+    setActiveStep(3);
   };
 
-  const deposit = async () => {
+  const handleDeposit = async () => {
     if (!proof || !publicInfo) {
       throw new Error("proof or publicInfo is undefined");
     }
-    const receipt = await writeContract({
-      address: CIPHER_CONTRACT_ADDRESS,
-      abi: CipherAbi.abi,
-      functionName: "cipherTransact",
-      args: [proof, publicInfo],
-      value:
-        token.address === DEFAULT_ETH_ADDRESS
-          ? BigNumber.from(pubInAmt.toString()).toBigInt()
-          : 0n,
-    });
+    try {
+      deposit?.();
+    } catch (err) {
+      toast({
+        title: "Deposit failed",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
   };
 
   return (
@@ -252,6 +342,20 @@ export default function DepositModal(props: Props) {
                     <StepTitle>{step.title}</StepTitle>
                     <StepDescription>{step.description}</StepDescription>
                   </Box>
+                  {step === steps[0] ? (
+                    <SimpleBtn
+                      disabled={isApproved}
+                      colorScheme={isApproved ? "teal" : "blue"}
+                      className="mx-auto w-40"
+                      onClick={() => handleApprove()}
+                    >
+                      {isApproving
+                        ? "Approving..."
+                        : isApproved
+                        ? "Approved"
+                        : "Approve"}
+                    </SimpleBtn>
+                  ) : null}
 
                   <StepSeparator />
                 </Step>
@@ -262,28 +366,25 @@ export default function DepositModal(props: Props) {
 
         {isDownloaded ? (
           <ModalFooter>
-            <SimpleBtn
+            {/* <SimpleBtn
               colorScheme="blue"
               className="mx-auto w-40"
-              onClick={() => initTokenTree?.()}
+              // onClick={() => initTokenTree?.()}
             >
               initToken
-            </SimpleBtn>
+            </SimpleBtn> */}
+
             <SimpleBtn
-              disabled={!isApproved}
+              disabled={!canDeposit || isDepositSuccess}
               colorScheme="blue"
               className="mx-auto w-40"
-              onClick={() => approve?.()}
+              onClick={() => handleDeposit()}
             >
-              Approve
-            </SimpleBtn>
-            <SimpleBtn
-              disabled={true}
-              colorScheme="blue"
-              className="mx-auto w-40"
-              onClick={() => deposit()}
-            >
-              Deposit
+              {isDepositing
+                ? "Depositing..."
+                : isDepositSuccess
+                ? "Success"
+                : "Deposit"}
             </SimpleBtn>
           </ModalFooter>
         ) : null}
