@@ -43,6 +43,7 @@ import {
   PublicInfoStruct,
 } from "../lib/cipher/types/CipherContract.type";
 import { useAllowance } from "../hooks/useAllowance";
+import { downloadCipher } from "../lib/downloadCipher";
 
 type Props = {
   isOpen: boolean;
@@ -91,9 +92,6 @@ export default function DepositModal(props: Props) {
     onClose();
   };
 
-  console.log("activeStep", activeStep);
-  console.log("allowance", allowance);
-
   // prepare approve
   const { config: approveConfig } = usePrepareContractWrite({
     address: token.address,
@@ -123,7 +121,8 @@ export default function DepositModal(props: Props) {
     enabled: proof && publicInfo ? true : false,
   });
 
-  const { data: depositTx, write: deposit } = useContractWrite(depositConfig);
+  const { data: depositTx, writeAsync: depositAsync } =
+    useContractWrite(depositConfig);
 
   const { isLoading: isDepositing, isSuccess: isDepositSuccess } =
     useWaitForTransaction({
@@ -142,14 +141,7 @@ export default function DepositModal(props: Props) {
   // const { write: initTokenTree } = useContractWrite(initTokenTreeConfig);
 
   const handleDownload = () => {
-    const random = Math.random().toString(36).substring(7);
-    const blob = new Blob([cipherHex], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const unixTime = dayjs().unix();
-    link.download = `cipher-${random}-${unixTime}.txt`;
-    link.href = url;
-    link.click();
+    downloadCipher(cipherHex);
     // delay 1 second
     setTimeout(() => {
       setIsDownloaded(true);
@@ -288,7 +280,7 @@ export default function DepositModal(props: Props) {
       throw new Error("proof or publicInfo is undefined");
     }
     try {
-      deposit?.();
+      depositAsync?.();
     } catch (err) {
       toast({
         title: "Deposit failed",
