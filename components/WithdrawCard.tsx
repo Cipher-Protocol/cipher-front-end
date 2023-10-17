@@ -35,9 +35,11 @@ export default function WithdrawCard(props: Props) {
 
   const [selectedToken, setSelectedToken] = useState<TokenConfig>(tokens[0]);
   const {
-    syncTree,
+    syncAndGetCipherTree: syncTree,
     getTreeDepth: syncTreeDepth,
     getIsNullified,
+    syncAndGetCipherTree,
+    getContractTreeRoot,
   } = useContext(CipherTreeProviderContext);
 
   const [cipherCode, setCipherCode] = useState<string>("");
@@ -51,23 +53,6 @@ export default function WithdrawCard(props: Props) {
 
   const onValueChange = (value: string) => {
     setCipherCode(value);
-  };
-
-  const doSyncTree = async (tokenAddress: string) => {
-    // Sync Tree
-    const depth = await syncTreeDepth(CIPHER_CONTRACT_ADDRESS, tokenAddress);
-    const tree = new CipherTree({
-      depth: depth,
-      zeroLeaf: DEFAULT_LEAF_ZERO_VALUE,
-      tokenAddress,
-    });
-    // TODO
-    tree.addCommitments([
-      "0x2f27ea3c4e9633eba4cdd42f6a78fcf1d211ba197e9a6d1c466a1628eedc74da",
-      "0x18c537e9a0e8c9331a8aad7a004ae2bd19d4222e52f4afbe20cc1177121d483c",
-      "0x04fc3398d9de5e1b96cf9e536080df014d80821a05d4ed846ec702590b6655f2",
-    ]);
-    return tree;
   };
 
   const doProveAndSendTx = async (
@@ -124,7 +109,18 @@ export default function WithdrawCard(props: Props) {
         return toast(cipherCodeError);
       }
 
-      const tree = await doSyncTree(tokenAddress);
+      const {
+        promise,
+        context,
+      } = await syncAndGetCipherTree(selectedToken.address);
+      const cache = await promise;
+      const tree = cache.cipherTree;
+      const root = cache.cipherTree.root;
+      const contractRoot = await getContractTreeRoot(CIPHER_CONTRACT_ADDRESS, selectedToken.address);
+      console.log({
+        root,
+        contractRoot,
+      })
 
       const commitment = generateCommitment({
         amount: amount.toBigInt(),

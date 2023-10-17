@@ -86,7 +86,8 @@ export async function generateCipherTx(
   publicInfo: PublicInfoStruct
 ) {
   const transferableCoins: CipherTransferableCoin[] = [];
-  const currentRoot = tree.root;
+  const newTree = tree.copyCipherTree();
+  const currentRoot = newTree.root;
 
   const totalPrivateInAmount = privateInCoins.reduce(
     (acc, coin) => acc + coin.coinInfo.amount,
@@ -114,7 +115,7 @@ export async function generateCipherTx(
       ins.coinInfo.key.inRandom,
     ]);
     assert(
-      commitment === tree.getCommitmentByLeafId(ins.leafId),
+      commitment === newTree.getCommitmentByLeafId(ins.leafId),
       "privateInCoins commitment is not in the tree"
     );
   }
@@ -137,9 +138,9 @@ export async function generateCipherTx(
       inRandom: coin.coinInfo.key.inRandom,
       inSaltOrSeed: coin.coinInfo.key.inSaltOrSeed,
     });
-    const leafId = tree.nextIndex;
-    const payableCoin = new CipherTransferableCoin(coinInfo, tree, leafId);
-    tree.insert(payableCoin.getCommitment());
+    const leafId = newTree.nextIndex;
+    const payableCoin = new CipherTransferableCoin(coinInfo, newTree, leafId);
+    newTree.insert(payableCoin.getCommitment());
     transferableCoins.push(payableCoin);
   }
   const circuitUtxoOutput = {
@@ -163,7 +164,7 @@ export async function generateCipherTx(
   };
 
   /** Prove */
-  const heightName = `h${tree.depth}`;
+  const heightName = `h${newTree.depth}`;
   const specName = `n${privateInputLength}m${privateOutputLength}`;
   const wasmUri = `/circuits/${heightName}/${specName}/${heightName}${specName}_js/${heightName}${specName}.wasm`;
   const zkeyUri = `/circuits/${heightName}/${specName}/${heightName}${specName}_final.zkey`
@@ -189,13 +190,13 @@ export async function generateCipherTx(
   };
 
   return {
-    tree,
+    tree: newTree,
     privateInputLength,
     privateOutputLength,
     transferableCoins,
     circuitInput,
     currentRoot,
-    newRoot: tree.root,
+    newRoot: newTree.root,
     contractCalldata: {
       utxoData,
       publicInfo,

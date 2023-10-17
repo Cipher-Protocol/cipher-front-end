@@ -1,4 +1,11 @@
 import { BigNumber } from "ethers";
+const ff = require("ffjavascript");
+
+export const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts;
+export const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts;
+export const deepCopyBigIntArray = (arr: bigint[]) => {
+  return arr.map((x) => BigInt(x.toString()));
+};
 
 export function assert(condition: any, message?: string): asserts condition {
   if (!condition) {

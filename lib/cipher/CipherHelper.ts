@@ -43,15 +43,19 @@ export function generateCommitment(data: {
   salt?: bigint,
   hashedSalt?: bigint,
 }) {
-  if(!data.hashedSalt || !data.salt) {
+  let actualHashedSalt!: bigint;
+  if(data.salt) {
+    actualHashedSalt = toHashedSalt(data.salt);
+  } else if (data.hashedSalt) {
+    actualHashedSalt = data.hashedSalt;
+  } else {
     throw new Error('hashedSalt or salt at least one should be provided');
   }
-  const actualHashedSalt = data.salt ? toHashedSalt(data.salt) : data.hashedSalt;
   assert(data.amount <= FIELD_SIZE_BIGINT, "amount is too large");
-  assert(actualHashedSalt <= FIELD_SIZE_BIGINT, "hashedSalt is too large");
+  assert(actualHashedSalt! <= FIELD_SIZE_BIGINT, "hashedSalt is too large");
   assert(data.random <= FIELD_SIZE_BIGINT, "random is too large");
 
-  const commitmentHash = PoseidonHash([data.amount, data.hashedSalt, data.random]);
+  const commitmentHash = PoseidonHash([data.amount, actualHashedSalt, data.random]);
   return commitmentHash;
 }
 

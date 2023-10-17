@@ -1,24 +1,17 @@
-import { assert } from "./helper";
+import { assert, deepCopyBigIntArray, stringifyBigInts, unstringifyBigInts } from "./helper";
 const ff = require("ffjavascript");
-const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts;
-const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts;
+export type Leaf = bigint;
+export type Root = bigint;
+export type PathElements = bigint[][];
+export type Indices = number[];
 
-type Leaf = bigint;
-type Root = bigint;
-type PathElements = bigint[][];
-type Indices = number[];
-
-interface MerkleProof {
+export interface MerkleProof {
   pathElements: PathElements;
   indices: Indices;
   depth: number;
   root: bigint;
   leaf: Leaf;
 }
-
-const deepCopyBigIntArray = (arr: bigint[]) => {
-  return arr.map((x) => BigInt(x.toString()));
-};
 
 const calcInitialVals = (
   leavesPerNode: number,

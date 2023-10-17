@@ -44,6 +44,7 @@ import {
 } from "../lib/cipher/types/CipherContract.type";
 import { useAllowance } from "../hooks/useAllowance";
 import { downloadCipher } from "../lib/downloadCipher";
+import { assert } from "../lib/helper";
 
 type Props = {
   isOpen: boolean;
@@ -84,7 +85,7 @@ export default function DepositModal(props: Props) {
     index: 0,
     count: steps.length,
   });
-  const { getTreeDepth } = useContext(CipherTreeProviderContext);
+  const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } = useContext(CipherTreeProviderContext);
   const { allowance, refetchAllowance } = useAllowance(token.address, address);
 
   const handleCloseModal = () => {
@@ -154,17 +155,11 @@ export default function DepositModal(props: Props) {
     }
   }, [isDownloaded]);
 
-  useEffect(() => {
-    if (isApproved) {
-      collectData();
-    }
-  }, [isApproved]);
-
-  useEffect(() => {
-    if (isCollectedData) {
-      genProof(tree as CipherTree);
-    }
-  }, [isCollectedData]);
+  // useEffect(() => {
+  //   if (isApproved) {
+  //     collectData();
+  //   }
+  // }, [isApproved]);
 
   const checkApproval = async () => {
     if (!address) {
@@ -179,7 +174,7 @@ export default function DepositModal(props: Props) {
       console.log("test");
       setIsApproved(true);
       setActiveStep(1);
-      collectData();
+      // collectData();
     }
   };
 
@@ -230,21 +225,55 @@ export default function DepositModal(props: Props) {
     }
   };
 
+  const [isCollecting, setIsCollecting] = useState(false);
   const collectData = async () => {
-    const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
-    if (depth === 0) {
-      throw new Error(`${token.address} tree is not initialized`);
+    try {
+      setIsCollecting(true);
+      const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
+      if (depth === 0) {
+        throw new Error(`${token.address} tree is not initialized`);
+      }
+      // TODO: generate cipher tree
+      const {
+        promise,
+        context,
+      } = await syncAndGetCipherTree(token.address);
+      console.log({
+        message: "deposit collectData start",
+        promise,
+        context,
+      })
+      const cache = await promise;
+      console.log({
+        message: "deposit collectData end",
+        cache,
+      })
+      const root = cache.cipherTree.root;
+      const contractRoot = await getContractTreeRoot(CIPHER_CONTRACT_ADDRESS, token.address);
+      console.log({
+        root,
+        contractRoot,
+      })
+      assert(root === contractRoot, "root is not equal");
+
+      setTree(cache.cipherTree);
+      setIsCollecting(false);
+      setIsCollectedData(true);
+      setActiveStep(2);
+      genProof(cache.cipherTree);
+    } catch (err) {
+      console.error({
+        err,
+      });
+      toast({
+        title: "Collect data failed",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     }
-    // TODO: generate cipher tree
-    const tree = new CipherTree({
-      depth: depth,
-      zeroLeaf: DEFAULT_LEAF_ZERO_VALUE,
-      tokenAddress: token.address,
-    });
-    setTree(tree);
-    setIsCollectedData(true);
-    setActiveStep(2);
-    genProof(tree as CipherTree);
   };
 
   const genProof = async (tree: CipherTree) => {
@@ -269,10 +298,19 @@ export default function DepositModal(props: Props) {
       }
     );
     const { utxoData, publicInfo } = tx.contractCalldata;
+    console.log({
+      utxoData,
+      publicInfo,
+    });
     setProof(utxoData);
     setPublicInfo(publicInfo);
     setCanDeposit(true);
     setActiveStep(3);
+
+    return {
+      utxoData,
+      publicInfo,
+    }
   };
 
   const handleDeposit = async () => {
@@ -365,6 +403,13 @@ export default function DepositModal(props: Props) {
             >
               initToken
             </SimpleBtn> */}
+            <SimpleBtn
+            colorScheme="blue"
+            className="mx-auto w-40"
+            onClick={() => collectData()}
+            >
+              CollectData
+            </SimpleBtn>
 
             <SimpleBtn
               disabled={!canDeposit || isDepositSuccess}
