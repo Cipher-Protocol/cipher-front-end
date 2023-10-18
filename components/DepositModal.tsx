@@ -8,6 +8,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spinner,
   Step,
   StepDescription,
   StepIcon,
@@ -85,11 +86,21 @@ export default function DepositModal(props: Props) {
     index: 0,
     count: steps.length,
   });
-  const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } = useContext(CipherTreeProviderContext);
+  const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } =
+    useContext(CipherTreeProviderContext);
   const { allowance, refetchAllowance } = useAllowance(token.address, address);
 
   const handleCloseModal = () => {
     setIsDownloaded(false);
+    setIsApproved(false);
+    setIsCollectedData(false);
+    setCanDeposit(false);
+    setTree(undefined);
+    setProof(undefined);
+    setPublicInfo(undefined);
+    setActiveStep(0);
+    resetApprove();
+    resetDeposit();
     onClose();
   };
 
@@ -103,7 +114,11 @@ export default function DepositModal(props: Props) {
       token && pubInAmt && token.address !== DEFAULT_ETH_ADDRESS ? true : false,
   });
   // approve
-  const { data: approveTx, write: approve } = useContractWrite(approveConfig);
+  const {
+    data: approveTx,
+    writeAsync: approveAsync,
+    reset: resetApprove,
+  } = useContractWrite(approveConfig);
 
   const { isLoading: isApproving, isSuccess: isApproveSuccess } =
     useWaitForTransaction({
@@ -122,8 +137,11 @@ export default function DepositModal(props: Props) {
     enabled: proof && publicInfo ? true : false,
   });
 
-  const { data: depositTx, writeAsync: depositAsync } =
-    useContractWrite(depositConfig);
+  const {
+    data: depositTx,
+    writeAsync: depositAsync,
+    reset: resetDeposit,
+  } = useContractWrite(depositConfig);
 
   const { isLoading: isDepositing, isSuccess: isDepositSuccess } =
     useWaitForTransaction({
@@ -155,13 +173,13 @@ export default function DepositModal(props: Props) {
     }
   }, [isDownloaded]);
 
-  // useEffect(() => {
-  //   if (isApproved) {
-  //     collectData();
-  //   }
-  // }, [isApproved]);
+  useEffect(() => {
+    if (isApproved) {
+      collectData();
+    }
+  }, [isApproved]);
 
-  const checkApproval = async () => {
+  const checkApproval = () => {
     if (!address) {
       throw new Error("address is undefined");
     }
@@ -174,7 +192,6 @@ export default function DepositModal(props: Props) {
       console.log("test");
       setIsApproved(true);
       setActiveStep(1);
-      // collectData();
     }
   };
 
@@ -212,7 +229,7 @@ export default function DepositModal(props: Props) {
       throw new Error("address is undefined");
     }
     try {
-      approve?.();
+      await approveAsync?.();
     } catch (err) {
       toast({
         title: "Approve failed",
@@ -234,26 +251,26 @@ export default function DepositModal(props: Props) {
         throw new Error(`${token.address} tree is not initialized`);
       }
       // TODO: generate cipher tree
-      const {
-        promise,
-        context,
-      } = await syncAndGetCipherTree(token.address);
+      const { promise, context } = await syncAndGetCipherTree(token.address);
       console.log({
         message: "deposit collectData start",
         promise,
         context,
-      })
+      });
       const cache = await promise;
       console.log({
         message: "deposit collectData end",
         cache,
-      })
+      });
       const root = cache.cipherTree.root;
-      const contractRoot = await getContractTreeRoot(CIPHER_CONTRACT_ADDRESS, token.address);
+      const contractRoot = await getContractTreeRoot(
+        CIPHER_CONTRACT_ADDRESS,
+        token.address
+      );
       console.log({
         root,
         contractRoot,
-      })
+      });
       assert(root === contractRoot, "root is not equal");
 
       setTree(cache.cipherTree);
@@ -310,7 +327,7 @@ export default function DepositModal(props: Props) {
     return {
       utxoData,
       publicInfo,
-    }
+    };
   };
 
   const handleDeposit = async () => {
@@ -318,7 +335,7 @@ export default function DepositModal(props: Props) {
       throw new Error("proof or publicInfo is undefined");
     }
     try {
-      depositAsync?.();
+      await depositAsync?.();
     } catch (err) {
       toast({
         title: "Deposit failed",
@@ -364,7 +381,7 @@ export default function DepositModal(props: Props) {
                     <StepStatus
                       complete={<StepIcon />}
                       incomplete={<StepNumber />}
-                      active={<StepNumber />}
+                      active={<Spinner size="md" color="blue.500" />}
                     />
                   </StepIndicator>
 
@@ -403,13 +420,13 @@ export default function DepositModal(props: Props) {
             >
               initToken
             </SimpleBtn> */}
-            <SimpleBtn
-            colorScheme="blue"
-            className="mx-auto w-40"
-            onClick={() => collectData()}
+            {/* <SimpleBtn
+              colorScheme="blue"
+              className="mx-auto w-40"
+              onClick={() => collectData()}
             >
               CollectData
-            </SimpleBtn>
+            </SimpleBtn> */}
 
             <SimpleBtn
               disabled={!canDeposit || isDepositSuccess}
