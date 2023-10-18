@@ -113,7 +113,9 @@ export default function WithdrawCard(props: Props) {
         promise,
         context,
       } = await syncAndGetCipherTree(selectedToken.address);
+      // TODO: wait for tree sync
       const cache = await promise;
+
       const tree = cache.cipherTree;
       const root = cache.cipherTree.root;
       const contractRoot = await getContractTreeRoot(CIPHER_CONTRACT_ADDRESS, selectedToken.address);
@@ -154,6 +156,7 @@ export default function WithdrawCard(props: Props) {
       if (coinLeafIndex === -1) {
         throw new Error("Commitment is already paid");
       }
+      
       const payableCoin = new CipherTransferableCoin(
         {
           key: {
