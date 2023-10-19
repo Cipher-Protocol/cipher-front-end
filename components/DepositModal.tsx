@@ -21,7 +21,7 @@ import {
   useSteps,
   useToast,
 } from "@chakra-ui/react";
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 import React, { useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../type";
 import SimpleBtn from "./SimpleBtn";
@@ -38,7 +38,6 @@ import {
   DEFAULT_ETH_ADDRESS,
 } from "../configs/tokenConfig";
 import CipherAbi from "../assets/Cipher-abi.json";
-import { DEFAULT_LEAF_ZERO_VALUE } from "../lib/cipher/CipherConfig";
 import {
   ProofStruct,
   PublicInfoStruct,
@@ -51,7 +50,7 @@ type Props = {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
-  pubInAmt: BigNumber;
+  pubInAmt: bigint;
   token: TokenConfig;
   cipherCode: string;
   cipherCoinInfo: CipherCoinInfo;
@@ -109,7 +108,7 @@ export default function DepositModal(props: Props) {
     address: token.address,
     abi: erc20ABI,
     functionName: "approve",
-    args: [CIPHER_CONTRACT_ADDRESS, pubInAmt.toBigInt()],
+    args: [CIPHER_CONTRACT_ADDRESS, pubInAmt],
     enabled:
       token && pubInAmt && token.address !== DEFAULT_ETH_ADDRESS ? true : false,
   });
@@ -130,10 +129,7 @@ export default function DepositModal(props: Props) {
     abi: CipherAbi.abi,
     functionName: "cipherTransact",
     args: [proof, publicInfo],
-    value:
-      token.address === DEFAULT_ETH_ADDRESS
-        ? BigNumber.from(pubInAmt.toString()).toBigInt()
-        : 0n,
+    value: token.address === DEFAULT_ETH_ADDRESS ? pubInAmt : 0n,
     enabled: proof && publicInfo ? true : false,
   });
 
@@ -188,7 +184,7 @@ export default function DepositModal(props: Props) {
       setActiveStep(1);
       return;
     }
-    if (allowance && allowance >= pubInAmt.toBigInt()) {
+    if (allowance && allowance >= pubInAmt) {
       console.log("test");
       setIsApproved(true);
       setActiveStep(1);
@@ -242,10 +238,8 @@ export default function DepositModal(props: Props) {
     }
   };
 
-  const [isCollecting, setIsCollecting] = useState(false);
   const collectData = async () => {
     try {
-      setIsCollecting(true);
       const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
       if (depth === 0) {
         throw new Error(`${token.address} tree is not initialized`);
@@ -274,7 +268,6 @@ export default function DepositModal(props: Props) {
       assert(root === contractRoot, "root is not equal");
 
       setTree(cache.cipherTree);
-      setIsCollecting(false);
       setIsCollectedData(true);
       setActiveStep(2);
       genProof(cache.cipherTree);
@@ -300,7 +293,7 @@ export default function DepositModal(props: Props) {
     const tx = await generateCipherTx(
       tree,
       {
-        publicInAmt: pubInAmt.toBigInt(),
+        publicInAmt: pubInAmt,
         publicOutAmt: 0n,
         privateInCoins: [],
         // TODO: get leafId

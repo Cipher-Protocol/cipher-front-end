@@ -8,12 +8,13 @@ import {
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
 import React, { useEffect } from "react";
+import { formatUnits, parseUnits } from "viem";
 
 type Props = {
-  pubInAmt: BigNumber | undefined;
-  setPubInAmt: React.Dispatch<React.SetStateAction<BigNumber | undefined>>;
-  selectedToken: TokenConfig | undefined;
-  balance: BigNumber | undefined;
+  pubInAmt: bigint | undefined;
+  setPubInAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  selectedToken: TokenConfig;
+  balance: bigint | undefined;
 };
 
 const amountTable = [0.01, 0.1, 1, 10];
@@ -22,7 +23,7 @@ export default function PublicInput(props: Props) {
   const { pubInAmt, setPubInAmt, balance, selectedToken } = props;
 
   const handlePubInAmt = (amt: number) => {
-    setPubInAmt(utils.parseUnits(amt.toString(), selectedToken?.decimals));
+    setPubInAmt(parseUnits(amt.toString(), selectedToken.decimals));
   };
 
   return (
@@ -75,9 +76,7 @@ export default function PublicInput(props: Props) {
         }
         onChange={(value) => handlePubInAmt(Number(value))}
         value={
-          pubInAmt
-            ? Number(utils.formatUnits(pubInAmt, selectedToken?.decimals))
-            : 0
+          pubInAmt ? Number(formatUnits(pubInAmt, selectedToken?.decimals)) : 0
         }
       >
         <NumberInputField placeholder="Deposit Amount" borderRadius={"full"} />

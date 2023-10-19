@@ -7,9 +7,7 @@ import { readContract } from "@wagmi/core";
 export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
   const { address } = useAccount();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [balance, setBalance] = useState<BigNumber | undefined>(
-    BigNumber.from(0)
-  );
+  const [balance, setBalance] = useState<bigint | undefined>(0n);
   const [decimals, setDecimals] = useState<number | undefined>(18);
 
   useEffect(() => {
@@ -19,7 +17,7 @@ export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
       tokenAddr === undefined ||
       tokenAddr === DEFAULT_ETH_ADDRESS
     ) {
-      setBalance(BigNumber.from(0));
+      setBalance(0n);
       setIsLoading(false);
       return;
     }
@@ -30,7 +28,7 @@ export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
       args: [address || "0x"],
     })
       .then((data) => {
-        setBalance(BigNumber.from(data));
+        setBalance(data);
         setIsLoading(false);
       })
       .catch((err) => {

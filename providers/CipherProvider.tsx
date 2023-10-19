@@ -5,22 +5,26 @@ import { CipherAccount } from "../type";
 export const CipherAccountContext = createContext<{
   cipherAccount: CipherAccount | undefined;
   isAuthenticated: boolean;
-  signAuth: () => void;
+  signAuthAsync: () => Promise<`0x${string}`>;
   breakAuthUser: () => void;
 }>({
   cipherAccount: undefined,
   isAuthenticated: false,
-  signAuth: () => {},
+  signAuthAsync: () => Promise.resolve(`0x`),
   breakAuthUser: () => {},
 });
 
-export const CipherAccountProvider = ({ children }: { children: React.ReactNode }) => {
-  const { cipherAccount, isAuthenticated, signAuth, breakAuthUser } =
+export const CipherAccountProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { cipherAccount, isAuthenticated, signAuthAsync, breakAuthUser } =
     useCipherAccount();
 
   return (
     <CipherAccountContext.Provider
-      value={{ cipherAccount, isAuthenticated, signAuth, breakAuthUser }}
+      value={{ cipherAccount, isAuthenticated, signAuthAsync, breakAuthUser }}
     >
       {children}
     </CipherAccountContext.Provider>

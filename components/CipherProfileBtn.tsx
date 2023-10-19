@@ -14,7 +14,7 @@ import { CipherAccountContext } from "../providers/CipherProvider";
 
 export default function CipherProfileBtn() {
   const { isOpen, onToggle, onClose } = useDisclosure();
-  const { cipherAccount, isAuthenticated, signAuth } =
+  const { cipherAccount, isAuthenticated, signAuthAsync } =
     useContext(CipherAccountContext);
   const toast = useToast();
 
@@ -29,6 +29,21 @@ export default function CipherProfileBtn() {
       isClosable: true,
       position: "top",
     });
+  };
+
+  const handleSignAuth = async () => {
+    try {
+      await signAuthAsync();
+    } catch (e) {
+      toast({
+        title: "Sign authentication failed",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
   };
 
   return (
@@ -78,7 +93,7 @@ export default function CipherProfileBtn() {
           }}
           _active={{ transform: "scale(0.9)" }}
           transitionDuration={"0.2s"}
-          onClick={signAuth}
+          onClick={handleSignAuth}
         />
       )}
     </Flex>

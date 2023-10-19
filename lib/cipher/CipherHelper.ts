@@ -38,24 +38,28 @@ export function getAmountHash(amount: string): BigNumber {
 }
 
 export function generateCommitment(data: {
-  amount: bigint,
-  random: bigint,
-  salt?: bigint,
-  hashedSalt?: bigint,
+  amount: bigint;
+  random: bigint;
+  salt?: bigint;
+  hashedSalt?: bigint;
 }) {
   let actualHashedSalt!: bigint;
-  if(data.salt) {
+  if (data.salt) {
     actualHashedSalt = toHashedSalt(data.salt);
   } else if (data.hashedSalt) {
     actualHashedSalt = data.hashedSalt;
   } else {
-    throw new Error('hashedSalt or salt at least one should be provided');
+    throw new Error("hashedSalt or salt at least one should be provided");
   }
   assert(data.amount <= FIELD_SIZE_BIGINT, "amount is too large");
   assert(actualHashedSalt! <= FIELD_SIZE_BIGINT, "hashedSalt is too large");
   assert(data.random <= FIELD_SIZE_BIGINT, "random is too large");
 
-  const commitmentHash = PoseidonHash([data.amount, actualHashedSalt, data.random]);
+  const commitmentHash = PoseidonHash([
+    data.amount,
+    actualHashedSalt,
+    data.random,
+  ]);
   return commitmentHash;
 }
 
@@ -101,41 +105,39 @@ export function encodeCipherCode(data: {
     ["address", "uint256", "uint256", "uint256"],
     [data.tokenAddress, data.amount, data.salt, data.random]
   );
-  console.log('decodeCipherCode', {
+  console.log("decodeCipherCode", {
     cipherCode,
     ...data,
-  })
+  });
   return cipherCode;
 }
 
 export function decodeCipherCode(cipherCode: string): {
   tokenAddress: string;
-  amount: BigNumber;
-  salt: BigNumber;
-  random: BigNumber;
+  amount: bigint;
+  salt: bigint;
+  random: bigint;
+  isCode: boolean;
 } {
-  const [
-    tokenAddress,
-    amount,
-    salt,
-    random,
-    leafIndex,
-  ] = utils.defaultAbiCoder.decode(
-    ["address", "uint256", "uint256", "uint256"],
-    cipherCode
-  );
-  console.log('decodeCipherCode', {
-    cipherCode,
-    tokenAddress,
-    amount,
-    salt,
-    random,
-    leafIndex,
-  })
-  return {
-    tokenAddress,
-    amount,
-    salt,
-    random,
-  };
+  try {
+    const [tokenAddress, amount, salt, random] = utils.defaultAbiCoder.decode(
+      ["address", "uint256", "uint256", "uint256"],
+      cipherCode
+    );
+    return {
+      tokenAddress,
+      amount,
+      salt,
+      random,
+      isCode: true,
+    };
+  } catch (e) {
+    return {
+      tokenAddress: "",
+      amount: 0n,
+      salt: 0n,
+      random: 0n,
+      isCode: false,
+    };
+  }
 }

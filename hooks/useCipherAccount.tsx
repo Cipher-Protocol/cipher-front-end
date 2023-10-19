@@ -8,7 +8,7 @@ export const useCipherAccount = () => {
   const {
     data: signature,
     isSuccess,
-    signMessage: signAuth,
+    signMessageAsync: signAuthAsync,
   } = useSignMessage({
     message: "Authenticate on Cipher Protocol",
   });
@@ -44,5 +44,5 @@ export const useCipherAccount = () => {
     setIsAuthenticated(false);
   };
 
-  return { cipherAccount, isAuthenticated, signAuth, breakAuthUser };
+  return { cipherAccount, isAuthenticated, signAuthAsync, breakAuthUser };
 };

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Flex, useDisclosure, useToast } from "@chakra-ui/react";
-import { BigNumber, utils } from "ethers";
 import { TokenConfig } from "../type";
 import TokenSelector from "./TokenSelector";
 import SimpleBtn from "./SimpleBtn";
@@ -12,7 +11,6 @@ import { useErc20 } from "../hooks/useErc20";
 import { CipherCoinInfo } from "../lib/cipher/CipherCoin";
 import { encodeCipherCode, toHashedSalt } from "../lib/cipher/CipherHelper";
 import { getRandomSnarkField } from "../utils/getRandom";
-const poseidon = require("poseidon-encryption");
 
 const PublicInput = dynamic(() => import("./PublicInput"), {
   ssr: false,
@@ -28,13 +26,13 @@ export default function DepositCard(props: Props) {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { address } = useAccount();
-  const [pubInAmt, setPubInAmt] = useState<BigNumber>();
+  const [pubInAmt, setPubInAmt] = useState<bigint>();
   const [selectedToken, setSelectedToken] = useState<TokenConfig>(tokens[0]);
   const { data: ethBalance } = useBalance({
     address: address,
   });
-  const [balance, setBalance] = useState<BigNumber | undefined>(
-    BigNumber.from(ethBalance?.value || 0)
+  const [balance, setBalance] = useState<bigint | undefined>(
+    ethBalance?.value || 0n
   );
   const { balance: Erc20Balance } = useErc20(selectedToken?.address);
   const [cipherCode, setCipherCode] = useState<string>("");
@@ -64,7 +62,7 @@ export default function DepositCard(props: Props) {
         inSaltOrSeed: data.salt.toBigInt(),
         inRandom: data.random.toBigInt(),
       },
-      amount: pubInAmt.toBigInt(),
+      amount: pubInAmt,
     };
     setCipherCoinInfo(coin);
   }, [pubInAmt, selectedToken]);
@@ -77,7 +75,7 @@ export default function DepositCard(props: Props) {
   useEffect(() => {
     if (!address) return;
     if (selectedToken?.address === DEFAULT_ETH_ADDRESS) {
-      setBalance(BigNumber.from(ethBalance?.value || 0));
+      setBalance(ethBalance?.value || 0n);
     } else {
       if (selectedToken === undefined || Erc20Balance === undefined) {
         setBalance(undefined);
@@ -100,7 +98,7 @@ export default function DepositCard(props: Props) {
       return;
     }
     if (balance === undefined) return;
-    if (pubInAmt === undefined || pubInAmt.gt(balance)) {
+    if (pubInAmt === undefined || pubInAmt > balance) {
       toast({
         title: "Invalid amount",
         description: "",
@@ -149,7 +147,7 @@ export default function DepositCard(props: Props) {
         isOpen={isOpen}
         onOpen={onOpen}
         onClose={onClose}
-        pubInAmt={pubInAmt || BigNumber.from(0)}
+        pubInAmt={pubInAmt || 0n}
         token={selectedToken}
         cipherCode={cipherCode}
         cipherCoinInfo={cipherCoinInfo}
