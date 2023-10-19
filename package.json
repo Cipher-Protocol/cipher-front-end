@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:subgraph": "graphclient build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.6",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.1",
     "@emotion/react": "^11.11.1",
@@ -26,6 +28,8 @@
     "eslint-config-next": "13.5.2",
     "ethers": "5.7.2",
     "framer-motion": "^10.16.4",
+    "graphql": "^16.8.1",
+    "graphql-tag": "^2.12.6",
     "next": "13.5.2",
     "poseidon-encryption": "^1.0.2",
     "postcss": "8.4.30",
@@ -40,6 +44,7 @@
     "wagmi": "^1.4.2"
   },
   "devDependencies": {
+    "@graphprotocol/client-cli": "^3.0.0",
     "lodash": "^4.17.21"
   },
   "browser": {

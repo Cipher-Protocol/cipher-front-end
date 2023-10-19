@@ -1,0 +1,15 @@
+query NewCommitmentsQuery ($tokenAddress: String, $startBlock: Int) {
+  newCommitments(
+    where: {
+      token: $tokenAddress,
+      blockNumber_gt: $startBlock
+    }
+    orderBy: leafIndex
+    orderDirection: asc
+  ) {
+    blockNumber
+    leafIndex
+    commitment
+    newRoot
+  }
+}
