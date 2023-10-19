@@ -7,6 +7,13 @@ const nextConfig = {
       config.resolve.fallback.readline = false;
     }
     config.experiments = { asyncWebAssembly: true };
+
+    config.module.rules.push({
+      test: /\.(graphql|gql)$/,
+      exclude: /node_modules/,
+      loader: 'graphql-tag/loader',
+    });
+
     return config;
   },
 }
