@@ -105,10 +105,6 @@ export function encodeCipherCode(data: {
     ["address", "uint256", "uint256", "uint256"],
     [data.tokenAddress, data.amount, data.salt, data.random]
   );
-  console.log("decodeCipherCode", {
-    cipherCode,
-    ...data,
-  });
   return cipherCode;
 }
 

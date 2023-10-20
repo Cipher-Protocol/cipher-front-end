@@ -5,6 +5,7 @@ import { assert, retry } from "../helper";
 import { CIPHER_CONTRACT_ADDRESS } from "../../configs/tokenConfig";
 import { CipherTree } from "./CipherTree";
 import { delay } from "./CipherHelper";
+import CipherAbi from "./CipherAbi.json";
 
 const NEXT_PUBLIC_CIPHER_START_BLOCK_NUMBER = BigInt(process.env.NEXT_PUBLIC_CIPHER_START_BLOCK_NUMBER || '0')
 const NEXT_PUBLIC_CIPHER_SYNC_LOGS_BATCH_BLOCK_SIZE = BigInt(process.env.NEXT_PUBLIC_CIPHER_SYNC_LOGS_BATCH_BLOCK_SIZE || '1000');
@@ -44,7 +45,7 @@ export async function syncNewCommitmentFromSubgraph(treeCacheItem: TreeCacheItem
     console.log({
       message: 'start syncNewCommitmentFromSubgraph',
       treeCacheItem,
-      config: context,
+      context,
     });
     const tokenAddress = treeCacheItem.cipherTree.tokenAddress;
     const { data } = await fetchNewCommitmentsEvents({
@@ -57,19 +58,25 @@ export async function syncNewCommitmentFromSubgraph(treeCacheItem: TreeCacheItem
       startBlock: Number(context.currentStartBlock),
       tmp: data,
     });
-    treeCacheItem.events = [ ...data.newCommitments ]; // TODO: handle tricky case: data.newCommitments is readonly array
-    const last = data.newCommitments.length > 0 ? data.newCommitments[data.newCommitments.length - 1] :  null;
-    if(last) {
-      treeCacheItem.endBlock = BigInt(last.blockNumber);
-    }
-    treeCacheItem.isSyncing = false;
+    const events = [ ...data.newCommitments ]; // TODO: handle tricky case: data.newCommitments is readonly array
     console.log({
       message: 'end syncNewCommitmentFromSubgraph',
       treeCacheItem,
       context,
+      newEvents: events,
     });
-    await updateCipherTreeFromEvents(treeCacheItem.cipherTree, treeCacheItem.events);
+    await updateCipherTreeFromEvents(treeCacheItem, events);
+    const root = treeCacheItem.cipherTree.root;
+    const contractRoot = await getContractTreeRoot(context.publicClient, CIPHER_CONTRACT_ADDRESS, treeCacheItem.cipherTree.tokenAddress);
     TreeCache.set(tokenAddress, treeCacheItem);
+    if(root !== contractRoot) {
+      console.warn(`root !== contractRoot, root=${root}, contractRoot=${contractRoot}, endBlock=${treeCacheItem.endBlock}`);
+      const latestBlockNumber = await context.publicClient.getBlockNumber();
+      context.latestBlockNumber = BigInt(latestBlockNumber);
+      return await syncNewCommitmentFromRpc(treeCacheItem, context);
+    } else {
+      treeCacheItem.isSyncing = false;
+    }
   } catch (error) {
     console.error(error);
   }
@@ -83,6 +90,7 @@ export async function syncNewCommitmentFromRpc(treeCacheItem: TreeCacheItem, con
     config: context,
   });
   const tokenAddress = treeCacheItem.cipherTree.tokenAddress;
+  let tmpEvents: NewCommitmentLogsType = [];
   while (context.currentEndBlock <= context.latestBlockNumber) {
     try {
       if(context.isStop) {
@@ -100,7 +108,7 @@ export async function syncNewCommitmentFromRpc(treeCacheItem: TreeCacheItem, con
         console.error(`ERROR: getCipherCommitmentLogs RETRY, tokenAddress=${tokenAddress}, errorTimes=${retryTimes}`);
         console.error(error);
       });
-      treeCacheItem.events = treeCacheItem.events.concat(rawEvents.map((rawEvent) => {
+      tmpEvents = tmpEvents.concat(rawEvents.map((rawEvent) => {
         const r: NewCommitmentLogType = {
           blockNumber: rawEvent.blockNumber.toString(),
           leafIndex: rawEvent.args.leafIndex?.toString() || '',
@@ -108,7 +116,7 @@ export async function syncNewCommitmentFromRpc(treeCacheItem: TreeCacheItem, con
           newRoot: rawEvent.args.newRoot?.toString(),
         }
         return r;
-      }));      treeCacheItem.endBlock = context.currentEndBlock;
+      }));
 
       context.currentStartBlock = context.currentEndBlock + 1n;
       context.currentEndBlock = context.currentEndBlock + context.batchSize > context.latestBlockNumber ? context.latestBlockNumber : context.currentEndBlock + context.batchSize;
@@ -118,7 +126,7 @@ export async function syncNewCommitmentFromRpc(treeCacheItem: TreeCacheItem, con
     } catch (error) {
       console.error(error);
       treeCacheItem.isSyncing = false;
-      await updateCipherTreeFromEvents(treeCacheItem.cipherTree, treeCacheItem.events);
+      await updateCipherTreeFromEvents(treeCacheItem, tmpEvents);
       TreeCache.set(tokenAddress, treeCacheItem);
       throw error;
     }
@@ -129,15 +137,20 @@ export async function syncNewCommitmentFromRpc(treeCacheItem: TreeCacheItem, con
     message: 'end syncNewCommitmentFromRpc',
     treeCacheItem,
     context,
+    tmpEvents,
   });
-  await updateCipherTreeFromEvents(treeCacheItem.cipherTree, treeCacheItem.events);
+  await updateCipherTreeFromEvents(treeCacheItem, tmpEvents);
+  treeCacheItem.isSyncing = false;
   TreeCache.set(tokenAddress, treeCacheItem);
 
   return treeCacheItem;
 }
 
-export async function updateCipherTreeFromEvents(cipherTree: CipherTree, events: NewCommitmentLogsType) {
-  const sortedAscEvents = events.sort((a, b) => {
+export async function updateCipherTreeFromEvents(treeCacheItem: TreeCacheItem, events: NewCommitmentLogsType) {
+  const sortedAscEvents = [
+    ...treeCacheItem.events,
+    ...events,
+  ].sort((a, b) => {
     const aLeafIndex = Number(a.leafIndex);
     const bLeafIndex = Number(b.leafIndex);
     assert(!isNaN(aLeafIndex), `aLeafIndex is NaN, a=${a}`);
@@ -145,26 +158,53 @@ export async function updateCipherTreeFromEvents(cipherTree: CipherTree, events:
     return aLeafIndex - bLeafIndex;
   });
 
+  // remove duplicated events
+  const sortedAscAndUniqueEvents: NewCommitmentLogType[] = [];
+  for (let i = 0; i < sortedAscEvents.length; i++) {
+    const event = sortedAscEvents[i];
+    const isDuplicated = sortedAscAndUniqueEvents.some((uniqueEvent) => {
+      return uniqueEvent.leafIndex === event.leafIndex;
+    });
+    if (!isDuplicated) {
+      sortedAscAndUniqueEvents.push(event);
+    }
+  }
+
   // check all events leafIndex is continuous
-  for (let actualIndex = 0; actualIndex < sortedAscEvents.length; actualIndex++) {
-    const event = sortedAscEvents[actualIndex];
+  for (let actualIndex = 0; actualIndex < sortedAscAndUniqueEvents.length; actualIndex++) {
+    const event = sortedAscAndUniqueEvents[actualIndex];
     const leafIndex = Number(event.leafIndex);
     assert(!isNaN(leafIndex), `leafIndex is NaN, event=${event}`);
     assert(actualIndex === leafIndex, `leafIndex is not continuous, leafIndex=${leafIndex}, index=${actualIndex}`);
   }
 
+  const cipherTree = treeCacheItem.cipherTree;
   const nextLeafIndex = cipherTree.nextIndex;
   // insert commitment to tree from nextLeafIndex
-  for(let leafIndex = nextLeafIndex; leafIndex < sortedAscEvents.length; leafIndex++) {
-    const event = sortedAscEvents[leafIndex];
+  for(let leafIndex = nextLeafIndex; leafIndex < sortedAscAndUniqueEvents.length; leafIndex++) {
+    const event = sortedAscAndUniqueEvents[leafIndex];
     const commitment = event.commitment;
     assert(commitment !== undefined, `commitment is undefined`);
     cipherTree.insert(BigInt(commitment));
   }
-  return cipherTree;
+
+  // update treeCacheItem
+  treeCacheItem.events = sortedAscAndUniqueEvents;
+
+  if(treeCacheItem.events.length > 0) {
+    const firstEvent = treeCacheItem.events[0];
+    treeCacheItem.fromBlock = BigInt(firstEvent.blockNumber);
+    const lastEvent = treeCacheItem.events[treeCacheItem.events.length - 1];
+    treeCacheItem.endBlock = BigInt(lastEvent.blockNumber);
+  }
+
+  return {
+    cipherTree,
+    events: sortedAscAndUniqueEvents,
+  };
 }
 
-export async function getCipherCommitmentLogs(publicClient: PublicClient,fromBlock: bigint, toBlock: bigint) {
+export async function getCipherCommitmentLogs(publicClient: PublicClient, fromBlock: bigint, toBlock: bigint) {
   const filter = await publicClient.createEventFilter({ 
     address: CIPHER_CONTRACT_ADDRESS,
     event: NewCommitmentAbiItem,
@@ -176,4 +216,14 @@ export async function getCipherCommitmentLogs(publicClient: PublicClient,fromBlo
     filter,
   });
   return logs;
+}
+
+async function getContractTreeRoot(publicClient: PublicClient, cipherAddress: string, token: string) {
+  const d = await publicClient.readContract({
+    abi: CipherAbi.abi,
+    address: cipherAddress as any as `0x${string}`,
+    functionName: 'getTreeRoot',
+    args: [ token ],
+  });
+  return d as bigint
 }

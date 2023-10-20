@@ -37,7 +37,7 @@ import {
   CIPHER_CONTRACT_ADDRESS,
   DEFAULT_ETH_ADDRESS,
 } from "../configs/tokenConfig";
-import CipherAbi from "../assets/Cipher-abi.json";
+import CipherAbi from "../lib/cipher/CipherAbi.json";
 import {
   ProofStruct,
   PublicInfoStruct,
@@ -261,10 +261,6 @@ export default function DepositModal(props: Props) {
         CIPHER_CONTRACT_ADDRESS,
         token.address
       );
-      console.log({
-        root,
-        contractRoot,
-      });
       assert(root === contractRoot, "root is not equal");
 
       setTree(cache.cipherTree);

@@ -1,7 +1,7 @@
 import { createContext, use, useCallback, useMemo, useState } from "react";
 import { CipherTree } from "../lib/cipher/CipherTree";
 import { watchContractEvent, readContract, getWalletClient } from '@wagmi/core'
-import CipherAbi from '../assets/Cipher-abi.json';
+import CipherAbi from '../lib/cipher/CipherAbi.json';
 import { BigNumber, Contract, Wallet } from "ethers";
 import { CIPHER_CONTRACT_ADDRESS } from "../configs/tokenConfig";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
@@ -110,21 +110,12 @@ export const CipherTreeProvider = ({ children }: { children: React.ReactNode }) 
     return leafIndex;
   }
   const getTreeDepth = async (cipherAddress: string, token: string) => {
-    console.log({
-      cipherAddress,
-      token
-    })
     const d = await readContract({
       address: cipherAddress as `0x${string}`,
       abi: CipherAbi.abi,
       functionName: 'getTreeDepth',
       args: [token],
-    })
-    console.log({
-      cipherAddress,
-      token,
-      d,
-    })
+    });
     const numDepth = Number(d);
     if(isNaN(numDepth)) {
       throw new Error("depth is NaN");
@@ -154,7 +145,6 @@ export const CipherTreeProvider = ({ children }: { children: React.ReactNode }) 
       cipherStartBlockNumber,
       batchSize,
     });
-
 
     let currentStartBlock = cipherStartBlockNumber;
     let currentEndBlock = currentStartBlock + batchSize;

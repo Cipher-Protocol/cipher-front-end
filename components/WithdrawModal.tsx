@@ -46,8 +46,7 @@ import {
   usePrepareContractWrite,
   useWaitForTransaction,
 } from "wagmi";
-import { writeContract } from "@wagmi/core";
-import CipherAbi from "../assets/Cipher-abi.json";
+import CipherAbi from "../lib/cipher/CipherAbi.json";
 import dayjs from "dayjs";
 import {
   ProofStruct,
@@ -160,6 +159,9 @@ export default function WithdrawModal(props: Props) {
         CIPHER_CONTRACT_ADDRESS,
         token.address
       );
+      if(root !== contractRoot) {
+        throw new Error("Tree root invalid");
+      }
       setActiveStep(1);
     } catch (error: any) {
       toast({
@@ -197,6 +199,7 @@ export default function WithdrawModal(props: Props) {
 
     for (let index = 0; index < coinLeafIndexs.length; index++) {
       const leafIndex = coinLeafIndexs[index];
+      console.log(`check paid: leafIndex=${leafIndex}`)
       const mkp = tree.genMerklePath(leafIndex);
       const indices = indicesToPathIndices(mkp.indices);
       const nullifier = generateNullifier(commitment, indices, salt);
@@ -237,16 +240,6 @@ export default function WithdrawModal(props: Props) {
         tree,
         coinLeafIndex,
       );
-
-      console.log({
-        coinLeafIndex,
-        commitment,
-        salt,
-        random,
-        pubOutAmt,
-        payableCoin,
-      })
-
       const withdrawTx = await generateCipherTx(
         tree,
         {
