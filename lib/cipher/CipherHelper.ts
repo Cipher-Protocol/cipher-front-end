@@ -132,12 +132,14 @@ export function decodeCipherCode(cipherCode: string): {
       isCode: true,
     };
   } catch (e) {
-    return {
-      tokenAddress: "",
-      amount: 0n,
-      salt: 0n,
-      random: 0n,
-      isCode: false,
-    };
+    throw new Error(`Invalid cipherCode`);
   }
+}
+
+export function delay(time: number) {
+  return new Promise((resolve) => {
+      setTimeout(() => {
+          resolve(true);
+      }, time);
+  });
 }
