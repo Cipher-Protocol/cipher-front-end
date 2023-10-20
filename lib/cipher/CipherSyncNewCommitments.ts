@@ -3,7 +3,6 @@ import { NewCommitmentLogType, NewCommitmentLogsType, TreeCacheItem, TreeSyncing
 import { fetchNewCommitmentsEvents } from "../graphql";
 import { assert, retry } from "../helper";
 import { CIPHER_CONTRACT_ADDRESS } from "../../configs/tokenConfig";
-import { CipherTree } from "./CipherTree";
 import { delay } from "./CipherHelper";
 import CipherAbi from "./CipherAbi.json";
 
@@ -19,7 +18,6 @@ console.log({
 // const NewCommitmentAbiType = NewCommitmentAbi.inputs.map((input) => `${input.type} ${input.name}`).join(',');
 const NewCommitmentAbiItem = parseAbiItem('event NewCommitment(address indexed token, uint256 newRoot, uint256 commitment, uint256 leafIndex)');
 const TreeCache = new Map<string, TreeCacheItem>(); // tokenAddress => CipherTree
-const TreeSyncingQueue = new Map<string, TreeSyncingQueueItem>();
 
 export async function syncNewCommitment(treeCacheItem: TreeCacheItem, context: TreeSyncingQueueContext) {
   return new Promise<TreeCacheItem>(async (resolve, reject) => {
@@ -71,7 +69,9 @@ export async function syncNewCommitmentFromSubgraph(treeCacheItem: TreeCacheItem
     TreeCache.set(tokenAddress, treeCacheItem);
     if(root !== contractRoot) {
       console.warn(`root !== contractRoot, root=${root}, contractRoot=${contractRoot}, endBlock=${treeCacheItem.endBlock}`);
-      const latestBlockNumber = await context.publicClient.getBlockNumber();
+      const latestBlockNumber = await retry(async () => {
+        return await context.publicClient.getBlockNumber();
+      }, 5, 2000);
       context.latestBlockNumber = BigInt(latestBlockNumber);
       return await syncNewCommitmentFromRpc(treeCacheItem, context);
     } else {
@@ -146,41 +146,27 @@ export async function syncNewCommitmentFromRpc(treeCacheItem: TreeCacheItem, con
   return treeCacheItem;
 }
 
-export async function updateCipherTreeFromEvents(treeCacheItem: TreeCacheItem, events: NewCommitmentLogsType) {
-  const sortedAscEvents = [
-    ...treeCacheItem.events,
-    ...events,
-  ].sort((a, b) => {
-    const aLeafIndex = Number(a.leafIndex);
-    const bLeafIndex = Number(b.leafIndex);
-    assert(!isNaN(aLeafIndex), `aLeafIndex is NaN, a=${a}`);
-    assert(!isNaN(bLeafIndex), `bLeafIndex is NaN, b=${b}`);
-    return aLeafIndex - bLeafIndex;
+export async function updateCipherTreeFromEvents(treeCacheItem: TreeCacheItem, newEvents: NewCommitmentLogsType) {
+
+  // merge old events and new events, new events will overwrite old events
+  const eventMap = new Map<string, NewCommitmentLogType>();
+  treeCacheItem.events.forEach((oldEvent) => {
+    eventMap.set(oldEvent.leafIndex, oldEvent);
+  });
+  newEvents.forEach((newEvent) => {
+    eventMap.set(newEvent.leafIndex, newEvent);
   });
 
-  // remove duplicated events
-  const sortedAscAndUniqueEvents: NewCommitmentLogType[] = [];
-  for (let i = 0; i < sortedAscEvents.length; i++) {
-    const event = sortedAscEvents[i];
-    const isDuplicated = sortedAscAndUniqueEvents.some((uniqueEvent) => {
-      return uniqueEvent.leafIndex === event.leafIndex;
-    });
-    if (!isDuplicated) {
-      sortedAscAndUniqueEvents.push(event);
-    }
+  // check all events leafIndex is continuous and start from 0
+  const sortedAscAndUniqueEvents = Array.from(eventMap.values()).sort((a, b) => Number(a.leafIndex) - Number(b.leafIndex));
+  for (let i = 0; i < sortedAscAndUniqueEvents.length; i++) {
+    const event = sortedAscAndUniqueEvents[i];
+    assert(Number(event.leafIndex) === i, `leafIndex is not continuous, leafIndex=${event.leafIndex}, index=${i}`);
   }
 
-  // check all events leafIndex is continuous
-  for (let actualIndex = 0; actualIndex < sortedAscAndUniqueEvents.length; actualIndex++) {
-    const event = sortedAscAndUniqueEvents[actualIndex];
-    const leafIndex = Number(event.leafIndex);
-    assert(!isNaN(leafIndex), `leafIndex is NaN, event=${event}`);
-    assert(actualIndex === leafIndex, `leafIndex is not continuous, leafIndex=${leafIndex}, index=${actualIndex}`);
-  }
-
+  // insert commitment to tree from nextLeafIndex
   const cipherTree = treeCacheItem.cipherTree;
   const nextLeafIndex = cipherTree.nextIndex;
-  // insert commitment to tree from nextLeafIndex
   for(let leafIndex = nextLeafIndex; leafIndex < sortedAscAndUniqueEvents.length; leafIndex++) {
     const event = sortedAscAndUniqueEvents[leafIndex];
     const commitment = event.commitment;
@@ -190,7 +176,6 @@ export async function updateCipherTreeFromEvents(treeCacheItem: TreeCacheItem, e
 
   // update treeCacheItem
   treeCacheItem.events = sortedAscAndUniqueEvents;
-
   if(treeCacheItem.events.length > 0) {
     const firstEvent = treeCacheItem.events[0];
     treeCacheItem.fromBlock = BigInt(firstEvent.blockNumber);
