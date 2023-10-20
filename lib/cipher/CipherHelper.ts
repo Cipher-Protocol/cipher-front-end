@@ -123,12 +123,12 @@ export function decodeCipherCode(cipherCode: string): {
     const [tokenAddress, amount, salt, random] = utils.defaultAbiCoder.decode(
       ["address", "uint256", "uint256", "uint256"],
       cipherCode
-    );
+    ) as [string, BigNumber, BigNumber, BigNumber];
     return {
       tokenAddress,
-      amount,
-      salt,
-      random,
+      amount: amount.toBigInt(),
+      salt: salt.toBigInt(),
+      random: random.toBigInt(),
       isCode: true,
     };
   } catch (e) {

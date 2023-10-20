@@ -26,6 +26,7 @@ import {
   generateCommitment,
   generateNullifier,
   indicesToPathIndices,
+  toHashedSalt,
 } from "../lib/cipher/CipherHelper";
 import SimpleBtn from "./SimpleBtn";
 import { TokenConfig } from "../type";
@@ -179,6 +180,7 @@ export default function WithdrawModal(props: Props) {
       random: random,
     });
     const coinLeafIndexs = tree.findLeafIndexsByCommitment(commitment);
+    console.log({ commitment, coinLeafIndexs });
     if (coinLeafIndexs.length === 0) {
       toast({
         title: "Commitment is not found",
@@ -226,15 +228,24 @@ export default function WithdrawModal(props: Props) {
       const payableCoin = new CipherTransferableCoin(
         {
           key: {
-            hashedSaltOrUserId: PoseidonHash([salt]),
+            hashedSaltOrUserId: toHashedSalt(salt),
             inSaltOrSeed: salt,
             inRandom: random,
           },
           amount: pubOutAmt,
         },
         tree,
-        coinLeafIndexs[0]
+        coinLeafIndex,
       );
+
+      console.log({
+        coinLeafIndex,
+        commitment,
+        salt,
+        random,
+        pubOutAmt,
+        payableCoin,
+      })
 
       const withdrawTx = await generateCipherTx(
         tree,
