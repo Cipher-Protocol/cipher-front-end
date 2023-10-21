@@ -37,7 +37,6 @@ import {
   DEFAULT_ETH_ADDRESS,
 } from "../configs/tokenConfig";
 import { CipherTransferableCoin } from "../lib/cipher/CipherCoin";
-import { PoseidonHash } from "../lib/poseidonHash";
 import { CipherTree } from "../lib/cipher/CipherTree";
 import { generateCipherTx } from "../lib/cipher/CipherCore";
 import {
@@ -67,7 +66,7 @@ type Props = {
 const steps = [
   { title: "Collect Data", description: "Collect data from the network" },
   { title: "Check Cipher Code", description: "Check cipher code is valid" },
-  { title: "Generate Proof", description: "Generate proof for deposit" },
+  { title: "Generate Proof", description: "Generate proof for withdraw" },
 ];
 
 export default function WithdrawModal(props: Props) {
@@ -75,7 +74,6 @@ export default function WithdrawModal(props: Props) {
   const toast = useToast();
   const { address } = useAccount();
   const [isChecked, setIsChecked] = useState<boolean>(false);
-  const [canWithdraw, setCanWithdraw] = useState<boolean>(false);
   const [proof, setProof] = useState<ProofStruct>();
   const [publicInfo, setPublicInfo] = useState<PublicInfoStruct>();
   const { activeStep, setActiveStep, goToNext } = useSteps({
@@ -113,7 +111,6 @@ export default function WithdrawModal(props: Props) {
 
   const handleCloseModal = () => {
     setIsChecked(false);
-    setCanWithdraw(false);
     setProof(undefined);
     setPublicInfo(undefined);
     setActiveStep(0);
@@ -141,6 +138,22 @@ export default function WithdrawModal(props: Props) {
   };
 
   useEffect(() => {
+    if (isWithdrawSuccess) {
+      toast({
+        title: "Withdraw success",
+        description: `Withdraw ${formatUnits(pubOutAmt, token.decimals)} ${
+          token.symbol
+        } success`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      handleCloseModal();
+    }
+  }, [isWithdrawSuccess]);
+
+  useEffect(() => {
     if (isChecked) {
       handleSteps();
     }
@@ -159,7 +172,7 @@ export default function WithdrawModal(props: Props) {
         CIPHER_CONTRACT_ADDRESS,
         token.address
       );
-      if(root !== contractRoot) {
+      if (root !== contractRoot) {
         throw new Error("Tree root invalid");
       }
       setActiveStep(1);
@@ -199,7 +212,7 @@ export default function WithdrawModal(props: Props) {
 
     for (let index = 0; index < coinLeafIndexs.length; index++) {
       const leafIndex = coinLeafIndexs[index];
-      console.log(`check paid: leafIndex=${leafIndex}`)
+      console.log(`check paid: leafIndex=${leafIndex}`);
       const mkp = tree.genMerklePath(leafIndex);
       const indices = indicesToPathIndices(mkp.indices);
       const nullifier = generateNullifier(commitment, indices, salt);
@@ -238,7 +251,7 @@ export default function WithdrawModal(props: Props) {
           amount: pubOutAmt,
         },
         tree,
-        coinLeafIndex,
+        coinLeafIndex
       );
       const withdrawTx = await generateCipherTx(
         tree,
@@ -258,7 +271,7 @@ export default function WithdrawModal(props: Props) {
 
       setProof(withdrawTx.contractCalldata.utxoData);
       setPublicInfo(withdrawTx.contractCalldata.publicInfo);
-      setCanWithdraw(true);
+      setActiveStep(3);
     } catch (error: any) {
       toast({
         title: "Generate proof failed",
@@ -272,8 +285,6 @@ export default function WithdrawModal(props: Props) {
       return;
     }
   };
-
-  console.log("failedStep", failedStep);
 
   return (
     <Modal isOpen={isOpen} size={"lg"} onClose={handleCloseModal}>
@@ -334,7 +345,7 @@ export default function WithdrawModal(props: Props) {
         {isChecked ? (
           <ModalFooter>
             <SimpleBtn
-              disabled={!canWithdraw}
+              disabled={activeStep !== 3 || isWithdrawing || isWithdrawSuccess}
               colorScheme="blue"
               className="mx-auto w-40"
               onClick={() => handleWithdraw()}

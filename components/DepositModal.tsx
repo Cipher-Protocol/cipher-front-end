@@ -45,6 +45,7 @@ import {
 import { useAllowance } from "../hooks/useAllowance";
 import { downloadCipher } from "../lib/downloadCipher";
 import { assert } from "../lib/helper";
+import { CloseIcon } from "@chakra-ui/icons";
 
 type Props = {
   isOpen: boolean;
@@ -75,9 +76,6 @@ export default function DepositModal(props: Props) {
   const toast = useToast();
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [isCollectedData, setIsCollectedData] = useState(false);
-  const [canDeposit, setCanDeposit] = useState(false);
-  const [tree, setTree] = useState<CipherTree | undefined>(undefined);
   const [proof, setProof] = useState<ProofStruct>();
   const [publicInfo, setPublicInfo] = useState<PublicInfoStruct>();
   const { address } = useAccount();
@@ -85,6 +83,7 @@ export default function DepositModal(props: Props) {
     index: 0,
     count: steps.length,
   });
+  const [failedStep, setFailedStep] = useState<number>(-1);
   const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } =
     useContext(CipherTreeProviderContext);
   const { allowance, refetchAllowance } = useAllowance(token.address, address);
@@ -92,12 +91,10 @@ export default function DepositModal(props: Props) {
   const handleCloseModal = () => {
     setIsDownloaded(false);
     setIsApproved(false);
-    setIsCollectedData(false);
-    setCanDeposit(false);
-    setTree(undefined);
     setProof(undefined);
     setPublicInfo(undefined);
     setActiveStep(0);
+    setFailedStep(-1);
     resetApprove();
     resetDeposit();
     onClose();
@@ -185,7 +182,6 @@ export default function DepositModal(props: Props) {
       return;
     }
     if (allowance && allowance >= pubInAmt) {
-      console.log("test");
       setIsApproved(true);
       setActiveStep(1);
     }
@@ -211,12 +207,15 @@ export default function DepositModal(props: Props) {
     if (isDepositSuccess) {
       toast({
         title: "Deposit success",
-        description: "",
+        description: `Deposit ${utils.formatUnits(pubInAmt, token.decimals)} ${
+          token.symbol
+        } success`,
         status: "success",
         duration: 5000,
         isClosable: true,
         position: "top",
       });
+      handleCloseModal();
     }
   }, [isDepositSuccess]);
 
@@ -225,8 +224,11 @@ export default function DepositModal(props: Props) {
       throw new Error("address is undefined");
     }
     try {
+      setFailedStep(-1);
+      setActiveStep(0);
       await approveAsync?.();
     } catch (err) {
+      setFailedStep(0);
       toast({
         title: "Approve failed",
         description: "",
@@ -246,31 +248,29 @@ export default function DepositModal(props: Props) {
       }
       // TODO: generate cipher tree
       const { promise, context } = await syncAndGetCipherTree(token.address);
-      console.log({
-        message: "deposit collectData start",
-        promise,
-        context,
-      });
       const cache = await promise;
-      console.log({
-        message: "deposit collectData end",
-        cache,
-      });
       const root = cache.cipherTree.root;
       const contractRoot = await getContractTreeRoot(
         CIPHER_CONTRACT_ADDRESS,
         token.address
       );
       assert(root === contractRoot, "root is not equal");
-
-      setTree(cache.cipherTree);
-      setIsCollectedData(true);
       setActiveStep(2);
-      genProof(cache.cipherTree);
+
+      try {
+        await genProof(cache.cipherTree);
+      } catch (err) {
+        toast({
+          title: "Generate proof failed",
+          description: "",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top",
+        });
+        setFailedStep(2);
+      }
     } catch (err) {
-      console.error({
-        err,
-      });
       toast({
         title: "Collect data failed",
         description: "",
@@ -279,6 +279,7 @@ export default function DepositModal(props: Props) {
         isClosable: true,
         position: "top",
       });
+      setFailedStep(1);
     }
   };
 
@@ -304,15 +305,9 @@ export default function DepositModal(props: Props) {
       }
     );
     const { utxoData, publicInfo } = tx.contractCalldata;
-    console.log({
-      utxoData,
-      publicInfo,
-    });
     setProof(utxoData);
     setPublicInfo(publicInfo);
-    setCanDeposit(true);
     setActiveStep(3);
-
     return {
       utxoData,
       publicInfo,
@@ -336,6 +331,8 @@ export default function DepositModal(props: Props) {
       });
     }
   };
+
+  console.log("failedStep", failedStep);
 
   return (
     <Modal isOpen={isOpen} size={"lg"} onClose={handleCloseModal}>
@@ -367,11 +364,19 @@ export default function DepositModal(props: Props) {
               {steps.map((step, index) => (
                 <Step key={index}>
                   <StepIndicator>
-                    <StepStatus
-                      complete={<StepIcon />}
-                      incomplete={<StepNumber />}
-                      active={<Spinner size="md" color="blue.500" />}
-                    />
+                    {failedStep === index ? (
+                      <StepStatus
+                        complete={<CloseIcon />}
+                        incomplete={<CloseIcon color="red.500" />}
+                        active={<CloseIcon color="red.500" />}
+                      />
+                    ) : (
+                      <StepStatus
+                        complete={<StepIcon />}
+                        incomplete={<StepNumber />}
+                        active={<Spinner size="md" color="blue.500" />}
+                      />
+                    )}
                   </StepIndicator>
 
                   <Box>
@@ -380,16 +385,18 @@ export default function DepositModal(props: Props) {
                   </Box>
                   {step === steps[0] ? (
                     <SimpleBtn
-                      disabled={isApproved}
+                      disabled={isApproved || isApproving || isApproveSuccess}
                       colorScheme={isApproved ? "teal" : "blue"}
                       className="mx-auto w-40"
                       onClick={() => handleApprove()}
                     >
-                      {isApproving
-                        ? "Approving..."
-                        : isApproved
-                        ? "Approved"
-                        : "Approve"}
+                      {isApproving ? (
+                        <Spinner size="sm" color="white" />
+                      ) : isApproved ? (
+                        "Approved"
+                      ) : (
+                        "Approve"
+                      )}
                     </SimpleBtn>
                   ) : null}
 
@@ -409,16 +416,8 @@ export default function DepositModal(props: Props) {
             >
               initToken
             </SimpleBtn> */}
-            {/* <SimpleBtn
-              colorScheme="blue"
-              className="mx-auto w-40"
-              onClick={() => collectData()}
-            >
-              CollectData
-            </SimpleBtn> */}
-
             <SimpleBtn
-              disabled={!canDeposit || isDepositSuccess}
+              disabled={activeStep !== 3 || isDepositing || isDepositSuccess}
               colorScheme="blue"
               className="mx-auto w-40"
               onClick={() => handleDeposit()}
