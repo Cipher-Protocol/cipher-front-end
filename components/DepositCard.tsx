@@ -6,7 +6,7 @@ import SimpleBtn from "./SimpleBtn";
 import dynamic from "next/dynamic";
 import DepositModal from "./DepositModal";
 import { useAccount, useBalance } from "wagmi";
-import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
 import { useErc20 } from "../hooks/useErc20";
 import { CipherCoinInfo } from "../lib/cipher/CipherCoin";
 import { encodeCipherCode, toHashedSalt } from "../lib/cipher/CipherHelper";
@@ -74,7 +74,7 @@ export default function DepositCard(props: Props) {
 
   useEffect(() => {
     if (!address) return;
-    if (selectedToken?.address === DEFAULT_ETH_ADDRESS) {
+    if (selectedToken?.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
       setBalance(ethBalance?.value || 0n);
     } else {
       if (selectedToken === undefined || Erc20Balance === undefined) {

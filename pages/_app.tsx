@@ -3,7 +3,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import "../styles/globals.css";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { mainnet, goerli } from "wagmi/chains";
+import { mainnet, goerli, arbitrumGoerli } from "wagmi/chains";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 import { ChakraProvider } from "@chakra-ui/react";
@@ -17,7 +17,7 @@ import { CipherTreeProvider } from "../providers/CipherTreeProvider";
 /* ============== rainbowkit & wagmi config ============== */
 
 const { chains, publicClient } = configureChains(
-  [mainnet, goerli],
+  [mainnet, goerli, arbitrumGoerli],
   [
     alchemyProvider({ apiKey: getString(process.env.NEXT_PUBLIC_ALCHEMY_ID) }),
     publicProvider(),
@@ -35,7 +35,6 @@ const wagmiConfig = createConfig({
   connectors,
   publicClient,
 });
-
 
 // react-query config
 const queryClient = new QueryClient();

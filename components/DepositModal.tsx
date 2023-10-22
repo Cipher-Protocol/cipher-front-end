@@ -35,7 +35,7 @@ import { usePrepareContractWrite, useContractWrite } from "wagmi";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
 import {
   CIPHER_CONTRACT_ADDRESS,
-  DEFAULT_ETH_ADDRESS,
+  DEFAULT_NATIVE_TOKEN_ADDRESS,
 } from "../configs/tokenConfig";
 import CipherAbi from "../lib/cipher/CipherAbi.json";
 import {
@@ -107,7 +107,9 @@ export default function DepositModal(props: Props) {
     functionName: "approve",
     args: [CIPHER_CONTRACT_ADDRESS, pubInAmt],
     enabled:
-      token && pubInAmt && token.address !== DEFAULT_ETH_ADDRESS ? true : false,
+      token && pubInAmt && token.address !== DEFAULT_NATIVE_TOKEN_ADDRESS
+        ? true
+        : false,
   });
   // approve
   const {
@@ -126,7 +128,7 @@ export default function DepositModal(props: Props) {
     abi: CipherAbi.abi,
     functionName: "cipherTransact",
     args: [proof, publicInfo],
-    value: token.address === DEFAULT_ETH_ADDRESS ? pubInAmt : 0n,
+    value: token.address === DEFAULT_NATIVE_TOKEN_ADDRESS ? pubInAmt : 0n,
     enabled: proof && publicInfo ? true : false,
   });
 
@@ -176,7 +178,7 @@ export default function DepositModal(props: Props) {
     if (!address) {
       throw new Error("address is undefined");
     }
-    if (token.address === DEFAULT_ETH_ADDRESS) {
+    if (token.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
       setIsApproved(true);
       setActiveStep(1);
       return;
@@ -332,8 +334,6 @@ export default function DepositModal(props: Props) {
     }
   };
 
-  console.log("failedStep", failedStep);
-
   return (
     <Modal isOpen={isOpen} size={"lg"} onClose={handleCloseModal}>
       <ModalOverlay />
@@ -412,7 +412,7 @@ export default function DepositModal(props: Props) {
             {/* <SimpleBtn
               colorScheme="blue"
               className="mx-auto w-40"
-              // onClick={() => initTokenTree?.()}
+              onClick={() => initTokenTree?.()}
             >
               initToken
             </SimpleBtn> */}

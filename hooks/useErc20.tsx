@@ -1,5 +1,5 @@
 import { erc20ABI, useAccount, useContractRead } from "wagmi";
-import { DEFAULT_ETH_ADDRESS } from "../configs/tokenConfig";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
 import { useEffect, useState } from "react";
 import { BigNumber } from "ethers";
 import { readContract } from "@wagmi/core";
@@ -15,7 +15,7 @@ export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
     if (
       !address ||
       tokenAddr === undefined ||
-      tokenAddr === DEFAULT_ETH_ADDRESS
+      tokenAddr === DEFAULT_NATIVE_TOKEN_ADDRESS
     ) {
       setBalance(0n);
       setIsLoading(false);
@@ -41,7 +41,7 @@ export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {
     if (
       !address ||
       tokenAddr === undefined ||
-      tokenAddr === DEFAULT_ETH_ADDRESS
+      tokenAddr === DEFAULT_NATIVE_TOKEN_ADDRESS
     ) {
       setDecimals(undefined);
       setIsLoading(false);

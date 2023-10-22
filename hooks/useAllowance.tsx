@@ -3,7 +3,7 @@ import { readContract } from "@wagmi/core";
 import { erc20ABI } from "wagmi";
 import {
   CIPHER_CONTRACT_ADDRESS,
-  DEFAULT_ETH_ADDRESS,
+  DEFAULT_NATIVE_TOKEN_ADDRESS,
 } from "../configs/tokenConfig";
 import { maxUint256 } from "viem";
 
@@ -29,7 +29,7 @@ const getAllowance = async (
   address: `0x${string}` | undefined
 ) => {
   if (!tokenAddress || !address) return BigInt(0);
-  if (tokenAddress === DEFAULT_ETH_ADDRESS) return maxUint256;
+  if (tokenAddress === DEFAULT_NATIVE_TOKEN_ADDRESS) return maxUint256;
   const allowance = await readContract({
     address: tokenAddress,
     abi: erc20ABI,

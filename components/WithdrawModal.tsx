@@ -34,7 +34,7 @@ import { formatUnits } from "viem";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
 import {
   CIPHER_CONTRACT_ADDRESS,
-  DEFAULT_ETH_ADDRESS,
+  DEFAULT_NATIVE_TOKEN_ADDRESS,
 } from "../configs/tokenConfig";
 import { CipherTransferableCoin } from "../lib/cipher/CipherCoin";
 import { CipherTree } from "../lib/cipher/CipherTree";
@@ -94,7 +94,7 @@ export default function WithdrawModal(props: Props) {
     abi: CipherAbi.abi,
     functionName: "cipherTransact",
     args: [proof, publicInfo],
-    value: token.address === DEFAULT_ETH_ADDRESS ? pubOutAmt : 0n,
+    value: token.address === DEFAULT_NATIVE_TOKEN_ADDRESS ? pubOutAmt : 0n,
     enabled: proof && publicInfo ? true : false,
   });
 
