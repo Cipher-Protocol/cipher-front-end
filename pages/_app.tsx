@@ -17,7 +17,7 @@ import { CipherTreeProvider } from "../providers/CipherTreeProvider";
 /* ============== rainbowkit & wagmi config ============== */
 
 const { chains, publicClient } = configureChains(
-  [mainnet, goerli, arbitrumGoerli],
+  [goerli, arbitrumGoerli],
   [
     alchemyProvider({ apiKey: getString(process.env.NEXT_PUBLIC_ALCHEMY_ID) }),
     publicProvider(),

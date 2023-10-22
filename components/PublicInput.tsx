@@ -7,7 +7,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
-import React, { useEffect } from "react";
+import React from "react";
 import { formatUnits, parseUnits } from "viem";
 
 type Props = {
@@ -27,7 +27,7 @@ export default function PublicInput(props: Props) {
   };
 
   return (
-    <Flex className="flex flex-col items-end">
+    <Flex className="flex flex-col items-end ">
       <Text fontSize="sm">
         Balance: &nbsp;
         {balance

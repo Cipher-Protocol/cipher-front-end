@@ -30,7 +30,11 @@ export default function Header(props: Props) {
         </SimpleBtn>
       </ButtonGroup>
       <ModeTab setMode={setMode} />
-      <ConnectButton accountStatus="address" showBalance={false} />
+      <ConnectButton
+        chainStatus="icon"
+        accountStatus="address"
+        showBalance={false}
+      />
       {isConnected && <CipherProfileBtn />}
     </Flex>
   );

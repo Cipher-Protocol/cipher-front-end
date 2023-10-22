@@ -1,6 +1,6 @@
 import { useAccount } from "wagmi";
 import Header from "../components/Header";
-import Pro from "../components/Pro";
+import ProContainer from "../components/pro/ProContainer";
 import Simple from "../components/Simple";
 import { Mode } from "../type.d";
 import { Flex, useToast } from "@chakra-ui/react";
@@ -37,9 +37,9 @@ export default function Page() {
 
   return (
     <>
-      <Flex className="w-full flex flex-col min-h-screen">
+      <Flex className="w-full flex flex-col h-screen">
         <Header setMode={setMode} />
-        {mode === Mode.SIMPLE ? <Simple /> : <Pro />}
+        {mode === Mode.SIMPLE ? <Simple /> : <ProContainer />}
       </Flex>
     </>
   );

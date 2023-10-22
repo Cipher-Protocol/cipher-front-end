@@ -5,7 +5,6 @@ import WithdrawCard from "./WithdrawCard";
 import { SimpleType, TokenConfig } from "../type.d";
 import { useNetwork } from "wagmi";
 import { getTokenConfig } from "../lib/getTokenConfig";
-import { get } from "lodash";
 
 export default function Simple() {
   const { chain } = useNetwork();

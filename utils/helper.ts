@@ -30,3 +30,13 @@ export function getString(str: string | undefined) {
     throw new Error(`'${str}' is not a string`);
   }
 }
+
+export function getBigInt(str: string | undefined) {
+  try {
+    if (str === "" || typeof str === "undefined")
+      throw new Error(`'${str}' is not a bigint`);
+    return BigInt(str);
+  } catch (error) {
+    throw new Error(`'${str}' is not a bigint`);
+  }
+}

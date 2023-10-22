@@ -30,13 +30,10 @@ import dayjs from "dayjs";
 import { CipherBaseCoin, CipherCoinInfo } from "../lib/cipher/CipherCoin";
 import { generateCipherTx } from "../lib/cipher/CipherCore";
 import { CipherTree } from "../lib/cipher/CipherTree";
-import { erc20ABI, useAccount, useWaitForTransaction } from "wagmi";
+import { erc20ABI, useAccount, useNetwork, useWaitForTransaction } from "wagmi";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
-import {
-  CIPHER_CONTRACT_ADDRESS,
-  DEFAULT_NATIVE_TOKEN_ADDRESS,
-} from "../configs/tokenConfig";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
 import CipherAbi from "../lib/cipher/CipherAbi.json";
 import {
   ProofStruct,
@@ -46,6 +43,7 @@ import { useAllowance } from "../hooks/useAllowance";
 import { downloadCipher } from "../lib/downloadCipher";
 import { assert } from "../lib/helper";
 import { CloseIcon } from "@chakra-ui/icons";
+import { getChainConfig } from "../configs/chainConfig";
 
 type Props = {
   isOpen: boolean;
@@ -74,6 +72,7 @@ export default function DepositModal(props: Props) {
     cipherCoinInfo,
   } = props;
   const toast = useToast();
+  const { chain, chains } = useNetwork();
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [proof, setProof] = useState<ProofStruct>();
@@ -87,6 +86,9 @@ export default function DepositModal(props: Props) {
   const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } =
     useContext(CipherTreeProviderContext);
   const { allowance, refetchAllowance } = useAllowance(token.address, address);
+  const CIPHER_CONTRACT_ADDRESS = getChainConfig(
+    chain?.id as number
+  ).cipherContractAddress;
 
   const handleCloseModal = () => {
     setIsDownloaded(false);
@@ -107,7 +109,10 @@ export default function DepositModal(props: Props) {
     functionName: "approve",
     args: [CIPHER_CONTRACT_ADDRESS, pubInAmt],
     enabled:
-      token && pubInAmt && token.address !== DEFAULT_NATIVE_TOKEN_ADDRESS
+      chain &&
+      token &&
+      pubInAmt &&
+      token.address !== DEFAULT_NATIVE_TOKEN_ADDRESS
         ? true
         : false,
   });

@@ -1,5 +1,5 @@
 declare module "circomlibjs";
-declare module "snarkjs"
+declare module "snarkjs";
 declare global {
   interface Window {
     ethereum: any;
@@ -15,6 +15,12 @@ export enum SimpleType {
   DEPOSIT,
   WITHDRAW,
 }
+
+export type ChainConfig = {
+  cipherContractAddress: `0x${string}`;
+  startBlock: bigint;
+  isSubgraphEnabled: boolean;
+};
 
 export type TokenConfig = {
   iconUri: StaticImageData;
