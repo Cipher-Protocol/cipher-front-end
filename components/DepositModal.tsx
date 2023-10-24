@@ -44,6 +44,7 @@ import { downloadCipher } from "../lib/downloadCipher";
 import { assert } from "../lib/helper";
 import { CloseIcon } from "@chakra-ui/icons";
 import { getChainConfig } from "../configs/chainConfig";
+import { ConfigContext } from "../providers/ConfigProvider";
 
 type Props = {
   isOpen: boolean;
@@ -85,10 +86,8 @@ export default function DepositModal(props: Props) {
   const [failedStep, setFailedStep] = useState<number>(-1);
   const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } =
     useContext(CipherTreeProviderContext);
-  const { allowance, refetchAllowance } = useAllowance(token.address, address);
-  const CIPHER_CONTRACT_ADDRESS = getChainConfig(
-    chain?.id as number
-  ).cipherContractAddress;
+    const { cipherContractInfo } = useContext(ConfigContext);
+  const { allowance, refetchAllowance } = useAllowance(cipherContractInfo?.cipherContractAddress, token.address, address);
 
   const handleCloseModal = () => {
     setIsDownloaded(false);
@@ -107,7 +106,7 @@ export default function DepositModal(props: Props) {
     address: token.address,
     abi: erc20ABI,
     functionName: "approve",
-    args: [CIPHER_CONTRACT_ADDRESS, pubInAmt],
+    args: [cipherContractInfo?.cipherContractAddress! as `0x${string}`, pubInAmt],
     enabled:
       chain &&
       token &&
@@ -129,7 +128,7 @@ export default function DepositModal(props: Props) {
     });
 
   const { config: depositConfig } = usePrepareContractWrite({
-    address: CIPHER_CONTRACT_ADDRESS,
+    address: cipherContractInfo?.cipherContractAddress,
     abi: CipherAbi.abi,
     functionName: "cipherTransact",
     args: [proof, publicInfo],
@@ -249,7 +248,7 @@ export default function DepositModal(props: Props) {
 
   const collectData = async () => {
     try {
-      const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, token.address);
+      const depth = await getTreeDepth(token.address);
       if (depth === 0) {
         throw new Error(`${token.address} tree is not initialized`);
       }
@@ -257,10 +256,7 @@ export default function DepositModal(props: Props) {
       const { promise, context } = await syncAndGetCipherTree(token.address);
       const cache = await promise;
       const root = cache.cipherTree.root;
-      const contractRoot = await getContractTreeRoot(
-        CIPHER_CONTRACT_ADDRESS,
-        token.address
-      );
+      const contractRoot = await getContractTreeRoot(token.address);
       assert(root === contractRoot, "root is not equal");
       setActiveStep(2);
 

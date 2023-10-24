@@ -33,7 +33,6 @@ import { TokenConfig } from "../type";
 import { formatUnits } from "viem";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
 import {
-  CIPHER_CONTRACT_ADDRESS,
   DEFAULT_NATIVE_TOKEN_ADDRESS,
 } from "../configs/tokenConfig";
 import { CipherTransferableCoin } from "../lib/cipher/CipherCoin";
@@ -52,6 +51,7 @@ import {
   PublicInfoStruct,
 } from "../lib/cipher/types/CipherContract.type";
 import { CloseIcon } from "@chakra-ui/icons";
+import { ConfigContext } from "../providers/ConfigProvider";
 
 type Props = {
   isOpen: boolean;
@@ -83,18 +83,20 @@ export default function WithdrawModal(props: Props) {
   const [failedStep, setFailedStep] = useState<number>(-1);
   const {
     syncAndGetCipherTree: syncTree,
-    getTreeDepth: syncTreeDepth,
+    getTreeDepth,
     getIsNullified,
     syncAndGetCipherTree,
     getContractTreeRoot,
   } = useContext(CipherTreeProviderContext);
+  const { cipherContractInfo } = useContext(ConfigContext);
+
 
   const { config: withdrawConfig } = usePrepareContractWrite({
-    address: CIPHER_CONTRACT_ADDRESS,
+    address: cipherContractInfo?.cipherContractAddress,
     abi: CipherAbi.abi,
     functionName: "cipherTransact",
     args: [proof, publicInfo],
-    value: token.address === DEFAULT_NATIVE_TOKEN_ADDRESS ? pubOutAmt : 0n,
+    value: 0n,
     enabled: proof && publicInfo ? true : false,
   });
 
@@ -168,10 +170,7 @@ export default function WithdrawModal(props: Props) {
 
       tree = cache.cipherTree;
       const root = cache.cipherTree.root;
-      const contractRoot = await getContractTreeRoot(
-        CIPHER_CONTRACT_ADDRESS,
-        token.address
-      );
+      const contractRoot = await getContractTreeRoot(token.address);
       if (root !== contractRoot) {
         throw new Error("Tree root invalid");
       }
@@ -217,7 +216,6 @@ export default function WithdrawModal(props: Props) {
       const indices = indicesToPathIndices(mkp.indices);
       const nullifier = generateNullifier(commitment, indices, salt);
       const isPaid = await getIsNullified(
-        CIPHER_CONTRACT_ADDRESS,
         token.address,
         nullifier
       );

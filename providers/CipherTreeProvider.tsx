@@ -3,7 +3,6 @@ import { CipherTree } from "../lib/cipher/CipherTree";
 import { watchContractEvent, readContract, getWalletClient } from "@wagmi/core";
 import CipherAbi from "../lib/cipher/CipherAbi.json";
 import { BigNumber, Contract, Wallet } from "ethers";
-import { CIPHER_CONTRACT_ADDRESS } from "../configs/tokenConfig";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { PublicClient, getContract, parseAbiItem } from "viem";
 import type { Abi } from "viem";
@@ -11,6 +10,7 @@ import { assert, retry } from "../lib/helper";
 import { DEFAULT_LEAF_ZERO_VALUE } from "../lib/cipher/CipherConfig";
 import { fetchNewCommitmentsEvents } from "../lib/graphql";
 import { syncNewCommitment } from "../lib/cipher/CipherSyncNewCommitments";
+import { getChainConfig } from "../configs/chainConfig";
 const NEXT_PUBLIC_GOERLI_CIPHER_START_BLOCK_NUMBER = BigInt(
   process.env.NEXT_PUBLIC_GOERLI_CIPHER_START_BLOCK_NUMBER || "0"
 );
@@ -63,13 +63,11 @@ export const CipherTreeProviderContext = createContext<{
     promise: Promise<TreeCacheItem>;
     context: TreeSyncingQueueContext;
   }>;
-  getTreeDepth: (cipherAddress: string, token: string) => Promise<number>;
+  getTreeDepth: (token: string) => Promise<number>;
   getTreeNextLeafIndex: (
-    cipherAddress: string,
     token: string
   ) => Promise<number>;
   getIsNullified: (
-    cipherAddress: string,
     token: string,
     nullifier: bigint
   ) => Promise<boolean>;
@@ -80,7 +78,6 @@ export const CipherTreeProviderContext = createContext<{
     tokenAddress: string
   ) => TreeSyncingQueueItem | undefined;
   getContractTreeRoot: (
-    cipherAddress: string,
     token: string
   ) => Promise<bigint>;
 }>({
@@ -88,14 +85,13 @@ export const CipherTreeProviderContext = createContext<{
   syncAndGetCipherTree: (tokenAddress: string) => {
     throw new Error("not implemented");
   },
-  getTreeDepth: async (cipherAddress: string, token: string) => {
+  getTreeDepth: async (token: string) => {
     throw new Error("not implemented");
   },
-  getTreeNextLeafIndex: async (cipherAddress: string, token: string) => {
+  getTreeNextLeafIndex: async (token: string) => {
     throw new Error("not implemented");
   },
   getIsNullified: async (
-    cipherAddress: string,
     token: string,
     nullifier: bigint
   ) => {
@@ -103,7 +99,7 @@ export const CipherTreeProviderContext = createContext<{
   },
   getSyncingTreeQueue: (tokenAddress: string) => undefined,
   stopSyncingTreeQueue: (tokenAddress: string) => undefined,
-  getContractTreeRoot: async (cipherAddress: string, token: string) => {
+  getContractTreeRoot: async (token: string) => {
     throw new Error("not implemented");
   },
 });
@@ -113,9 +109,16 @@ export const CipherTreeProvider = ({
   children: React.ReactNode;
 }) => {
   const publicClient = usePublicClient();
-  const getContractTreeRoot = async (cipherAddress: string, token: string) => {
+  
+  const cipherContractInfo = useMemo(() => {
+    return getChainConfig(
+      publicClient.chain.id
+    );
+  }, [publicClient]);
+
+  const getContractTreeRoot = async (token: string) => {
     const d = await readContract({
-      address: cipherAddress as `0x${string}`,
+      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
       abi: CipherAbi.abi,
       functionName: "getTreeRoot",
       args: [token],
@@ -123,21 +126,20 @@ export const CipherTreeProvider = ({
     return d as bigint;
   };
   const getIsNullified = async (
-    cipherAddress: string,
     token: string,
     nullifier: bigint
   ) => {
     const d = await readContract({
-      address: cipherAddress as `0x${string}`,
+      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
       abi: CipherAbi.abi,
       functionName: "isNullified",
       args: [token, BigNumber.from(nullifier)],
     });
     return Boolean(d);
   };
-  const getTreeNextLeafIndex = async (cipherAddress: string, token: string) => {
+  const getTreeNextLeafIndex = async (token: string) => {
     const d = await readContract({
-      address: cipherAddress as `0x${string}`,
+      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
       abi: CipherAbi.abi,
       functionName: "getTreeLeafNum",
       args: [token],
@@ -148,9 +150,9 @@ export const CipherTreeProvider = ({
     }
     return leafIndex;
   };
-  const getTreeDepth = async (cipherAddress: string, token: string) => {
+  const getTreeDepth = async (token: string) => {
     const d = await readContract({
-      address: cipherAddress as `0x${string}`,
+      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
       abi: CipherAbi.abi,
       functionName: "getTreeDepth",
       args: [token],
@@ -227,7 +229,7 @@ export const CipherTreeProvider = ({
           };
         }
       } else {
-        const depth = await getTreeDepth(CIPHER_CONTRACT_ADDRESS, tokenAddress);
+        const depth = await getTreeDepth(tokenAddress);
         const cipherTree = new CipherTree({
           depth,
           zeroLeaf: DEFAULT_LEAF_ZERO_VALUE,
@@ -242,7 +244,9 @@ export const CipherTreeProvider = ({
         };
       }
 
-      return addSyncingCipherTreeQueue(newCache, {
+      return addSyncingCipherTreeQueue(
+        cipherContractInfo?.cipherContractAddress as `0x${string}`,
+        newCache, {
         publicClient,
         currentStartBlock,
         currentEndBlock,
@@ -273,6 +277,7 @@ export const CipherTreeProvider = ({
 };
 
 function addSyncingCipherTreeQueue(
+  cipherContractAddress: `0x${string}`,
   treeCacheItem: TreeCacheItem,
   context: TreeSyncingQueueContext
 ) {
@@ -283,7 +288,9 @@ function addSyncingCipherTreeQueue(
       try {
         currentQueue.context.isStop = true;
         const newTreeCache = await currentQueue.promise;
-        const newTreeCacheItem = await syncNewCommitment(treeCacheItem, {
+        const newTreeCacheItem = await syncNewCommitment(
+          cipherContractAddress,
+          treeCacheItem, {
           ...context,
           currentStartBlock: newTreeCache.endBlock + 1n,
         });
@@ -301,7 +308,9 @@ function addSyncingCipherTreeQueue(
       context,
     };
   } else {
-    const promise = syncNewCommitment(treeCacheItem, context);
+    const promise = syncNewCommitment(
+      cipherContractAddress,
+      treeCacheItem, context);
     TreeSyncingQueue.set(tokenAddress, {
       promise,
       context,

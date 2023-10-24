@@ -4,9 +4,6 @@ import btcIcon from "../assets/icon/wrapped-bitcoin.png";
 import usdcIcon from "../assets/icon/usd-coin-wormhole-from-ethereum.png";
 import wethIcon from "../assets/icon/wrapped-ethereum.png";
 
-export const CIPHER_CONTRACT_ADDRESS = process.env
-  .NEXT_PUBLIC_GOERLI_CIPHER_CONTRACT_ADDRESS as `0x${string}`;
-
 export const SNARK_FIELD_SIZE =
   "21888242871839275222246405745257275088548364400416034343698204186575808495617";
 export const DEFAULT_NATIVE_TOKEN_ADDRESS =
