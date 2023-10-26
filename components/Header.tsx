@@ -24,7 +24,7 @@ export default function Header(props: Props) {
   const { isConnected } = useAccount();
 
   return (
-    <Flex className="w-full p-4 gap-2 items-center justify-between">
+    <Flex className="w-full p-4 gap-2 justify-between items-start">
       <Box className="py-2 pl-8 w-[30%]">
         <Image
           src={logo.src}
@@ -47,13 +47,13 @@ export default function Header(props: Props) {
           Docs
         </SimpleBtn> */}
       <ModeTab setMode={setMode} />
-      <Box className="flex flex-row pr-8 justify-end w-[30%] gap-2">
+      <Box className="flex flex-row pr-8 justify-end items-center w-[30%] gap-2">
         <ConnectButton
           chainStatus="icon"
           accountStatus="address"
           showBalance={false}
         />
-        {isConnected && <CipherProfileBtn />}
+        <CipherProfileBtn />
       </Box>
     </Flex>
   );
