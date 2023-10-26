@@ -123,7 +123,7 @@ export default function DepositCard(props: Props) {
 
   return (
     <>
-      <Flex className="p-8 flex flex-col justify-between items-center gap-8 h-[20rem] w-[25rem] rounded-3xl shadow-md bg-slate-300 m-8">
+      <Flex className="flex flex-col justify-between items-center gap-8 h-full pt-10 pb-12">
         <TokenSelector
           tokens={tokens}
           selectedToken={selectedToken}
@@ -136,8 +136,7 @@ export default function DepositCard(props: Props) {
           balance={balance}
         />
         <SimpleBtn
-          colorScheme={"teal"}
-          className="w-56"
+          className="w-full bg-white py-6"
           onClick={handleOpenDepositModal}
         >
           Deposit
@@ -151,6 +150,7 @@ export default function DepositCard(props: Props) {
         token={selectedToken}
         cipherCode={cipherCode}
         cipherCoinInfo={cipherCoinInfo}
+        setCipherCoinInfo={setCipherCoinInfo}
       />
     </>
   );

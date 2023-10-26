@@ -8,9 +8,11 @@ import {
   MenuList,
   useDisclosure,
   useToast,
+  Image,
 } from "@chakra-ui/react";
 import { CopyIcon, LockIcon, StarIcon } from "@chakra-ui/icons";
 import { CipherAccountContext } from "../providers/CipherProvider";
+import profileImage from "../assets/images/profile.png";
 
 export default function CipherProfileBtn() {
   const { isOpen, onToggle, onClose } = useDisclosure();
@@ -47,20 +49,20 @@ export default function CipherProfileBtn() {
   };
 
   return (
-    <Flex className="mx-2">
+    <Flex className="mx-2 ">
       {isAuthenticated ? (
         <Menu onOpen={onToggle} onClose={onClose} isOpen={isOpen}>
           <MenuButton
-            className="flex justify-center items-center"
-            rounded={"full"}
-            border={"none"}
             as={IconButton}
+            className="flex justify-center items-center"
+            bgColor="whiteAlpha.400"
+            rounded="full"
             aria-label="Options"
             onClick={onToggle}
-            bgColor={"transparent"}
             icon={
-              <StarIcon
-                boxSize="25px"
+              <Image
+                boxSize="20px"
+                src={profileImage.src}
                 _hover={{
                   cursor: "pointer",
                   opacity: 0.8,

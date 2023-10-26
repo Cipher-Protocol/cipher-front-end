@@ -14,14 +14,27 @@ export default function ModeTab(props: Props) {
       <Spacer />
       <Tabs
         variant="soft-rounded"
-        colorScheme="green"
         borderRadius="full"
-        className="border-2 border-green-500"
+        className="bg-white/20 p-1"
         onChange={(index) => setMode(index)}
       >
         <TabList>
-          <Tab className="w-24">Simple</Tab>
-          <Tab className="w-24">Pro</Tab>
+          <Tab
+            _hover={{ bg: "whiteAlpha.400" }}
+            _selected={{ bg: "white", textColor: "#6B39AB" }}
+            textColor="white"
+            className="w-36"
+          >
+            Simple
+          </Tab>
+          <Tab
+            _hover={{ bg: "whiteAlpha.400" }}
+            _selected={{ bg: "white", textColor: "#6B39AB" }}
+            textColor="white"
+            className="w-36"
+          >
+            Pro
+          </Tab>
         </TabList>
       </Tabs>
     </Flex>

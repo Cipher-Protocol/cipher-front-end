@@ -7,6 +7,7 @@ import {
   Image,
   Flex,
   Skeleton,
+  Text,
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import React from "react";
@@ -25,27 +26,38 @@ export default function TokenSelector(props: Props) {
     <Menu>
       <MenuButton
         as={Button}
-        rightIcon={<ChevronDownIcon />}
-        borderRadius={"3xl"}
-        className="w-56"
+        rightIcon={<ChevronDownIcon color="white" boxSize="30px" />}
+        borderRadius="3xl"
+        bgColor={"whiteAlpha.400"}
+        _hover={{ bgColor: "whiteAlpha.500" }}
+        className="w-full p-6"
+        _active={{ bgColor: "whiteAlpha.500" }}
       >
         <Flex className="flex flex-row items-center gap-4">
           {selectedToken ? (
             <>
               <Image
                 className="rounded-full"
-                boxSize="25px"
+                boxSize="30px"
                 src={selectedToken?.iconUri.src}
                 alt=""
               />
-              {selectedToken?.symbol}
+              <Text className="text-white">{selectedToken?.symbol}</Text>
             </>
           ) : (
             <Skeleton height="20px" width="full" />
           )}
         </Flex>
       </MenuButton>
-      <MenuList borderRadius={"3xl"} className="rounded-3xl w-56 px-2 py-2">
+      <MenuList
+        borderRadius={"3xl"}
+        bgColor={"whiteAlpha.500"}
+        className="rounded-3xl px-2 py-2 border-none"
+        backdropFilter={"blur(10px)"}
+        // mixBlendMode={"multiply"}
+        minW="0"
+        w={"320px"}
+      >
         {isLoadingTokens ? (
           <Skeleton height="20px" width="85%" className="m-auto" />
         ) : (
@@ -53,12 +65,16 @@ export default function TokenSelector(props: Props) {
             <MenuItem
               key={token.symbol}
               borderRadius={"3xl"}
+              bgColor={"transparent"}
+              _hover={{ bgColor: "whiteAlpha.500" }}
               className="flex flex-row items-center gap-4"
+              textColor={"white"}
+              fontWeight={"base"}
               onClick={() => setSelectedToken(token)}
             >
               <Image
                 borderRadius="full"
-                boxSize="25px"
+                boxSize="30px"
                 src={token.iconUri.src}
                 alt={token.symbol}
               />

@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@chakra-ui/react";
 
 type Props = {
-  colorScheme: string;
+  colorScheme?: string;
   children: React.ReactNode;
   className?: string;
   borderRadius?: string;

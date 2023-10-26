@@ -53,6 +53,7 @@ type Props = {
   token: TokenConfig;
   cipherCode: string;
   cipherCoinInfo: CipherCoinInfo;
+  setCipherCoinInfo: React.Dispatch<React.SetStateAction<CipherCoinInfo>>;
 };
 
 const steps = [
@@ -70,6 +71,7 @@ export default function DepositModal(props: Props) {
     token,
     cipherCode: cipherHex,
     cipherCoinInfo,
+    setCipherCoinInfo,
   } = props;
   const toast = useToast();
   const { chain, chains } = useNetwork();
@@ -100,6 +102,14 @@ export default function DepositModal(props: Props) {
     resetApprove();
     resetDeposit();
     onClose();
+    setCipherCoinInfo({
+      key: {
+        hashedSaltOrUserId: 0n,
+        inSaltOrSeed: 0n,
+        inRandom: 0n,
+      },
+      amount: 0n,
+    });
   };
 
   // prepare approve
