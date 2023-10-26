@@ -2,7 +2,8 @@ import { ChainConfig } from "../type";
 import { getBigInt, getString } from "../utils/helper";
 import { mainnet, goerli, arbitrumGoerli } from "wagmi/chains";
 
-export const getChainConfig = (chainId: number): ChainConfig => {
+// TODO: MIGRATE FROM .env
+export const getChainConfig = (chainId: number): ChainConfig | undefined => {
   switch (chainId) {
     case mainnet.id:
       return MAINNET_CONFIG;
@@ -11,7 +12,7 @@ export const getChainConfig = (chainId: number): ChainConfig => {
     case arbitrumGoerli.id:
       return ARBITRUM_GOERLI_CONFIG;
     default:
-      return MAINNET_CONFIG;
+      return undefined;
   }
 };
 

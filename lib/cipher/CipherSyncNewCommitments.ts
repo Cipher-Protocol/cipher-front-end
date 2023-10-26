@@ -8,7 +8,6 @@ import {
 } from "./types/CipherNewCommitment.type";
 import { fetchNewCommitmentsEvents } from "../graphql";
 import { assert, retry } from "../helper";
-import { CIPHER_CONTRACT_ADDRESS } from "../../configs/tokenConfig";
 import { delay } from "./CipherHelper";
 import CipherAbi from "./CipherAbi.json";
 
@@ -32,12 +31,15 @@ const NewCommitmentAbiItem = parseAbiItem(
 const TreeCache = new Map<string, TreeCacheItem>(); // tokenAddress => CipherTree
 
 export async function syncNewCommitment(
+  cipherContractAddress: string | undefined,
   treeCacheItem: TreeCacheItem,
   context: TreeSyncingQueueContext
 ) {
+  if(!cipherContractAddress) return Promise.reject("cipherContractAddress is undefined");
   return new Promise<TreeCacheItem>(async (resolve, reject) => {
     try {
       const result = await syncNewCommitmentFromSubgraph(
+        cipherContractAddress,
         treeCacheItem,
         context
       );
@@ -49,7 +51,7 @@ export async function syncNewCommitment(
     }
 
     try {
-      const result = await syncNewCommitmentFromRpc(treeCacheItem, context);
+      const result = await syncNewCommitmentFromRpc(cipherContractAddress, treeCacheItem, context);
       return resolve(result);
     } catch (error) {
       console.error("syncNewCommitmentFromRpc error, stop");
@@ -59,6 +61,7 @@ export async function syncNewCommitment(
 }
 
 export async function syncNewCommitmentFromSubgraph(
+  cipherContractAddress: string,
   treeCacheItem: TreeCacheItem,
   context: TreeSyncingQueueContext
 ) {
@@ -90,7 +93,7 @@ export async function syncNewCommitmentFromSubgraph(
     const root = treeCacheItem.cipherTree.root;
     const contractRoot = await getContractTreeRoot(
       context.publicClient,
-      CIPHER_CONTRACT_ADDRESS,
+      cipherContractAddress,
       treeCacheItem.cipherTree.tokenAddress
     );
     TreeCache.set(tokenAddress, treeCacheItem);
@@ -106,7 +109,7 @@ export async function syncNewCommitmentFromSubgraph(
         2000
       );
       context.latestBlockNumber = BigInt(latestBlockNumber);
-      return await syncNewCommitmentFromRpc(treeCacheItem, context);
+      return await syncNewCommitmentFromRpc(cipherContractAddress, treeCacheItem, context);
     } else {
       treeCacheItem.isSyncing = false;
     }
@@ -117,6 +120,7 @@ export async function syncNewCommitmentFromSubgraph(
 }
 
 export async function syncNewCommitmentFromRpc(
+  cipherContractAddress: string,
   treeCacheItem: TreeCacheItem,
   context: TreeSyncingQueueContext
 ) {
@@ -139,6 +143,7 @@ export async function syncNewCommitmentFromRpc(
         async () => {
           const tmpLogs = await getCipherCommitmentLogs(
             context.publicClient,
+            cipherContractAddress,
             context.currentStartBlock,
             context.currentEndBlock
           );
@@ -256,11 +261,12 @@ export async function updateCipherTreeFromEvents(
 
 export async function getCipherCommitmentLogs(
   publicClient: PublicClient,
+  cipherContractAddress: string,
   fromBlock: bigint,
   toBlock: bigint
 ) {
   const filter = await publicClient.createEventFilter({
-    address: CIPHER_CONTRACT_ADDRESS,
+    address: cipherContractAddress as any as `0x${string}`,
     event: NewCommitmentAbiItem,
     fromBlock,
     toBlock,
