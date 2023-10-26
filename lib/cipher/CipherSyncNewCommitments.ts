@@ -6,21 +6,11 @@ import {
   TreeSyncingQueueContext,
   TreeSyncingQueueItem,
 } from "./types/CipherNewCommitment.type";
-import { fetchNewCommitmentsEvents } from "../graphql";
 import { assert, retry } from "../helper";
 import { delay } from "./CipherHelper";
 import CipherAbi from "./CipherAbi.json";
-
-const NEXT_PUBLIC_GOERLI_CIPHER_START_BLOCK_NUMBER = BigInt(
-  process.env.NEXT_PUBLIC_GOERLI_CIPHER_START_BLOCK_NUMBER || "0"
-);
-const NEXT_PUBLIC_CIPHER_SYNC_LOGS_BATCH_BLOCK_SIZE = BigInt(
-  process.env.NEXT_PUBLIC_CIPHER_SYNC_LOGS_BATCH_BLOCK_SIZE || "1000"
-);
-console.log({
-  NEXT_PUBLIC_GOERLI_CIPHER_START_BLOCK_NUMBER,
-  NEXT_PUBLIC_CIPHER_SYNC_LOGS_BATCH_BLOCK_SIZE,
-});
+import { ChainConfig } from "../../type";
+import { CipherSubgraph } from "../graphql";
 
 // const NewCommitmentAbi = CipherAbi.abi.find((abi) => abi.name === 'NewCommitment' && abi.type === 'event');
 // assert(NewCommitmentAbi, `NewCommitmentAbi is undefined`);
@@ -28,181 +18,202 @@ console.log({
 const NewCommitmentAbiItem = parseAbiItem(
   "event NewCommitment(address indexed token, uint256 newRoot, uint256 commitment, uint256 leafIndex)"
 );
-const TreeCache = new Map<string, TreeCacheItem>(); // tokenAddress => CipherTree
 
-export async function syncNewCommitment(
-  cipherContractAddress: string | undefined,
-  treeCacheItem: TreeCacheItem,
-  context: TreeSyncingQueueContext
-) {
-  if(!cipherContractAddress) return Promise.reject("cipherContractAddress is undefined");
-  return new Promise<TreeCacheItem>(async (resolve, reject) => {
-    try {
-      const result = await syncNewCommitmentFromSubgraph(
-        cipherContractAddress,
-        treeCacheItem,
-        context
-      );
-      return resolve(result);
-    } catch (subGraphError) {
-      console.error(
-        "syncNewCommitmentFromSubgraph error, try syncNewCommitmentFromRpc"
-      );
-    }
+type CipherTreeDataCache = Map<string, TreeCacheItem>;
 
-    try {
-      const result = await syncNewCommitmentFromRpc(cipherContractAddress, treeCacheItem, context);
-      return resolve(result);
-    } catch (error) {
-      console.error("syncNewCommitmentFromRpc error, stop");
-      reject(error);
-    }
-  });
-}
+export class CipherTreeDataCollector {
+  cipherSubgraph?: CipherSubgraph;
+  config!: ChainConfig;
+  treeCache!: CipherTreeDataCache;
 
-export async function syncNewCommitmentFromSubgraph(
-  cipherContractAddress: string,
-  treeCacheItem: TreeCacheItem,
-  context: TreeSyncingQueueContext
-) {
-  try {
-    console.log({
-      message: "start syncNewCommitmentFromSubgraph",
-      treeCacheItem,
-      context,
-    });
-    const tokenAddress = treeCacheItem.cipherTree.tokenAddress;
-    const { data } = await fetchNewCommitmentsEvents({
-      tokenAddress,
-      startBlock: Number(context.currentStartBlock),
-    });
-    console.log({
-      message: "fetchNewCommitmentsEvents success",
-      tokenAddress,
-      startBlock: Number(context.currentStartBlock),
-      tmp: data,
-    });
-    const events = [...data.newCommitments]; // TODO: handle tricky case: data.newCommitments is readonly array
-    console.log({
-      message: "end syncNewCommitmentFromSubgraph",
-      treeCacheItem,
-      context,
-      newEvents: events,
-    });
-    await updateCipherTreeFromEvents(treeCacheItem, events);
-    const root = treeCacheItem.cipherTree.root;
-    const contractRoot = await getContractTreeRoot(
-      context.publicClient,
-      cipherContractAddress,
-      treeCacheItem.cipherTree.tokenAddress
-    );
-    TreeCache.set(tokenAddress, treeCacheItem);
-    if (root !== contractRoot) {
-      console.warn(
-        `root !== contractRoot, root=${root}, contractRoot=${contractRoot}, endBlock=${treeCacheItem.endBlock}`
-      );
-      const latestBlockNumber = await retry(
-        async () => {
-          return await context.publicClient.getBlockNumber();
-        },
-        5,
-        2000
-      );
-      context.latestBlockNumber = BigInt(latestBlockNumber);
-      return await syncNewCommitmentFromRpc(cipherContractAddress, treeCacheItem, context);
-    } else {
-      treeCacheItem.isSyncing = false;
+  constructor(config: ChainConfig) {
+    if(!config.cipherContractAddress) throw new Error("cipherContractAddress is undefined");
+    if(config.subgraphUrl) {
+      this.cipherSubgraph = new CipherSubgraph(config.subgraphUrl);
     }
-  } catch (error) {
-    console.error(error);
+    this.config = config;
+    this.treeCache = new Map<string, TreeCacheItem>();
+    console.log({
+      message: "CipherTreeDataCollector constructor",
+      config,
+    });
   }
-  return treeCacheItem;
-}
 
-export async function syncNewCommitmentFromRpc(
-  cipherContractAddress: string,
-  treeCacheItem: TreeCacheItem,
-  context: TreeSyncingQueueContext
-) {
-  console.log({
-    message: "start syncNewCommitmentFromRpc",
-    treeCacheItem,
-    config: context,
-  });
-  const tokenAddress = treeCacheItem.cipherTree.tokenAddress;
-  let tmpEvents: NewCommitmentLogsType = [];
-  while (context.currentEndBlock <= context.latestBlockNumber) {
-    try {
-      if (context.isStop) {
-        break;
+  async syncNewCommitment(
+    treeCacheItem: TreeCacheItem,
+    context: TreeSyncingQueueContext
+  ) {
+    if(!this.config.cipherContractAddress) return Promise.reject("cipherContractAddress is undefined");
+    return new Promise<TreeCacheItem>(async (resolve, reject) => {
+      try {
+        const result = await this.syncNewCommitmentFromSubgraph(
+          treeCacheItem,
+          context
+        );
+        return resolve(result);
+      } catch (subGraphError) {
+        console.error(
+          "syncNewCommitmentFromSubgraph error, try syncNewCommitmentFromRpc"
+        );
       }
-      console.log(
-        `parsing ${context.currentStartBlock} ~ ${context.currentEndBlock} (EndBlockNumber=${context.latestBlockNumber}) ......`
+  
+      try {
+        const result = await this.syncNewCommitmentFromRpc(treeCacheItem, context);
+        return resolve(result);
+      } catch (error) {
+        console.error("syncNewCommitmentFromRpc error, stop");
+        reject(error);
+      }
+    });
+  }
+  
+  async syncNewCommitmentFromSubgraph(
+    treeCacheItem: TreeCacheItem,
+    context: TreeSyncingQueueContext
+  ) {
+    try {
+      if(!this.cipherSubgraph) throw new Error("cipherSubgraph is undefined");
+      console.log({
+        message: "start syncNewCommitmentFromSubgraph",
+        treeCacheItem,
+        context,
+      });
+      const tokenAddress = treeCacheItem.cipherTree.tokenAddress;
+      const { data } = await this.cipherSubgraph.fetchNewCommitmentsEvents({
+        tokenAddress,
+        startBlock: Number(context.currentStartBlock),
+      });
+      console.log({
+        message: "fetchNewCommitmentsEvents success",
+        tokenAddress,
+        startBlock: Number(context.currentStartBlock),
+        tmp: data,
+      });
+      const events = [...data.newCommitments]; // TODO: handle tricky case: data.newCommitments is readonly array
+      console.log({
+        message: "end syncNewCommitmentFromSubgraph",
+        treeCacheItem,
+        context,
+        newEvents: events,
+      });
+      await updateCipherTreeFromEvents(treeCacheItem, events);
+      const root = treeCacheItem.cipherTree.root;
+      const contractRoot = await getContractTreeRoot(
+        context.publicClient,
+        this.config.cipherContractAddress,
+        treeCacheItem.cipherTree.tokenAddress
       );
-      const rawEvents = await retry(
-        async () => {
-          const tmpLogs = await getCipherCommitmentLogs(
-            context.publicClient,
-            cipherContractAddress,
-            context.currentStartBlock,
-            context.currentEndBlock
-          );
-          console.log({
-            message: "getCipherCommitmentLogs",
-            tmpLogs,
-          });
-          return tmpLogs;
-        },
-        5,
-        5000,
-        async (error, retryTimes) => {
-          console.error(
-            `ERROR: getCipherCommitmentLogs RETRY, tokenAddress=${tokenAddress}, errorTimes=${retryTimes}`
-          );
-          console.error(error);
-        }
-      );
-      tmpEvents = tmpEvents.concat(
-        rawEvents.map((rawEvent) => {
-          const r: NewCommitmentLogType = {
-            blockNumber: rawEvent.blockNumber.toString(),
-            leafIndex: rawEvent.args.leafIndex?.toString() || "",
-            commitment: rawEvent.args.commitment?.toString() || "",
-            newRoot: rawEvent.args.newRoot?.toString(),
-          };
-          return r;
-        })
-      );
-
-      context.currentStartBlock = context.currentEndBlock + 1n;
-      context.currentEndBlock =
-        context.currentEndBlock + context.batchSize > context.latestBlockNumber
-          ? context.latestBlockNumber
-          : context.currentEndBlock + context.batchSize;
-      if (context.currentStartBlock > context.latestBlockNumber) {
-        break;
+      this.treeCache.set(tokenAddress, treeCacheItem);
+      if (root !== contractRoot) {
+        console.warn(
+          `root !== contractRoot, root=${root}, contractRoot=${contractRoot}, endBlock=${treeCacheItem.endBlock}`
+        );
+        const latestBlockNumber = await retry(
+          async () => {
+            return await context.publicClient.getBlockNumber();
+          },
+          5,
+          2000
+        );
+        context.latestBlockNumber = BigInt(latestBlockNumber);
+        return await this.syncNewCommitmentFromRpc(treeCacheItem, context);
+      } else {
+        treeCacheItem.isSyncing = false;
       }
     } catch (error) {
       console.error(error);
-      treeCacheItem.isSyncing = false;
-      await updateCipherTreeFromEvents(treeCacheItem, tmpEvents);
-      TreeCache.set(tokenAddress, treeCacheItem);
-      throw error;
     }
-    await delay(Math.floor(Math.random() * 500 + 300)); // avoid rate limit, 300ms ~ 800ms
+    return treeCacheItem;
   }
-  treeCacheItem.isSyncing = false;
-  console.log({
-    message: "end syncNewCommitmentFromRpc",
-    treeCacheItem,
-    context,
-    tmpEvents,
-  });
-  await updateCipherTreeFromEvents(treeCacheItem, tmpEvents);
-  treeCacheItem.isSyncing = false;
-  TreeCache.set(tokenAddress, treeCacheItem);
+  
+  async syncNewCommitmentFromRpc(
+    treeCacheItem: TreeCacheItem,
+    context: TreeSyncingQueueContext
+  ) {
+    console.log({
+      message: "start syncNewCommitmentFromRpc",
+      treeCacheItem,
+      config: context,
+    });
+    const tokenAddress = treeCacheItem.cipherTree.tokenAddress;
+    let tmpEvents: NewCommitmentLogsType = [];
+    while (context.currentEndBlock <= context.latestBlockNumber) {
+      try {
+        if (context.isStop) {
+          break;
+        }
+        console.log(
+          `parsing ${context.currentStartBlock} ~ ${context.currentEndBlock} (EndBlockNumber=${context.latestBlockNumber}) ......`
+        );
+        const rawEvents = await retry(
+          async () => {
+            const tmpLogs = await getCipherCommitmentLogs(
+              context.publicClient,
+              this.config.cipherContractAddress,
+              context.currentStartBlock,
+              context.currentEndBlock
+            );
+            console.log({
+              message: "getCipherCommitmentLogs",
+              tmpLogs,
+            });
+            return tmpLogs;
+          },
+          5,
+          5000,
+          async (error, retryTimes) => {
+            console.error(
+              `ERROR: getCipherCommitmentLogs RETRY, tokenAddress=${tokenAddress}, errorTimes=${retryTimes}`
+            );
+            console.error(error);
+          }
+        );
+        tmpEvents = tmpEvents.concat(
+          rawEvents.map((rawEvent) => {
+            const r: NewCommitmentLogType = {
+              blockNumber: rawEvent.blockNumber.toString(),
+              leafIndex: rawEvent.args.leafIndex?.toString() || "",
+              commitment: rawEvent.args.commitment?.toString() || "",
+              newRoot: rawEvent.args.newRoot?.toString(),
+            };
+            return r;
+          })
+        );
+  
+        context.currentStartBlock = context.currentEndBlock + 1n;
+        context.currentEndBlock =
+          context.currentEndBlock + context.batchSize > context.latestBlockNumber
+            ? context.latestBlockNumber
+            : context.currentEndBlock + context.batchSize;
+        if (context.currentStartBlock > context.latestBlockNumber) {
+          break;
+        }
+      } catch (error) {
+        console.error(error);
+        treeCacheItem.isSyncing = false;
+        await updateCipherTreeFromEvents(treeCacheItem, tmpEvents);
+        this.treeCache.set(tokenAddress, treeCacheItem);
+        throw error;
+      }
+      await delay(Math.floor(Math.random() * 500 + 300)); // avoid rate limit, 300ms ~ 800ms
+    }
+    treeCacheItem.isSyncing = false;
+    console.log({
+      message: "end syncNewCommitmentFromRpc",
+      treeCacheItem,
+      context,
+      tmpEvents,
+    });
+    await updateCipherTreeFromEvents(treeCacheItem, tmpEvents);
+    treeCacheItem.isSyncing = false;
 
-  return treeCacheItem;
+    // NOTE: only sync from rpc would assign `context.currentEndBlock` to treeCacheItem.endBlock
+    // due to subgraph doesn't provide latest blockNumber what it has been synced
+    treeCacheItem.endBlock = context.currentEndBlock;
+    this.treeCache.set(tokenAddress, treeCacheItem);
+  
+    return treeCacheItem;
+  }
 }
 
 export async function updateCipherTreeFromEvents(

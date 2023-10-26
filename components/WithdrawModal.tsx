@@ -87,6 +87,7 @@ export default function WithdrawModal(props: Props) {
     getIsNullified,
     syncAndGetCipherTree,
     getContractTreeRoot,
+    getUnPaidIndexFromTree,
   } = useContext(CipherTreeProviderContext);
   const { cipherContractInfo } = useContext(ConfigContext);
 
@@ -193,38 +194,23 @@ export default function WithdrawModal(props: Props) {
       salt: salt,
       random: random,
     });
-    const coinLeafIndexs = tree.findLeafIndexsByCommitment(commitment);
-    console.log({ commitment, coinLeafIndexs });
-    if (coinLeafIndexs.length === 0) {
-      toast({
-        title: "Commitment is not found",
-        description: "",
-        status: "error",
-        duration: 5000,
-        position: "top",
-        isClosable: true,
-      });
-      setFailedStep(1);
-      return;
-    }
+    
+    // if (coinLeafIndexs.length === 0) {
+    //   toast({
+    //     title: "Commitment is not found",
+    //     description: "",
+    //     status: "error",
+    //     duration: 5000,
+    //     position: "top",
+    //     isClosable: true,
+    //   });
+    //   setFailedStep(1);
+    //   return;
+    // }
     let coinLeafIndex = -1;
-
-    for (let index = 0; index < coinLeafIndexs.length; index++) {
-      const leafIndex = coinLeafIndexs[index];
-      console.log(`check paid: leafIndex=${leafIndex}`);
-      const mkp = tree.genMerklePath(leafIndex);
-      const indices = indicesToPathIndices(mkp.indices);
-      const nullifier = generateNullifier(commitment, indices, salt);
-      const isPaid = await getIsNullified(
-        token.address,
-        nullifier
-      );
-      if (!isPaid) {
-        coinLeafIndex = leafIndex;
-        break;
-      }
-    }
-    if (coinLeafIndex === -1) {
+    try {
+      coinLeafIndex = await getUnPaidIndexFromTree(tree, commitment, salt);
+    } catch (error: any) {
       toast({
         title: "Cipher code is used",
         description: "",
@@ -237,8 +223,8 @@ export default function WithdrawModal(props: Props) {
       return;
     }
 
-    setActiveStep(2);
     try {
+      setActiveStep(2);
       const payableCoin = new CipherTransferableCoin(
         {
           key: {
