@@ -1,6 +1,7 @@
 import { Button, Flex } from "@chakra-ui/react";
 import React, { useState } from "react";
 import CipherCard from "../CipherCard";
+import PrivateInputCipherCodeItem from "./PrivateInputCipherCodeItem";
 
 const nInsNum = [0, 1, 2, 4];
 
@@ -32,7 +33,9 @@ export default function PrivateInputBox() {
       </Flex>
       <Flex className="flex w-full mx-auto flex-col items-center gap-2">
         {[...Array(nIns)].map((_, idx) => (
-          <CipherCard key={idx} placeholder={`Enter your cipher ${idx + 1}`} />
+          <>
+          <PrivateInputCipherCodeItem key={idx} index={idx}></PrivateInputCipherCodeItem>
+          </>
         ))}
       </Flex>
     </Flex>

@@ -7,7 +7,7 @@ import TokenSelector from "./TokenSelector";
 import { decodeCipherCode } from "../lib/cipher/CipherHelper";
 import { useAccount } from "wagmi";
 import WithdrawModal from "./WithdrawModal";
-import { useDebounce } from "usehooks-ts";
+import { useDebounce } from "@uidotdev/usehooks";
 
 type Props = {
   tokens: TokenConfig[];

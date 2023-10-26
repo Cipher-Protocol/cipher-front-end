@@ -17,9 +17,11 @@ export enum SimpleType {
 }
 
 export type ChainConfig = {
+  chainId: number;
   cipherContractAddress: `0x${string}`;
   startBlock: bigint;
-  isSubgraphEnabled: boolean;
+  subgraphUrl?: string;
+  syncBlockBatchSize: number;
 };
 
 export type TokenConfig = {

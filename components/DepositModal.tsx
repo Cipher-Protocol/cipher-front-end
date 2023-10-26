@@ -283,10 +283,11 @@ export default function DepositModal(props: Props) {
         });
         setFailedStep(2);
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error(err);
       toast({
         title: "Collect data failed",
-        description: "",
+        description: err.message,
         status: "error",
         duration: 5000,
         isClosable: true,

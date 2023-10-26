@@ -38,6 +38,21 @@ export default function ProContainer() {
     }
   }, [ethBalance, Erc20Balance, address, selectedToken]);
 
+  /**
+   * TODO:
+   * 
+   * 1. collect tree first when selected token
+   * 2. In Active input box
+   *   - enter cipher code
+   *     - valid cipher code format
+   *     - valid in tree and didn't paid
+   *     - confirm button and disable input
+   *   - import by file
+   *   - it have Holding Box, it can be drag to input box
+   *   - Each CipherCode item have status check valid or not
+   * 3. In 
+   */
+
   return (
     <SimpleGrid columns={3} className="flex justify-center p-8 w-full h-full">
       <Flex className="flex flex-col justify-between bg-slate-200 rounded-3xl">

@@ -1,4 +1,5 @@
 import { BigNumber } from "ethers";
+import { debounce, memoize, throttle } from "lodash";
 const ff = require("ffjavascript");
 
 export const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts;
@@ -61,4 +62,51 @@ export function retry<T>(fn: (...args: any) => Promise<T>, retriesLeft: number, 
         }, interval);
       });
   });
+}
+
+
+/**  memoizeDebounce */
+export interface memoizeDebounceOptions {
+  resolver?: (...args: any[]) => any;
+  leading?: boolean;
+  trailing?: boolean;
+}
+
+export function memoizeDebounce<T extends (...args: any[]) => any>(
+  func: T, 
+  wait: number = 0, 
+  options: memoizeDebounceOptions = {}
+): T {
+  const mem = memoize(function() {
+    return debounce(func, wait, {
+      leading: options.leading,
+      trailing: options.trailing
+    });
+  }, options.resolver);
+
+  return function(this: ThisType<any>, ...args: any[]): any {
+    return mem.apply(this, args as []).apply(this, args as Parameters<T>);
+  } as T;
+}
+
+
+export interface memoizeThrottleOptions extends memoizeDebounceOptions {
+  trailing?: boolean;
+}
+
+export function memoizeThrottle<T extends (...args: any[]) => any>(
+  func: T, 
+  wait: number = 0, 
+  options: memoizeThrottleOptions = {}
+): T {
+  const mem = memoize(function() {
+    return throttle(func, wait, {
+      leading: options.leading,
+      trailing: options.trailing
+    });
+  }, options.resolver);
+
+  return function(this: ThisType<any>, ...args: any[]): any {
+    return mem.apply(this, args as []).apply(this, args as Parameters<T>);
+  } as T;
 }
