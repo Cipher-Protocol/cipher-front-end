@@ -1,4 +1,4 @@
-import { Flex, useDisclosure, useToast } from "@chakra-ui/react";
+import { Button, Flex, useDisclosure, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { TokenConfig } from "../type";
 import CipherCard from "./CipherCard";
@@ -88,27 +88,55 @@ export default function WithdrawCard(props: Props) {
 
   return (
     <>
-      <Flex className="flex flex-col justify-between items-center gap-8 h-full pt-10 pb-12">
+      <Flex className="flex flex-col justify-between items-center gap-4 h-full pt-10 pb-12">
         <TokenSelector
           tokens={tokens}
           selectedToken={selectedToken}
           isLoadingTokens={isLoadingTokens}
           setSelectedToken={setSelectedToken}
         />
-        <Flex className="w-[20rem]">
+        <Flex className="flex flex-col gap-8 w-[20rem] my-4">
           <CipherCard
-            placeholder="Enter your cipher here"
+            placeholder="Enter your cipher code here"
             onValueChange={onValueChange}
           />
+          <Button
+            className="w-full py-6"
+            bgColor="whiteAlpha.400"
+            textColor="white"
+            borderRadius="3xl"
+            _hover={{
+              bgColor: "whiteAlpha.500",
+              cursor: "not-allowed",
+            }}
+          >
+            Choose relayer
+          </Button>
         </Flex>
-        <SimpleBtn
+        <Button
           disabled={!isValidCode}
-          className="w-full bg-white py-6"
+          borderRadius={"full"}
+          className="w-full bg-white py-6 mt-2"
+          _hover={
+            !isValidCode
+              ? { cursor: "not-allowed" }
+              : {
+                  transform: "scale(1.05)",
+                  textColor: "#6B39AB",
+                }
+          }
+          _active={
+            !isValidCode
+              ? { cursor: "not-allowed" }
+              : {
+                  transform: "scale(0.95)",
+                }
+          }
+          transitionDuration={"0.2s"}
           onClick={handleOpenWithdrawModal}
-          // onClick={() => withdraw()}
         >
           Withdraw
-        </SimpleBtn>
+        </Button>
       </Flex>
       <WithdrawModal
         isOpen={isOpen}

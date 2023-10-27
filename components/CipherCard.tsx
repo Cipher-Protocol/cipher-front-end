@@ -5,8 +5,11 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Image,
+  Box,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
+import hideImage from "../assets/images/hide.png";
 
 type Props = {
   value?: string;
@@ -29,23 +32,33 @@ export default function CipherCard(props: Props) {
   };
 
   return (
-    <Card className="w-[20rem] h-[5rem]">
-      <CardBody>
-        <InputGroup size="md">
-          <Input
-            pr="4.5rem"
-            type={show ? "text" : "password"}
-            placeholder={placeholder}
-            value={value}
-            onChange={onChange}
-          />
-          <InputRightElement width="4.5rem">
-            <Button h="1.75rem" size="sm" onClick={handleClick}>
-              {show ? "Hide" : "Show"}
-            </Button>
-          </InputRightElement>
-        </InputGroup>
-      </CardBody>
+    <Card
+      className="w-[20rem]"
+      borderRadius="3xl"
+      bgColor={"whiteAlpha.400"}
+      border="none"
+    >
+      <Box className="flex flex-row px-4 py-1 justify-center items-center">
+        <Input
+          type={show ? "text" : "password"}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          borderRadius="3xl"
+          border="none"
+          color={"white"}
+          focusBorderColor="transparent"
+          className="placeholder-white"
+        />
+        <Image
+          boxSize="28px"
+          src={hideImage.src}
+          onClick={handleClick}
+          _hover={{
+            cursor: "pointer",
+          }}
+        />
+      </Box>
     </Card>
   );
 }

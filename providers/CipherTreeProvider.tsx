@@ -11,9 +11,12 @@ import { DEFAULT_LEAF_ZERO_VALUE } from "../lib/cipher/CipherConfig";
 import { getChainConfig } from "../configs/chainConfig";
 import { CipherTreeDataCollector } from "../lib/cipher/CipherSyncNewCommitments";
 import { useThrottle } from "@uidotdev/usehooks";
-import { generateNullifier, indicesToPathIndices } from "../lib/cipher/CipherHelper";
+import {
+  generateNullifier,
+  indicesToPathIndices,
+} from "../lib/cipher/CipherHelper";
 import { throttle } from "lodash";
-import { cachedThrottle } from "../utils/helper";
+// import { cachedThrottle } from "../utils/helper";
 
 interface NewCommitmentLogType {
   blockNumber: string;
@@ -48,7 +51,10 @@ interface TreeSyncingQueueItem {
 type TreeSyncingQueueKey = `${number}-${string}-${string}`;
 type CipherTreeDataCollectorKey = `${number}-${string}`;
 const TreeSyncingQueue = new Map<TreeSyncingQueueKey, TreeSyncingQueueItem>(); // chainId-cipherContractAddress-tokenAddress -> TreeSyncingQueueItem
-const CipherTreeDataCollectorCache = new Map<CipherTreeDataCollectorKey, CipherTreeDataCollector>(); // chainId-cipherContractAddress -> CipherTreeDataCollector
+const CipherTreeDataCollectorCache = new Map<
+  CipherTreeDataCollectorKey,
+  CipherTreeDataCollector
+>(); // chainId-cipherContractAddress -> CipherTreeDataCollector
 
 export const CipherTreeProviderContext = createContext<{
   tokenTreeMap: Map<string, CipherTree>;
@@ -57,22 +63,15 @@ export const CipherTreeProviderContext = createContext<{
     context: TreeSyncingQueueContext;
   }>;
   getTreeDepth: (token: string) => Promise<number>;
-  getTreeNextLeafIndex: (
-    token: string
-  ) => Promise<number>;
-  getIsNullified: (
-    token: string,
-    nullifier: bigint
-  ) => Promise<boolean>;
+  getTreeNextLeafIndex: (token: string) => Promise<number>;
+  getIsNullified: (token: string, nullifier: bigint) => Promise<boolean>;
   getSyncingTreeQueue: (
     tokenAddress: string
   ) => TreeSyncingQueueItem | undefined;
   stopSyncingTreeQueue: (
     tokenAddress: string
   ) => TreeSyncingQueueItem | undefined;
-  getContractTreeRoot: (
-    token: string
-  ) => Promise<bigint>;
+  getContractTreeRoot: (token: string) => Promise<bigint>;
   getUnPaidIndexFromTree: (
     tree: CipherTree,
     commitment: bigint,
@@ -89,10 +88,7 @@ export const CipherTreeProviderContext = createContext<{
   getTreeNextLeafIndex: async (token: string) => {
     throw new Error("not implemented");
   },
-  getIsNullified: async (
-    token: string,
-    nullifier: bigint
-  ) => {
+  getIsNullified: async (token: string, nullifier: bigint) => {
     throw new Error("not implemented");
   },
   getSyncingTreeQueue: (tokenAddress: string) => undefined,
@@ -106,7 +102,7 @@ export const CipherTreeProviderContext = createContext<{
     salt: bigint
   ) => {
     throw new Error("not implemented");
-  }
+  },
 });
 export const CipherTreeProvider = ({
   children,
@@ -119,94 +115,104 @@ export const CipherTreeProvider = ({
     const func = async () => {
       const blockNumber = await publicClient.getBlockNumber();
       return blockNumber;
-    }
-    const t = new cachedThrottle(func, 1000, {
-      leading: true,
-      trailing: false,
-    });
-    return t;
+    };
+    // const t = new cachedThrottle(func, 1000, {
+    //   leading: true,
+    //   trailing: false,
+    // });
+    // return t;
   }, [publicClient]);
 
   const cipherContractInfo = useMemo(() => {
-    return getChainConfig(
-      publicClient.chain.id
-    );
+    return getChainConfig(publicClient.chain.id);
   }, [publicClient]);
 
   const cipherTreeDataCollector = useMemo(() => {
-    if(!cipherContractInfo) {
+    if (!cipherContractInfo) {
       return undefined;
     }
-    if(!cipherContractInfo?.cipherContractAddress) {
+    if (!cipherContractInfo?.cipherContractAddress) {
       return undefined;
     }
-    if(!publicClient?.chain?.id) {
+    if (!publicClient?.chain?.id) {
       return undefined;
     }
-    const cipherContractAddress = cipherContractInfo?.cipherContractAddress as string;
-    const key = getCipherTreeDataCollectorKey(publicClient.chain.id, cipherContractAddress);
-    if(CipherTreeDataCollectorCache.has(key)) {
+    const cipherContractAddress =
+      cipherContractInfo?.cipherContractAddress as string;
+    const key = getCipherTreeDataCollectorKey(
+      publicClient.chain.id,
+      cipherContractAddress
+    );
+    if (CipherTreeDataCollectorCache.has(key)) {
       return CipherTreeDataCollectorCache.get(key)!;
-    } 
-    else {
+    } else {
       const collector = new CipherTreeDataCollector(cipherContractInfo);
       CipherTreeDataCollectorCache.set(key, collector);
       return collector;
     }
-  }, [cipherContractInfo, publicClient])
+  }, [cipherContractInfo, publicClient]);
 
-  const getContractTreeRoot = useCallback(async (token: string) => {
-    const d = await readContract({
-      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
-      abi: CipherAbi.abi,
-      functionName: "getTreeRoot",
-      args: [token],
-    });
-    return d as bigint;
-  }, [cipherContractInfo]);
+  const getContractTreeRoot = useCallback(
+    async (token: string) => {
+      const d = await readContract({
+        address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
+        abi: CipherAbi.abi,
+        functionName: "getTreeRoot",
+        args: [token],
+      });
+      return d as bigint;
+    },
+    [cipherContractInfo]
+  );
 
-  const getIsNullified = useCallback(async (
-    token: string,
-    nullifier: bigint
-  ) => {
-    const d = await readContract({
-      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
-      abi: CipherAbi.abi,
-      functionName: "isNullified",
-      args: [token, BigNumber.from(nullifier)],
-    });
-    return Boolean(d);
-  }, [cipherContractInfo]);
+  const getIsNullified = useCallback(
+    async (token: string, nullifier: bigint) => {
+      const d = await readContract({
+        address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
+        abi: CipherAbi.abi,
+        functionName: "isNullified",
+        args: [token, BigNumber.from(nullifier)],
+      });
+      return Boolean(d);
+    },
+    [cipherContractInfo]
+  );
 
-  const getTreeNextLeafIndex = useCallback(async (token: string) => {
-    const d = await readContract({
-      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
-      abi: CipherAbi.abi,
-      functionName: "getTreeLeafNum",
-      args: [token],
-    });
-    const leafIndex = Number(d);
-    if (isNaN(leafIndex)) {
-      throw new Error("leafIndex is NaN");
-    }
-    return leafIndex;
-  }, [cipherContractInfo]);
-  const getTreeDepth = useCallback(async (token: string) => {
-    const d = await readContract({
-      address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
-      abi: CipherAbi.abi,
-      functionName: "getTreeDepth",
-      args: [token],
-    });
-    const numDepth = Number(d);
-    if (isNaN(numDepth)) {
-      throw new Error("depth is NaN");
-    }
-    return numDepth;
-  }, [cipherContractInfo]);
+  const getTreeNextLeafIndex = useCallback(
+    async (token: string) => {
+      const d = await readContract({
+        address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
+        abi: CipherAbi.abi,
+        functionName: "getTreeLeafNum",
+        args: [token],
+      });
+      const leafIndex = Number(d);
+      if (isNaN(leafIndex)) {
+        throw new Error("leafIndex is NaN");
+      }
+      return leafIndex;
+    },
+    [cipherContractInfo]
+  );
+  const getTreeDepth = useCallback(
+    async (token: string) => {
+      const d = await readContract({
+        address: cipherContractInfo?.cipherContractAddress as `0x${string}`,
+        abi: CipherAbi.abi,
+        functionName: "getTreeDepth",
+        args: [token],
+      });
+      const numDepth = Number(d);
+      if (isNaN(numDepth)) {
+        throw new Error("depth is NaN");
+      }
+      return numDepth;
+    },
+    [cipherContractInfo]
+  );
 
   const getSyncingTreeQueue = useCallback((tokenAddress: string) => {
-    if(!cipherTreeDataCollector) return undefined;
+    if (!cipherTreeDataCollector) return undefined;
     const key = getTreeSyncingQueueKey(cipherTreeDataCollector, tokenAddress);
     return TreeSyncingQueue.get(key);
   }, []);
@@ -225,8 +231,8 @@ export const CipherTreeProvider = ({
 
   const syncAndGetCipherTree = useCallback(
     async (tokenAddress: string) => {
-      if(!cipherContractInfo || !cipherTreeDataCollector) {
-        throw new Error('unsupported chain!');
+      if (!cipherContractInfo || !cipherTreeDataCollector) {
+        throw new Error("unsupported chain!");
       }
       const key = getTreeSyncingQueueKey(cipherTreeDataCollector, tokenAddress);
       console.log({
@@ -235,7 +241,9 @@ export const CipherTreeProvider = ({
         cipherTreeDataCollectorConfig: cipherTreeDataCollector.config,
       });
 
-      const batchSize = BigInt(cipherTreeDataCollector.config.syncBlockBatchSize);
+      const batchSize = BigInt(
+        cipherTreeDataCollector.config.syncBlockBatchSize
+      );
       let currentStartBlock = cipherTreeDataCollector.config.startBlock;
       let currentEndBlock = currentStartBlock + batchSize;
       const latestBlockNumber = await getLatestBlockNumber.execute();
@@ -288,9 +296,7 @@ export const CipherTreeProvider = ({
         };
       }
 
-      return addSyncingCipherTreeQueue(
-        cipherTreeDataCollector,
-        newCache, {
+      return addSyncingCipherTreeQueue(cipherTreeDataCollector, newCache, {
         publicClient,
         currentStartBlock,
         currentEndBlock,
@@ -302,29 +308,29 @@ export const CipherTreeProvider = ({
     [cipherContractInfo, cipherTreeDataCollector, getTreeDepth, publicClient]
   );
 
-  const getUnPaidIndexFromTree = useCallback(async (tree: CipherTree, commitment: bigint, salt: bigint) => {
-    let coinLeafIndex = -1;
-    const coinLeafIndexes = tree.findLeafIndexsByCommitment(commitment);
-    if (coinLeafIndexes.length === 0) {
-      throw new Error("Commitment is not found");
-    }
-    for (let index = 0; index < coinLeafIndexes.length; index++) {
-      const leafIndex = coinLeafIndexes[index];
-      console.log(`check paid: leafIndex=${leafIndex}`);
-      const mkp = tree.genMerklePath(leafIndex);
-      const indices = indicesToPathIndices(mkp.indices);
-      const nullifier = generateNullifier(commitment, indices, salt);
-      const isPaid = await getIsNullified(
-        tree.tokenAddress,
-        nullifier
-      );
-      if (!isPaid) {
-        coinLeafIndex = leafIndex;
-        return coinLeafIndex;
+  const getUnPaidIndexFromTree = useCallback(
+    async (tree: CipherTree, commitment: bigint, salt: bigint) => {
+      let coinLeafIndex = -1;
+      const coinLeafIndexes = tree.findLeafIndexsByCommitment(commitment);
+      if (coinLeafIndexes.length === 0) {
+        throw new Error("Commitment is not found");
       }
-    }
-    throw new Error("Commitment is used");
-  }, [getIsNullified])
+      for (let index = 0; index < coinLeafIndexes.length; index++) {
+        const leafIndex = coinLeafIndexes[index];
+        console.log(`check paid: leafIndex=${leafIndex}`);
+        const mkp = tree.genMerklePath(leafIndex);
+        const indices = indicesToPathIndices(mkp.indices);
+        const nullifier = generateNullifier(commitment, indices, salt);
+        const isPaid = await getIsNullified(tree.tokenAddress, nullifier);
+        if (!isPaid) {
+          coinLeafIndex = leafIndex;
+          return coinLeafIndex;
+        }
+      }
+      throw new Error("Commitment is used");
+    },
+    [getIsNullified]
+  );
 
   return (
     <CipherTreeProviderContext.Provider
@@ -358,11 +364,11 @@ function addSyncingCipherTreeQueue(
       try {
         currentQueue.stopSyncing();
         const newTreeCache = await currentQueue.promise;
-        const newTreeCacheItem = await cipherTreeDataCollector.syncNewCommitment(
-          treeCacheItem, {
-          ...context,
-          currentStartBlock: newTreeCache.endBlock + 1n,
-        });
+        const newTreeCacheItem =
+          await cipherTreeDataCollector.syncNewCommitment(treeCacheItem, {
+            ...context,
+            currentStartBlock: newTreeCache.endBlock + 1n,
+          });
         resolve(newTreeCacheItem);
       } catch (error) {
         reject(error);
@@ -370,7 +376,7 @@ function addSyncingCipherTreeQueue(
     });
     const stopSyncing = async () => {
       return await currentQueue.stopSyncing();
-    }
+    };
     TreeSyncingQueue.set(key, {
       key,
       promise,
@@ -383,11 +389,14 @@ function addSyncingCipherTreeQueue(
       stopSyncing,
     };
   } else {
-    const promise = cipherTreeDataCollector.syncNewCommitment(treeCacheItem, context);
+    const promise = cipherTreeDataCollector.syncNewCommitment(
+      treeCacheItem,
+      context
+    );
     const stopSyncing = async () => {
       context.isStop = true;
       return await promise;
-    }
+    };
     TreeSyncingQueue.set(key, {
       key,
       promise,
@@ -402,10 +411,16 @@ function addSyncingCipherTreeQueue(
   }
 }
 
-function getTreeSyncingQueueKey(cipherTreeDataCollector: CipherTreeDataCollector, tokenAddress: string): TreeSyncingQueueKey {
-  return `${cipherTreeDataCollector.config.chainId}-${cipherTreeDataCollector.config.cipherContractAddress}-${tokenAddress}`
+function getTreeSyncingQueueKey(
+  cipherTreeDataCollector: CipherTreeDataCollector,
+  tokenAddress: string
+): TreeSyncingQueueKey {
+  return `${cipherTreeDataCollector.config.chainId}-${cipherTreeDataCollector.config.cipherContractAddress}-${tokenAddress}`;
 }
 
-function getCipherTreeDataCollectorKey(chainId: number, cipherContractAddress: string): CipherTreeDataCollectorKey {
-  return `${chainId}-${cipherContractAddress}`
+function getCipherTreeDataCollectorKey(
+  chainId: number,
+  cipherContractAddress: string
+): CipherTreeDataCollectorKey {
+  return `${chainId}-${cipherContractAddress}`;
 }

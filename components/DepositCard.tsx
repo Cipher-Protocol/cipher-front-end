@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Flex, useDisclosure, useToast } from "@chakra-ui/react";
+import { Button, Flex, useDisclosure, useToast } from "@chakra-ui/react";
 import { TokenConfig } from "../type";
 import TokenSelector from "./TokenSelector";
 import SimpleBtn from "./SimpleBtn";
@@ -135,12 +135,22 @@ export default function DepositCard(props: Props) {
           setPubInAmt={setPubInAmt}
           balance={balance}
         />
-        <SimpleBtn
+        <Button
           className="w-full bg-white py-6"
+          borderRadius={"full"}
+          bgColor="white"
+          _hover={{
+            transform: "scale(1.05)",
+            textColor: "#6B39AB",
+          }}
+          _active={{
+            transform: "scale(0.95)",
+          }}
+          transitionDuration={"0.2s"}
           onClick={handleOpenDepositModal}
         >
           Deposit
-        </SimpleBtn>
+        </Button>
       </Flex>
       <DepositModal
         isOpen={isOpen}

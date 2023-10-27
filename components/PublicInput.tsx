@@ -82,6 +82,7 @@ export default function PublicInput(props: Props) {
             w={"100%"}
             textColor={"white"}
             _focus={{ borderColor: "white" }}
+            focusBorderColor="transparent"
             my={1}
             min={0}
             max={
@@ -121,11 +122,11 @@ export default function PublicInput(props: Props) {
         bgColor={"whiteAlpha.400"}
         textColor={"white"}
         _hover={{
-          transform: "scale(1.1)",
+          transform: "scale(1.05)",
           bgColor: "whiteAlpha.500",
         }}
         _active={{
-          transform: "scale(0.9)",
+          transform: "scale(0.95)",
         }}
         transitionDuration={"0.2s"}
         onClick={() => setIsCustomAmt(!isCustomAmt)}
