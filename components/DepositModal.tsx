@@ -43,7 +43,6 @@ import { useAllowance } from "../hooks/useAllowance";
 import { downloadCipher } from "../lib/downloadCipher";
 import { assert } from "../lib/helper";
 import { CloseIcon } from "@chakra-ui/icons";
-import { getChainConfig } from "../configs/chainConfig";
 import { ConfigContext } from "../providers/ConfigProvider";
 
 type Props = {
@@ -88,8 +87,12 @@ export default function DepositModal(props: Props) {
   const [failedStep, setFailedStep] = useState<number>(-1);
   const { getTreeDepth, syncAndGetCipherTree, getContractTreeRoot } =
     useContext(CipherTreeProviderContext);
-    const { cipherContractInfo } = useContext(ConfigContext);
-  const { allowance, refetchAllowance } = useAllowance(cipherContractInfo?.cipherContractAddress, token.address, address);
+  const { cipherContractInfo } = useContext(ConfigContext);
+  const { allowance, refetchAllowance } = useAllowance(
+    cipherContractInfo?.cipherContractAddress,
+    token.address,
+    address
+  );
 
   const handleCloseModal = () => {
     setIsDownloaded(false);
@@ -116,7 +119,10 @@ export default function DepositModal(props: Props) {
     address: token.address,
     abi: erc20ABI,
     functionName: "approve",
-    args: [cipherContractInfo?.cipherContractAddress! as `0x${string}`, pubInAmt],
+    args: [
+      cipherContractInfo?.cipherContractAddress! as `0x${string}`,
+      pubInAmt,
+    ],
     enabled:
       chain &&
       token &&

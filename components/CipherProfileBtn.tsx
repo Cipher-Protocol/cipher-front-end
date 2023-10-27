@@ -11,7 +11,7 @@ import {
   Image,
   Box,
 } from "@chakra-ui/react";
-import { CopyIcon, LockIcon, StarIcon } from "@chakra-ui/icons";
+import { CopyIcon, LockIcon } from "@chakra-ui/icons";
 import { CipherAccountContext } from "../providers/CipherProvider";
 import profileImage from "../assets/images/profile.png";
 import { useAccount } from "wagmi";

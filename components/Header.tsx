@@ -1,14 +1,6 @@
-import {
-  Box,
-  ButtonGroup,
-  Flex,
-  Heading,
-  Spacer,
-  Image,
-} from "@chakra-ui/react";
+import { Box, Flex, Image } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import React, { Dispatch, SetStateAction } from "react";
-import SimpleBtn from "./SimpleBtn";
 import { Mode } from "../type";
 import ModeTab from "./ModeTab";
 import CipherProfileBtn from "./CipherProfileBtn";

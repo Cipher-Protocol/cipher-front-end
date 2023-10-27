@@ -1,7 +1,5 @@
-import { useCipherCodeItem } from "../../hooks/pro";
+import { useCipherCodeItem } from "../../hooks/useCipherCodeItem";
 import CipherCard from "../CipherCard";
-
-
 
 type Props = {
   index: number;
@@ -19,11 +17,13 @@ export default function PrivateInputCipherCodeItem(props: Props) {
 
   return (
     <>
-      <p>isLoading={isLoading}, error={error?.message}</p>
-      {
-        isLoading || (!error && transferableCoin)
-        ? <p>valid cipherCode! ({cipherCode?.slice(-5)})</p>
-        : <>
+      <p>
+        isLoading={isLoading}, error={error?.message}
+      </p>
+      {isLoading || (!error && transferableCoin) ? (
+        <p>valid cipherCode! ({cipherCode?.slice(-5)})</p>
+      ) : (
+        <>
           <CipherCard
             value={cipherCode}
             onValueChange={(str) => setCipherCode(str)}
@@ -33,9 +33,11 @@ export default function PrivateInputCipherCodeItem(props: Props) {
             onClick={() => {
               checkValid();
             }}
-          >check</button>
+          >
+            check
+          </button>
         </>
-      }
+      )}
     </>
-  )
+  );
 }
