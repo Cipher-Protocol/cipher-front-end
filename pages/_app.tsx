@@ -45,7 +45,11 @@ export default function App({ Component, pageProps }: AppProps) {
     <ChakraProvider theme={chakraTheme}>
       <QueryClientProvider client={queryClient}>
         <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains} theme={rainbowkitTheme}>
+          <RainbowKitProvider
+            chains={chains}
+            theme={rainbowkitTheme}
+            modalSize="compact"
+          >
             <ConfigProvider>
               <CipherAccountProvider>
                 <CipherTreeProvider>

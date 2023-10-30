@@ -397,7 +397,7 @@ export default function DepositModal(props: Props) {
               </p>
               <Button
                 colorScheme="blue"
-                className="w-full text-base py-6 font-extrabold"
+                className="w-full text-base py-6"
                 borderRadius={"full"}
                 bgColor="white"
                 textColor="black"
@@ -445,7 +445,7 @@ export default function DepositModal(props: Props) {
                       <StepStatus
                         complete={<CheckIcon boxSize={6} />}
                         incomplete={
-                          <Text fontSize={"xl"} fontWeight={800}>
+                          <Text fontSize={"xl"} fontWeight={600}>
                             {index + 1}
                           </Text>
                         }
@@ -462,13 +462,14 @@ export default function DepositModal(props: Props) {
 
                   <Box>
                     <StepTitle>
-                      <Flex fontWeight={800}>{step.title}</Flex>
+                      <Flex fontWeight={600}>{step.title}</Flex>
                     </StepTitle>
                     <StepDescription>
                       <Flex
                         fontSize={"xs"}
                         color={"whiteAlpha.600"}
-                        fontWeight={700}
+                        fontWeight={500}
+                        lineHeight={"1"}
                       >
                         {step.description}
                       </Flex>
@@ -479,7 +480,6 @@ export default function DepositModal(props: Props) {
                       bgColor={isApproved ? "white" : "whiteAlpha.400"}
                       className="mx-auto w-40"
                       borderRadius="full"
-                      // bgColor="white"
                       textColor="black"
                       _hover={
                         isApproved

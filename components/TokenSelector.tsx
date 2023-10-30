@@ -54,7 +54,6 @@ export default function TokenSelector(props: Props) {
         bgColor={"whiteAlpha.500"}
         className="rounded-3xl px-2 py-2 border-none"
         backdropFilter={"blur(10px)"}
-        // mixBlendMode={"multiply"}
         minW="0"
         w={"320px"}
       >

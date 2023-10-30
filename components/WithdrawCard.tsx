@@ -116,24 +116,26 @@ export default function WithdrawCard(props: Props) {
         <Button
           disabled={!isValidCode}
           borderRadius={"full"}
-          className="w-full bg-white py-6 mt-2"
+          className="w-full py-6 mt-2"
+          bgColor={isValidCode ? "white" : "whiteAlpha.200"}
+          textColor={isValidCode ? "black" : "whiteAlpha.400"}
           _hover={
             isValidCode
-              ? { cursor: "not-allowed" }
-              : {
+              ? {
                   transform: "scale(1.05)",
                   textColor: "#6B39AB",
                 }
+              : { cursor: "not-allowed" }
           }
           _active={
             isValidCode
-              ? { cursor: "not-allowed" }
-              : {
+              ? {
                   transform: "scale(0.95)",
                 }
+              : { cursor: "not-allowed" }
           }
           transitionDuration={"0.2s"}
-          onClick={handleOpenWithdrawModal}
+          onClick={isValidCode ? handleOpenWithdrawModal : () => {}}
         >
           Withdraw
         </Button>

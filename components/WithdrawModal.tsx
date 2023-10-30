@@ -341,7 +341,7 @@ export default function WithdrawModal(props: Props) {
                       <StepStatus
                         complete={<CheckIcon boxSize={6} />}
                         incomplete={
-                          <Text fontSize={"xl"} fontWeight={800}>
+                          <Text fontSize={"xl"} fontWeight={600}>
                             {index + 1}
                           </Text>
                         }
@@ -358,13 +358,14 @@ export default function WithdrawModal(props: Props) {
 
                   <Box>
                     <StepTitle>
-                      <Flex fontWeight={800}>{step.title}</Flex>
+                      <Flex fontWeight={600}>{step.title}</Flex>
                     </StepTitle>
                     <StepDescription>
                       <Flex
                         fontSize={"xs"}
                         color={"whiteAlpha.600"}
-                        fontWeight={700}
+                        fontWeight={500}
+                        lineHeight={"1"}
                       >
                         {step.description}
                       </Flex>
