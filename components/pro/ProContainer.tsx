@@ -57,7 +57,7 @@ export default function ProContainer() {
   return (
     <CipherTxProvider tokenAddress={selectedToken?.address}>
     <CipherTxProviderContext.Consumer>
-    {({publicInAmt, setPublicInAmt, setPublicOutAmt, sendTransaction, publicOutAmt, }) => {
+    {({publicInAmt, publicOutAmt, setPublicInAmt, setPublicOutAmt, downloadCipherCodes, sendTransaction,  prepareProof }) => {
       return (
       <SimpleGrid columns={3} className="flex justify-center p-8 w-full h-full">
         <Flex className="flex flex-col justify-between bg-slate-200 rounded-3xl">
@@ -76,6 +76,8 @@ export default function ProContainer() {
             tokens={tokens}
             selectedToken={selectedToken}
             setSelectedToken={setSelectedToken}
+            onDownload={downloadCipherCodes}
+            onPrepare={prepareProof}
             onSendTransaction={sendTransaction}
           />
         </Box>

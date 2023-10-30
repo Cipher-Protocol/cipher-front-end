@@ -19,10 +19,13 @@ type Props = {
   selectedToken: TokenConfig | undefined;
   isLoadingTokens?: boolean;
   setSelectedToken: React.Dispatch<React.SetStateAction<TokenConfig>>;
+  onDownload?: () => void;
+  onPrepare?: () => void;
   onSendTransaction?: () => void;
+
 };
 export default function SelectBox(props: Props) {
-  const { tokens, selectedToken, isLoadingTokens, setSelectedToken, onSendTransaction } = props;
+  const { tokens, selectedToken, isLoadingTokens, setSelectedToken, onDownload, onPrepare, onSendTransaction } = props;
 
   return (
     <Flex className="w-full p-8 flex flex-col justify-between items-center gap-8 h-[20rem] rounded-3xl shadow-md bg-slate-300">
@@ -91,17 +94,25 @@ export default function SelectBox(props: Props) {
     <SimpleBtn disabled={true} colorScheme="teal" className="w-56">
       Select relayer
     </SimpleBtn>
-    <SimpleBtn disabled={true} colorScheme="teal" className="w-56">
+    {/* <SimpleBtn disabled={true} colorScheme="teal" className="w-56">
       Set Recipient
-    </SimpleBtn>
-    <SimpleBtn disabled={true} colorScheme="teal" className="w-56">
+    </SimpleBtn> */}
+    <SimpleBtn colorScheme={"teal"} className="w-56"
+      onClick={() => {
+        onDownload && onDownload();
+      }}
+    >
       Download CipherCodes
     </SimpleBtn>
     <SimpleBtn colorScheme={"teal"} className="w-56"
       onClick={() => {
-        console.log({
-          onSendTransaction,
-        })
+        onPrepare && onPrepare();
+      }}
+    >
+      Prepare Proof
+    </SimpleBtn>
+    <SimpleBtn colorScheme={"teal"} className="w-56"
+      onClick={() => {
         onSendTransaction && onSendTransaction();
       }}
     >

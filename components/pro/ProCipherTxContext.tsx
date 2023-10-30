@@ -3,8 +3,14 @@ import { CipherBaseCoin, CipherCoinInfo, CipherTransferableCoin } from "../../li
 import { useToast } from "@chakra-ui/react";
 import { CipherTreeProviderContext } from "../../providers/CipherTreeProvider";
 import { generateCipherTx } from "../../lib/cipher/CipherCore";
-import { PublicInfoStruct } from "../../lib/cipher/types/CipherContract.type";
+import { ProofStruct, PublicInfoStruct } from "../../lib/cipher/types/CipherContract.type";
 import dayjs from "dayjs";
+import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
+import { ConfigContext } from "../../providers/ConfigProvider";
+import CipherAbi from "../../lib/cipher/CipherAbi.json";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
+import { downloadCipher } from "../../lib/downloadCipher";
+import { encodeCipherCode } from "../../lib/cipher/CipherHelper";
 
 
 export const CipherTxProviderContext = createContext<{
@@ -20,6 +26,8 @@ export const CipherTxProviderContext = createContext<{
   setRecipient: (recipient: string | null) => void;
   totalPrivateInAmt: bigint;
   totalPrivateOutAmt: bigint;
+  downloadCipherCodes: () => void;
+  prepareProof: () => Promise<void>;
   sendTransaction: () => Promise<void>;
 }>({
   publicInAmt: BigInt(0),
@@ -34,6 +42,8 @@ export const CipherTxProviderContext = createContext<{
   setRecipient: () => {},
   totalPrivateInAmt: BigInt(0),
   totalPrivateOutAmt: BigInt(0),
+  downloadCipherCodes: () => {},
+  prepareProof: async () => {},
   sendTransaction: async () => {},
 });
 
@@ -50,6 +60,7 @@ export const CipherTxProvider = ({
     syncAndGetCipherTree,
     getUnPaidIndexFromTree,
   } = useContext(CipherTreeProviderContext);
+  const { address } = useAccount();
 
   const [publicInAmt, setPublicInAmt] = useState(BigInt(0));
   const [publicOutAmt, setPublicOutAmt] = useState(BigInt(0));
@@ -79,8 +90,93 @@ export const CipherTxProvider = ({
     }, BigInt(0));
   }, [privateOutCoinInfos]);
 
-  const sendTransaction = async () => {
 
+  /** CONTRACT: cipherTransact */
+  const { cipherContractInfo } = useContext(ConfigContext);
+  const [utxoData, setUtxoData] = useState<ProofStruct>();
+  const [publicInfo, setPublicInfo] = useState<PublicInfoStruct>();
+  const { config: contractTxConfig } = usePrepareContractWrite({
+    address: cipherContractInfo?.cipherContractAddress,
+    abi: CipherAbi.abi,
+    functionName: "cipherTransact",
+    args: [utxoData, publicInfo],
+    value: tokenAddress === DEFAULT_NATIVE_TOKEN_ADDRESS ? publicInAmt : 0n,
+    enabled: utxoData && publicInfo ? true : false,
+  });
+  const {
+    data: transactTx,
+    writeAsync: transactASync,
+    reset: transactRest,
+  } = useContractWrite(contractTxConfig);
+
+  /** */
+  const validate = useCallback(() => {
+    if(!tokenAddress)  {
+      throw new Error("Token address is not set");
+    }
+
+    if(!address) {
+      throw new Error("Address is not set");
+    }
+
+    if(privateInCoins.length === 0 && privateOutCoinInfos.length === 0) {
+      throw new Error("No input and output coins");
+    }
+
+    if(!isPrivateInCoinsValid) {
+      throw new Error("Invalid private input coins");
+    }
+
+    if(!isPrivateOutCoinsValid) {
+      throw new Error("Invalid private output coins");
+    }
+
+    if(publicInAmt + totalPrivateInAmt !== publicOutAmt + totalPrivateOutAmt) {
+      throw new Error("total IN amount and total OUT amount not match");
+    }
+    // if(publicOutAmt > 0 && !recipient) {
+    //   throw new Error("recipient must be set if public OUT amount is greater than 0");
+    // }
+  }, [address, isPrivateInCoinsValid, isPrivateOutCoinsValid, privateInCoins.length, privateOutCoinInfos.length, publicInAmt, publicOutAmt, tokenAddress, totalPrivateInAmt, totalPrivateOutAmt]);
+
+  const downloadCipherCodes = useCallback(async () => {
+    try {
+      await validate();
+      const privateOutCoins = privateOutCoinInfos.map((coinInfo) => new CipherBaseCoin(coinInfo as CipherCoinInfo));
+
+      const allCodes = privateOutCoins.map((coin) => {
+        if(!coin.coinInfo.key.inSaltOrSeed) {
+          throw new Error("Invalid coin info");
+        }
+        if(!coin.coinInfo.key.inRandom) {
+          throw new Error("Invalid coin info");
+        }
+        return encodeCipherCode({
+          tokenAddress: tokenAddress!,
+          amount: coin.coinInfo.amount,
+          salt: coin.coinInfo.key.inSaltOrSeed,
+          random: coin.coinInfo.key.inRandom,
+        });
+      })
+
+      for(let i = 0; i < allCodes.length; i++) {
+        downloadCipher(allCodes[i]);
+      }
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  }, [privateOutCoinInfos, toast, tokenAddress, validate])
+
+
+  const prepareProof = async () => {
     try {
       console.log({
         publicInAmt,
@@ -92,42 +188,21 @@ export const CipherTxProvider = ({
         totalPrivateOutAmt,
       });
 
-      if(!tokenAddress)  {
-        throw new Error("Token address is not set");
-      }
+      await validate();
 
-      if(privateInCoins.length === 0 && privateOutCoinInfos.length === 0) {
-        throw new Error("No input and output coins");
-      }
-
-      if(!isPrivateInCoinsValid) {
-        throw new Error("Invalid private input coins");
-      }
-
-      if(!isPrivateOutCoinsValid) {
-        throw new Error("Invalid private output coins");
-      }
-
-      if(publicInAmt + totalPrivateInAmt !== publicOutAmt + totalPrivateOutAmt) {
-        throw new Error("total IN amount and total OUT amount not match");
-      }
-
-      if(publicOutAmt > 0 && !recipient) {
-        throw new Error("recipient must be set if public OUT amount is greater than 0");
-      }
-
-      const { promise } = await syncAndGetCipherTree(tokenAddress);
+      const { promise } = await syncAndGetCipherTree(tokenAddress!);
       const treeCache = await promise;
 
       const privateOutCoins = privateOutCoinInfos.map((coinInfo) => new CipherBaseCoin(coinInfo as CipherCoinInfo));
       const publicInfo: PublicInfoStruct = {
         maxAllowableFeeRate: "0",
-        recipient: recipient || "",
-        token: tokenAddress,
+        recipient: address as string,
+        // recipient: recipient || "",
+        token: tokenAddress!,
         deadline: dayjs().add(1, "month").unix().toString(),
       }
 
-      const result = generateCipherTx(
+      const result = await generateCipherTx(
         treeCache.cipherTree,
         {
           publicInAmt,
@@ -141,6 +216,9 @@ export const CipherTxProvider = ({
       console.log({
         result,
       })
+        
+      setUtxoData(result.contractCalldata.utxoData);
+      setPublicInfo(result.contractCalldata.publicInfo);
 
     } catch (error: any) {
       toast({
@@ -152,8 +230,25 @@ export const CipherTxProvider = ({
         position: "top",
       });
     }
+  };
 
 
+  const sendTransaction = async () => {
+    if (!utxoData || !publicInfo || !transactASync) {
+      throw new Error("proof or publicInfo is undefined");
+    }
+    try {
+      await transactASync?.();
+    } catch (err) {
+      toast({
+        title: "Deposit failed",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
   };
 
 
@@ -172,6 +267,8 @@ export const CipherTxProvider = ({
         setRecipient,
         totalPrivateInAmt,
         totalPrivateOutAmt,
+        downloadCipherCodes,
+        prepareProof,
         sendTransaction,
       }}
     >

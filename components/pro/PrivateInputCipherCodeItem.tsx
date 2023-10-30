@@ -27,7 +27,7 @@ export default function PrivateInputCipherCodeItem(props: Props) {
   return (
     <>
       <p>
-        isLoading={isLoading}, error={error?.message}
+        isLoading={isLoading}, {error ? error.message : ""}
       </p>
       {isLoading || (!error && transferableCoin) ? (
         <p>valid cipherCode! ({cipherCode?.slice(-5)})</p>
