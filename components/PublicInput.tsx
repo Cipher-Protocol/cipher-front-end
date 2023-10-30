@@ -7,7 +7,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
-import React, { useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import SimpleBtn from "./SimpleBtn";
 
@@ -29,7 +29,12 @@ export default function PublicInput(props: Props) {
     setPubInAmt(parseUnits(amt.toString(), selectedToken.decimals));
   };
 
-  const renderAmtBtns = () => {
+  useEffect(() => {
+    if (pubInAmt !== undefined) return;
+    setSelectedAmt(undefined);
+  }, [pubInAmt]);
+
+  const renderAmtBtns = useCallback(() => {
     return (
       <Flex className="gap-2 my-1 w-full justify-between">
         {amountTable.map((amt) => (
@@ -59,10 +64,10 @@ export default function PublicInput(props: Props) {
         ))}
       </Flex>
     );
-  };
+  }, [selectedAmt]);
 
   return (
-    <Flex className="flex flex-col items-end w-full">
+    <Flex key={pubInAmt} className="flex flex-col items-end w-full">
       <Text fontSize="md" textColor="whiteAlpha.700">
         Balance: &nbsp;
         {balance

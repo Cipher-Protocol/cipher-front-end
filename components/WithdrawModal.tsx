@@ -298,7 +298,7 @@ export default function WithdrawModal(props: Props) {
             </p>
           </Flex>
           <Checkbox
-            className="my-4 mx-2"
+            className="my-6 mx-2"
             defaultChecked={isChecked}
             onChange={(e) => {
               setIsChecked(e.target.checked);
@@ -379,25 +379,46 @@ export default function WithdrawModal(props: Props) {
         {isChecked ? (
           <ModalFooter>
             <Button
-              disabled={activeStep !== 3 || isWithdrawing || isWithdrawSuccess}
               className="mx-auto w-full font-extrabold py-6 mt-6"
               borderRadius="full"
-              bgColor="white"
-              textColor="black"
-              _hover={{
-                transform: "scale(1.05)",
-                textColor: "#6B39AB",
-              }}
-              _active={{
-                transform: "scale(0.95)",
-              }}
-              onClick={() => handleWithdraw()}
+              bgColor={
+                activeStep !== 3 || isWithdrawing || isWithdrawSuccess
+                  ? "whiteAlpha.400"
+                  : "white"
+              }
+              textColor={
+                activeStep !== 3 || isWithdrawing || isWithdrawSuccess
+                  ? "white"
+                  : "black"
+              }
+              _hover={
+                activeStep !== 3 || isWithdrawing || isWithdrawSuccess
+                  ? { cursor: "not-allowed" }
+                  : {
+                      transform: "scale(1.05)",
+                      textColor: "#6B39AB",
+                    }
+              }
+              _active={
+                activeStep !== 3 || isWithdrawing || isWithdrawSuccess
+                  ? { cursor: "not-allowed" }
+                  : {
+                      transform: "scale(0.95)",
+                    }
+              }
+              onClick={
+                activeStep !== 3 || isWithdrawing || isWithdrawSuccess
+                  ? () => {}
+                  : handleWithdraw
+              }
             >
-              {isWithdrawing
-                ? "Withdrawing..."
-                : isWithdrawSuccess
-                ? "Success"
-                : "Withdraw"}
+              {isWithdrawing ? (
+                <Spinner size="md" color="whiteAlpha.500" />
+              ) : isWithdrawSuccess ? (
+                "Success"
+              ) : (
+                "Withdraw"
+              )}
             </Button>
           </ModalFooter>
         ) : null}

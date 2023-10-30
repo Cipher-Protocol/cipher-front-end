@@ -392,7 +392,7 @@ export default function DepositModal(props: Props) {
               className="flex flex-col w-full my-4"
               color="rgba(255, 157, 169, 1)"
             >
-              <p className="px-2 my-2">
+              <p className="px-2 my-2 font-normal">
                 Download cipher code and save it in a safe place!
               </p>
               <Button
@@ -477,10 +477,10 @@ export default function DepositModal(props: Props) {
                   </Box>
                   {step === steps[0] ? (
                     <Button
-                      bgColor={isApproved ? "white" : "whiteAlpha.400"}
                       className="mx-auto w-40"
                       borderRadius="full"
-                      textColor="black"
+                      bgColor={isApproved ? "whiteAlpha.400" : "white"}
+                      textColor={isApproved ? "white" : "black"}
                       _hover={
                         isApproved
                           ? { cursor: "not-allowed" }
@@ -526,22 +526,44 @@ export default function DepositModal(props: Props) {
               disabled={activeStep !== 3 || isDepositing || isDepositSuccess}
               className="mx-auto w-full font-extrabold py-6 mt-6"
               borderRadius="full"
-              bgColor="white"
-              textColor="black"
-              _hover={{
-                transform: "scale(1.05)",
-                textColor: "#6B39AB",
-              }}
-              _active={{
-                transform: "scale(0.95)",
-              }}
-              onClick={() => handleDeposit()}
+              bgColor={
+                activeStep !== 3 || isDepositing || isDepositSuccess
+                  ? "whiteAlpha.400"
+                  : "white"
+              }
+              textColor={
+                activeStep !== 3 || isDepositing || isDepositSuccess
+                  ? "white"
+                  : "black"
+              }
+              _hover={
+                activeStep !== 3 || isDepositing || isDepositSuccess
+                  ? { cursor: "not-allowed" }
+                  : {
+                      transform: "scale(1.05)",
+                      textColor: "#6B39AB",
+                    }
+              }
+              _active={
+                activeStep !== 3 || isDepositing || isDepositSuccess
+                  ? { cursor: "not-allowed" }
+                  : {
+                      transform: "scale(0.95)",
+                    }
+              }
+              onClick={
+                activeStep !== 3 || isDepositing || isDepositSuccess
+                  ? () => {}
+                  : handleDeposit
+              }
             >
-              {isDepositing
-                ? "Depositing..."
-                : isDepositSuccess
-                ? "Success"
-                : "Deposit"}
+              {isDepositing ? (
+                <Spinner size="md" color="whiteAlpha.500" />
+              ) : isDepositSuccess ? (
+                "Success"
+              ) : (
+                "Deposit"
+              )}
             </Button>
           </ModalFooter>
         ) : null}

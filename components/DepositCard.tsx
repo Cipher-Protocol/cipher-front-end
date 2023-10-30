@@ -121,6 +121,12 @@ export default function DepositCard(props: Props) {
     }
   };
 
+  const customClose = () => {
+    console.log("custom close");
+    setPubInAmt(undefined);
+    onClose();
+  };
+
   return (
     <>
       <Flex className="flex flex-col justify-between items-center gap-8 h-full pt-10 pb-12">
@@ -155,7 +161,7 @@ export default function DepositCard(props: Props) {
       <DepositModal
         isOpen={isOpen}
         onOpen={onOpen}
-        onClose={onClose}
+        onClose={customClose}
         pubInAmt={pubInAmt || 0n}
         token={selectedToken}
         cipherCode={cipherCode}
