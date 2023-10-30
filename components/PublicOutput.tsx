@@ -1,35 +1,138 @@
-import { Flex, NumberInput, NumberInputField, Button } from "@chakra-ui/react";
-import React from "react";
+import { TokenConfig } from "../type";
+import {
+  Flex,
+  Text,
+  NumberInput,
+  NumberInputField,
+  Button,
+} from "@chakra-ui/react";
+import { BigNumber, utils } from "ethers";
+import React, { useState } from "react";
+import { formatUnits, parseUnits } from "viem";
+import SimpleBtn from "./SimpleBtn";
+
+type Props = {
+  pubOutAmt: bigint | undefined;
+  setPubOutAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  selectedToken: TokenConfig;
+  balance: bigint | undefined;
+};
 
 const amountTable = [0.01, 0.1, 1, 10];
 
-export default function PublicOutput() {
-  return (
-    <Flex className="flex flex-col items-end py-2 px-4 ">
-      <Flex className="gap-2 my-1">
+export default function PublicOutput(props: Props) {
+  const { pubOutAmt, setPubOutAmt, balance, selectedToken } = props;
+  const [isCustomAmt, setIsCustomAmt] = useState<boolean>(false);
+  const [selectedAmt, setSelectedAmt] = useState<number>();
+
+  const handlePubOutAmt = (amt: number) => {
+    setPubOutAmt(parseUnits(amt.toString(), selectedToken.decimals));
+  };
+
+  const renderAmtBtns = () => {
+    return (
+      <Flex className="gap-2 my-1 w-full justify-between">
         {amountTable.map((amt) => (
           <Button
             key={amt}
-            colorScheme="blue"
-            borderRadius="md"
-            fontSize={"xs"}
-            h={"1.2rem"}
-            w={"1rem"}
+            borderRadius="2xl"
+            w={"22%"}
+            fontSize={"sm"}
             _hover={{
               transform: "scale(1.1)",
+              bgColor: "white",
+              textColor: "#6B39AB",
             }}
             _active={{
               transform: "scale(0.9)",
             }}
             transitionDuration={"0.2s"}
+            bgColor={selectedAmt === amt ? "white" : "whiteAlpha.400"}
+            textColor={selectedAmt === amt ? "#6B39AB" : "white"}
+            onClick={() => {
+              handlePubOutAmt(amt);
+              setSelectedAmt(amt);
+            }}
           >
             {amt}
           </Button>
         ))}
       </Flex>
-      <NumberInput variant="outline" min={0}>
-        <NumberInputField placeholder="Deposit Amount" borderRadius={"full"} />
-      </NumberInput>
+    );
+  };
+
+  return (
+    <Flex className="flex flex-col items-end w-full">
+      <Text fontSize="md" textColor="whiteAlpha.700">
+        Balance: &nbsp;
+        {balance
+          ? Number(
+              utils.formatUnits(
+                BigNumber.from(balance),
+                selectedToken?.decimals
+              )
+            ).toFixed(4)
+          : 0}
+      </Text>
+      <Flex className="gap-2 my-1 w-full justify-between">
+        {isCustomAmt ? (
+          <NumberInput
+            variant="outline"
+            borderRadius={"full"}
+            w={"100%"}
+            textColor={"white"}
+            _focus={{ borderColor: "white" }}
+            focusBorderColor="transparent"
+            my={1}
+            min={0}
+            max={
+              balance
+                ? Number(
+                    utils.formatUnits(
+                      BigNumber.from(balance),
+                      selectedToken?.decimals
+                    )
+                  )
+                : 0
+            }
+            onChange={(value) => handlePubOutAmt(Number(value))}
+            value={
+              pubOutAmt
+                ? Number(formatUnits(pubOutAmt, selectedToken?.decimals))
+                : 0
+            }
+          >
+            <NumberInputField
+              placeholder="Deposit Amount"
+              borderRadius={"full"}
+              bgColor={"whiteAlpha.400"}
+              _focus={{ borderColor: "white" }}
+              px={6}
+              fontSize={"lg"}
+            />
+          </NumberInput>
+        ) : (
+          renderAmtBtns()
+        )}
+      </Flex>
+
+      <Button
+        className="w-full my-2"
+        borderRadius={"full"}
+        bgColor={"whiteAlpha.400"}
+        textColor={"white"}
+        _hover={{
+          transform: "scale(1.05)",
+          bgColor: "whiteAlpha.500",
+        }}
+        _active={{
+          transform: "scale(0.95)",
+        }}
+        transitionDuration={"0.2s"}
+        onClick={() => setIsCustomAmt(!isCustomAmt)}
+      >
+        {isCustomAmt ? "Select amount" : "Custom Amount"}
+      </Button>
     </Flex>
   );
 }

@@ -1,5 +1,5 @@
 import { Box, Flex, SimpleGrid } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import SelectBox from "./SelectBox";
 import { getTokenConfig } from "../../lib/getTokenConfig";
 import { TokenConfig } from "../../type";
@@ -10,13 +10,14 @@ import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { useErc20 } from "../../hooks/useErc20";
 import PrivateOutputBox from "./PrivateOutputBox";
 import PublicOutput from "../PublicOutput";
+import { CipherTxProvider, CipherTxProviderContext } from "./ProCipherTxContext";
 
 export default function ProContainer() {
   const { address } = useAccount();
   const [tokens, setTokens] = useState<TokenConfig[]>(getTokenConfig(1));
   const [selectedToken, setSelectedToken] = useState<TokenConfig>(tokens[0]);
   const { balance: Erc20Balance } = useErc20(selectedToken?.address);
-  const [pubInAmt, setPubInAmt] = useState<bigint>();
+
   const { data: ethBalance } = useBalance({
     address: address,
   });
@@ -54,31 +55,47 @@ export default function ProContainer() {
    */
 
   return (
-    <SimpleGrid columns={3} className="flex justify-center p-8 w-full h-full">
-      <Flex className="flex flex-col justify-between bg-slate-200 rounded-3xl">
-        <PrivateInputBox />
-        <Box className="my-4 px-8 py-2 mx-auto bg-slate-300 rounded-3xl">
-          <PublicInput
-            pubInAmt={pubInAmt}
-            setPubInAmt={setPubInAmt}
+    <CipherTxProvider tokenAddress={selectedToken?.address}>
+    <CipherTxProviderContext.Consumer>
+    {({publicInAmt, publicOutAmt, setPublicInAmt, setPublicOutAmt, downloadCipherCodes, sendTransaction,  prepareProof }) => {
+      return (
+      <SimpleGrid columns={3} className="flex justify-center p-8 w-full h-full">
+        <Flex className="flex flex-col justify-between bg-slate-200 rounded-3xl">
+          <PrivateInputBox selectedToken={selectedToken} />
+          <Box className="my-4 px-8 py-2 mx-auto bg-slate-300 rounded-3xl">
+            <PublicInput
+              pubInAmt={publicInAmt}
+              setPubInAmt={(v) => setPublicInAmt(v ? v as bigint : 0n)}
+              selectedToken={selectedToken}
+              balance={balance}
+            />
+          </Box>
+        </Flex>
+        <Box className="flex items-center px-4">
+          <SelectBox
+            tokens={tokens}
             selectedToken={selectedToken}
-            balance={balance}
+            setSelectedToken={setSelectedToken}
+            onDownload={downloadCipherCodes}
+            onPrepare={prepareProof}
+            onSendTransaction={sendTransaction}
           />
         </Box>
-      </Flex>
-      <Box className="flex items-center px-4">
-        <SelectBox
-          tokens={tokens}
-          selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
-        />
-      </Box>
-      <Flex className="flex flex-col justify-between bg-slate-200 rounded-3xl">
-        <PrivateOutputBox selectedToken={selectedToken} />
-        <Box className="my-4 py-2 px-8 mx-auto bg-slate-300 rounded-3xl">
-          <PublicOutput />
-        </Box>
-      </Flex>
-    </SimpleGrid>
+        <Flex className="flex flex-col justify-between bg-slate-200 rounded-3xl">
+          <PrivateOutputBox selectedToken={selectedToken} />
+          <Box className="my-4 py-2 px-8 mx-auto bg-slate-300 rounded-3xl">
+            <PublicOutput
+              pubOutAmt={publicOutAmt}
+              setPubOutAmt={(v) => setPublicOutAmt(v ? v as bigint : 0n)}
+              selectedToken={selectedToken}
+              balance={0n}
+            />
+          </Box>
+        </Flex>
+      </SimpleGrid>
+      )
+    }}
+    </CipherTxProviderContext.Consumer>
+    </CipherTxProvider>
   );
 }
