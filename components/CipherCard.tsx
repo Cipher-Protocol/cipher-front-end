@@ -9,7 +9,8 @@ import {
   Box,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
-import hideImage from "../assets/images/hide.png";
+import showImage from "../assets/images/hide1.png";
+import hideImage from "../assets/images/hide2.png";
 
 type Props = {
   value?: string;
@@ -33,7 +34,7 @@ export default function CipherCard(props: Props) {
 
   return (
     <Card
-      className="w-[20rem]"
+      className="w-full"
       borderRadius="3xl"
       bgColor={"whiteAlpha.400"}
       border="none"
@@ -52,7 +53,7 @@ export default function CipherCard(props: Props) {
         />
         <Image
           boxSize="28px"
-          src={hideImage.src}
+          src={show ? showImage.src : hideImage.src}
           onClick={handleClick}
           _hover={{
             cursor: "pointer",

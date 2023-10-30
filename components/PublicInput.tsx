@@ -80,10 +80,10 @@ export default function PublicInput(props: Props) {
             variant="outline"
             borderRadius={"full"}
             w={"100%"}
+            my={1}
             textColor={"white"}
             _focus={{ borderColor: "white" }}
             focusBorderColor="transparent"
-            my={1}
             min={0}
             max={
               balance

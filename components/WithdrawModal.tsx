@@ -11,15 +11,15 @@ import {
   Spinner,
   Step,
   StepDescription,
-  StepIcon,
   StepIndicator,
-  StepNumber,
-  StepSeparator,
   StepStatus,
   StepTitle,
   Stepper,
   useSteps,
   useToast,
+  Text,
+  Flex,
+  Button,
 } from "@chakra-ui/react";
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -32,9 +32,7 @@ import SimpleBtn from "./SimpleBtn";
 import { TokenConfig } from "../type";
 import { formatUnits } from "viem";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
-import {
-  DEFAULT_NATIVE_TOKEN_ADDRESS,
-} from "../configs/tokenConfig";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
 import { CipherTransferableCoin } from "../lib/cipher/CipherCoin";
 import { CipherTree } from "../lib/cipher/CipherTree";
 import { generateCipherTx } from "../lib/cipher/CipherCore";
@@ -50,7 +48,7 @@ import {
   ProofStruct,
   PublicInfoStruct,
 } from "../lib/cipher/types/CipherContract.type";
-import { CloseIcon } from "@chakra-ui/icons";
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { ConfigContext } from "../providers/ConfigProvider";
 
 type Props = {
@@ -90,7 +88,6 @@ export default function WithdrawModal(props: Props) {
     getUnPaidIndexFromTree,
   } = useContext(CipherTreeProviderContext);
   const { cipherContractInfo } = useContext(ConfigContext);
-
 
   const { config: withdrawConfig } = usePrepareContractWrite({
     address: cipherContractInfo?.cipherContractAddress,
@@ -194,7 +191,7 @@ export default function WithdrawModal(props: Props) {
       salt: salt,
       random: random,
     });
-    
+
     // if (coinLeafIndexs.length === 0) {
     //   toast({
     //     title: "Commitment is not found",
@@ -271,56 +268,108 @@ export default function WithdrawModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} size={"lg"} onClose={handleCloseModal}>
+    <Modal isOpen={isOpen} size={"md"} onClose={handleCloseModal}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Modal Title</ModalHeader>
-        <ModalCloseButton />
+      <ModalContent
+        bgColor={"whiteAlpha.400"}
+        borderRadius={"3xl"}
+        className="px-8 py-4"
+        color={"white"}
+        backdropFilter={"blur(10px)"}
+      >
+        <ModalHeader fontSize={"3xl"}>Withdraw</ModalHeader>
+        <ModalCloseButton
+          className="m-6"
+          size={"lg"}
+          _hover={{
+            color: "#6B39AB",
+            bgColor: "white",
+          }}
+          _active={{
+            color: "#6B39AB",
+            bgColor: "white",
+          }}
+        />
         <ModalBody>
-          <p>
-            Withdraw {formatUnits(pubOutAmt, token.decimals)} {token.symbol}
-          </p>
+          <Flex className="px-2 flex flex-row justify-between">
+            <p>Amount: </p>
+            <p>
+              {formatUnits(pubOutAmt, token.decimals)} {token.symbol}
+            </p>
+          </Flex>
           <Checkbox
-            className="my-4"
+            className="my-4 mx-2"
             defaultChecked={isChecked}
             onChange={(e) => {
               setIsChecked(e.target.checked);
               setActiveStep(0);
             }}
+            colorScheme="red"
+            color="rgba(255, 157, 169, 1)"
           >
-            I want to withdraw
+            I am sure to withdraw
           </Checkbox>
           {isChecked ? (
             <Stepper
               index={activeStep}
               orientation="vertical"
-              height="300px"
+              height="200"
               gap="0"
+              colorScheme="whiteAlpha"
+              className="my-4"
             >
               {steps.map((step, index) => (
                 <Step key={index}>
-                  <StepIndicator>
+                  <StepIndicator
+                    bgColor="whiteAlpha.500"
+                    border="none"
+                    boxSize="12"
+                  >
                     {failedStep === index ? (
                       <StepStatus
-                        complete={<CloseIcon />}
-                        incomplete={<CloseIcon color="red.500" />}
-                        active={<CloseIcon color="red.500" />}
+                        complete={
+                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                        }
+                        incomplete={
+                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                        }
+                        active={
+                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                        }
                       />
                     ) : (
                       <StepStatus
-                        complete={<StepIcon />}
-                        incomplete={<StepNumber />}
-                        active={<Spinner size="md" color="blue.500" />}
+                        complete={<CheckIcon boxSize={6} />}
+                        incomplete={
+                          <Text fontSize={"xl"} fontWeight={800}>
+                            {index + 1}
+                          </Text>
+                        }
+                        active={
+                          <Spinner
+                            size="md"
+                            color="whiteAlpha.500"
+                            boxSize={6}
+                          />
+                        }
                       />
                     )}
                   </StepIndicator>
 
                   <Box>
-                    <StepTitle>{step.title}</StepTitle>
-                    <StepDescription>{step.description}</StepDescription>
+                    <StepTitle>
+                      <Flex fontWeight={800}>{step.title}</Flex>
+                    </StepTitle>
+                    <StepDescription>
+                      <Flex
+                        fontSize={"xs"}
+                        color={"whiteAlpha.600"}
+                        fontWeight={700}
+                      >
+                        {step.description}
+                      </Flex>
+                    </StepDescription>
                   </Box>
-
-                  <StepSeparator />
                 </Step>
               ))}
             </Stepper>
@@ -328,10 +377,19 @@ export default function WithdrawModal(props: Props) {
         </ModalBody>
         {isChecked ? (
           <ModalFooter>
-            <SimpleBtn
+            <Button
               disabled={activeStep !== 3 || isWithdrawing || isWithdrawSuccess}
-              colorScheme="blue"
-              className="mx-auto w-40"
+              className="mx-auto w-full font-extrabold py-6 mt-6"
+              borderRadius="full"
+              bgColor="white"
+              textColor="black"
+              _hover={{
+                transform: "scale(1.05)",
+                textColor: "#6B39AB",
+              }}
+              _active={{
+                transform: "scale(0.95)",
+              }}
               onClick={() => handleWithdraw()}
             >
               {isWithdrawing
@@ -339,7 +397,7 @@ export default function WithdrawModal(props: Props) {
                 : isWithdrawSuccess
                 ? "Success"
                 : "Withdraw"}
-            </SimpleBtn>
+            </Button>
           </ModalFooter>
         ) : null}
       </ModalContent>
