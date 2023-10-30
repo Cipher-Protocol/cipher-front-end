@@ -16,6 +16,7 @@ import {
   indicesToPathIndices,
 } from "../lib/cipher/CipherHelper";
 import { throttle } from "lodash";
+import { cachedThrottle } from "../utils/helper";
 // import { cachedThrottle } from "../utils/helper";
 
 interface NewCommitmentLogType {
@@ -116,11 +117,11 @@ export const CipherTreeProvider = ({
       const blockNumber = await publicClient.getBlockNumber();
       return blockNumber;
     };
-    // const t = new cachedThrottle(func, 1000, {
-    //   leading: true,
-    //   trailing: false,
-    // });
-    // return t;
+    const t = new cachedThrottle(func, 1000, {
+      leading: true,
+      trailing: false,
+    });
+    return t;
   }, [publicClient]);
 
   const cipherContractInfo = useMemo(() => {
