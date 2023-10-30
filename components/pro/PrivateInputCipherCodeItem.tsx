@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import { useCipherCodeItem } from "../../hooks/useCipherCodeItem";
+import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
 import CipherCard from "../CipherCard";
 
 type Props = {
   index: number;
+  onUpdateCoin?: (coin: CipherTransferableCoin | undefined) => void;
 };
 
 export default function PrivateInputCipherCodeItem(props: Props) {
@@ -14,6 +17,12 @@ export default function PrivateInputCipherCodeItem(props: Props) {
     checkValid,
     error,
   } = useCipherCodeItem();
+
+  useEffect(() => {
+    if (props.onUpdateCoin) {
+      props.onUpdateCoin(transferableCoin);
+    }
+  }, [props, transferableCoin]);
 
   return (
     <>
