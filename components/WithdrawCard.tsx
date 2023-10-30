@@ -118,7 +118,7 @@ export default function WithdrawCard(props: Props) {
           borderRadius={"full"}
           className="w-full bg-white py-6 mt-2"
           _hover={
-            !isValidCode
+            isValidCode
               ? { cursor: "not-allowed" }
               : {
                   transform: "scale(1.05)",
@@ -126,7 +126,7 @@ export default function WithdrawCard(props: Props) {
                 }
           }
           _active={
-            !isValidCode
+            isValidCode
               ? { cursor: "not-allowed" }
               : {
                   transform: "scale(0.95)",

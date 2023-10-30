@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Flex,
   Modal,
   ModalBody,
@@ -13,13 +14,13 @@ import {
   StepDescription,
   StepIcon,
   StepIndicator,
-  StepNumber,
-  StepSeparator,
   StepStatus,
   StepTitle,
   Stepper,
   useSteps,
   useToast,
+  Text,
+  Image,
 } from "@chakra-ui/react";
 import { utils } from "ethers";
 import React, { useContext, useEffect, useState } from "react";
@@ -42,8 +43,9 @@ import {
 import { useAllowance } from "../hooks/useAllowance";
 import { downloadCipher } from "../lib/downloadCipher";
 import { assert } from "../lib/helper";
-import { CloseIcon } from "@chakra-ui/icons";
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { ConfigContext } from "../providers/ConfigProvider";
+import checkedImage from "../assets/images/checked.png";
 
 type Props = {
   isOpen: boolean;
@@ -353,72 +355,158 @@ export default function DepositModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} size={"lg"} onClose={handleCloseModal}>
+    <Modal isOpen={isOpen} size={"md"} onClose={handleCloseModal}>
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Modal Title</ModalHeader>
-        <ModalCloseButton />
+      <ModalContent
+        bgColor={"whiteAlpha.400"}
+        borderRadius={"3xl"}
+        className="px-8 py-4"
+        color={"white"}
+        backdropFilter={"blur(10px)"}
+      >
+        <ModalHeader fontSize={"3xl"}>Deposit</ModalHeader>
+        <ModalCloseButton
+          className="m-6"
+          size={"lg"}
+          _hover={{
+            color: "#6B39AB",
+            bgColor: "white",
+          }}
+          _active={{
+            color: "#6B39AB",
+            bgColor: "white",
+          }}
+        />
         <ModalBody>
-          <p>
-            Deposit {utils.formatUnits(pubInAmt, token.decimals)} {token.symbol}
-          </p>
-          <Flex className="my-4 items-center">
+          <Flex className="px-2 flex flex-row justify-between">
+            <p>Amount: </p>
+            <p>
+              {utils.formatUnits(pubInAmt, token.decimals)} {token.symbol}
+            </p>
+          </Flex>
+          <Flex className="flex flex-col my-2 items-center">
             <CipherCard value={cipherHex} />
-            <SimpleBtn
-              colorScheme="blue"
-              className="m-auto text-base my-4"
-              onClick={() => handleDownload()}
+            <Flex
+              fontSize={"xs"}
+              fontWeight={"bold"}
+              className="flex flex-col w-full my-4"
+              color="rgba(255, 157, 169, 1)"
             >
-              Download
-            </SimpleBtn>
+              <p className="px-2 my-2">
+                Download cipher code and save it in a safe place!
+              </p>
+              <Button
+                colorScheme="blue"
+                className="w-full text-base py-6 font-extrabold"
+                borderRadius={"full"}
+                bgColor="white"
+                textColor="black"
+                _hover={{
+                  transform: "scale(1.05)",
+                  textColor: "#6B39AB",
+                }}
+                _active={{
+                  transform: "scale(0.95)",
+                }}
+                onClick={() => handleDownload()}
+              >
+                Download
+              </Button>
+            </Flex>
           </Flex>
           {isDownloaded ? (
             <Stepper
               index={activeStep}
               orientation="vertical"
-              height="300px"
+              height="200"
               gap="0"
+              colorScheme="whiteAlpha"
             >
               {steps.map((step, index) => (
                 <Step key={index}>
-                  <StepIndicator>
+                  <StepIndicator
+                    bgColor="whiteAlpha.500"
+                    border="none"
+                    boxSize="12"
+                  >
                     {failedStep === index ? (
                       <StepStatus
-                        complete={<CloseIcon />}
-                        incomplete={<CloseIcon color="red.500" />}
-                        active={<CloseIcon color="red.500" />}
+                        complete={
+                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                        }
+                        incomplete={
+                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                        }
+                        active={
+                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                        }
                       />
                     ) : (
                       <StepStatus
-                        complete={<StepIcon />}
-                        incomplete={<StepNumber />}
-                        active={<Spinner size="md" color="blue.500" />}
+                        complete={<CheckIcon boxSize={6} />}
+                        incomplete={
+                          <Text fontSize={"xl"} fontWeight={800}>
+                            {index + 1}
+                          </Text>
+                        }
+                        active={
+                          <Spinner
+                            size="md"
+                            color="whiteAlpha.500"
+                            boxSize={6}
+                          />
+                        }
                       />
                     )}
                   </StepIndicator>
 
                   <Box>
-                    <StepTitle>{step.title}</StepTitle>
-                    <StepDescription>{step.description}</StepDescription>
+                    <StepTitle>
+                      <Flex fontWeight={800}>{step.title}</Flex>
+                    </StepTitle>
+                    <StepDescription>
+                      <Flex
+                        fontSize={"xs"}
+                        color={"whiteAlpha.600"}
+                        fontWeight={700}
+                      >
+                        {step.description}
+                      </Flex>
+                    </StepDescription>
                   </Box>
                   {step === steps[0] ? (
-                    <SimpleBtn
-                      disabled={isApproved || isApproving || isApproveSuccess}
-                      colorScheme={isApproved ? "teal" : "blue"}
+                    <Button
+                      bgColor={isApproved ? "white" : "whiteAlpha.400"}
                       className="mx-auto w-40"
-                      onClick={() => handleApprove()}
+                      borderRadius="full"
+                      // bgColor="white"
+                      textColor="black"
+                      _hover={
+                        isApproved
+                          ? { cursor: "not-allowed" }
+                          : {
+                              transform: "scale(1.05)",
+                              textColor: "#6B39AB",
+                            }
+                      }
+                      _active={
+                        isApproved
+                          ? { cursor: "not-allowed" }
+                          : {
+                              transform: "scale(0.95)",
+                            }
+                      }
+                      onClick={isApproved ? undefined : handleApprove}
                     >
                       {isApproving ? (
-                        <Spinner size="sm" color="white" />
+                        <Spinner size="sm" color="whiteAlpha.500" />
                       ) : isApproved ? (
                         "Approved"
                       ) : (
                         "Approve"
                       )}
-                    </SimpleBtn>
+                    </Button>
                   ) : null}
-
-                  <StepSeparator />
                 </Step>
               ))}
             </Stepper>
@@ -434,10 +522,19 @@ export default function DepositModal(props: Props) {
             >
               initToken
             </SimpleBtn> */}
-            <SimpleBtn
+            <Button
               disabled={activeStep !== 3 || isDepositing || isDepositSuccess}
-              colorScheme="blue"
-              className="mx-auto w-40"
+              className="mx-auto w-full font-extrabold py-6 mt-6"
+              borderRadius="full"
+              bgColor="white"
+              textColor="black"
+              _hover={{
+                transform: "scale(1.05)",
+                textColor: "#6B39AB",
+              }}
+              _active={{
+                transform: "scale(0.95)",
+              }}
               onClick={() => handleDeposit()}
             >
               {isDepositing
@@ -445,7 +542,7 @@ export default function DepositModal(props: Props) {
                 : isDepositSuccess
                 ? "Success"
                 : "Deposit"}
-            </SimpleBtn>
+            </Button>
           </ModalFooter>
         ) : null}
       </ModalContent>
