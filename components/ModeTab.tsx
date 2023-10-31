@@ -25,7 +25,7 @@ export default function ModeTab(props: Props) {
             textColor="white"
             className="w-36"
           >
-            Simple
+            Basic
           </Tab>
           <Tab
             _hover={{ bg: "whiteAlpha.400" }}

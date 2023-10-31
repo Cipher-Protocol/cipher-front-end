@@ -12,7 +12,6 @@ import {
   Spinner,
   Step,
   StepDescription,
-  StepIcon,
   StepIndicator,
   StepStatus,
   StepTitle,
@@ -20,7 +19,6 @@ import {
   useSteps,
   useToast,
   Text,
-  Image,
 } from "@chakra-ui/react";
 import { utils } from "ethers";
 import React, { useContext, useEffect, useState } from "react";

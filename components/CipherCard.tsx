@@ -1,13 +1,4 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Image,
-  Box,
-} from "@chakra-ui/react";
+import { Card, Input, Image, Box } from "@chakra-ui/react";
 import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
 import showImage from "../assets/images/hide1.png";
 import hideImage from "../assets/images/hide2.png";
@@ -49,7 +40,7 @@ export default function CipherCard(props: Props) {
           border="none"
           color={"white"}
           focusBorderColor="transparent"
-          className="placeholder-white"
+          className="placeholder-white/60"
         />
         <Image
           boxSize="28px"

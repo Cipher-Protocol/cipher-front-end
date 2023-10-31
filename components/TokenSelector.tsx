@@ -56,6 +56,7 @@ export default function TokenSelector(props: Props) {
         backdropFilter={"blur(10px)"}
         minW="0"
         w={"320px"}
+        zIndex={9999}
       >
         {isLoadingTokens ? (
           <Skeleton height="20px" width="85%" className="m-auto" />

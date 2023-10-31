@@ -8,7 +8,7 @@ type Props = {
   onUpdateCoin?: (coin: CipherTransferableCoin | undefined) => void;
 };
 
-export default function PrivateInputCipherCodeItem(props: Props) {
+export default function PrivateInputItem(props: Props) {
   const {
     isLoading,
     cipherCode,
@@ -26,9 +26,9 @@ export default function PrivateInputCipherCodeItem(props: Props) {
 
   return (
     <>
-      <p>
+      {/* <p>
         isLoading={isLoading}, {error ? error.message : ""}
-      </p>
+      </p> */}
       {isLoading || (!error && transferableCoin) ? (
         <p>valid cipherCode! ({cipherCode?.slice(-5)})</p>
       ) : (
@@ -36,15 +36,15 @@ export default function PrivateInputCipherCodeItem(props: Props) {
           <CipherCard
             value={cipherCode}
             onValueChange={(str) => setCipherCode(str)}
-            placeholder={`Enter your cipher ${props.index + 1}`}
+            placeholder={`Drag or enter your cipher code`}
           />
-          <button
+          {/* <button
             onClick={() => {
               checkValid();
             }}
           >
             check
-          </button>
+          </button> */}
         </>
       )}
     </>
