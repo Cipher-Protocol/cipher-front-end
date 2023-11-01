@@ -484,9 +484,9 @@ export default function DepositModal(props: Props) {
                       bgColor={
                         isApproved || isApproving ? "whiteAlpha.400" : "white"
                       }
-                      textColor={isApproved ? "white" : "black"}
+                      textColor={isApproved || isApproving ? "white" : "black"}
                       _hover={
-                        isApproved
+                        isApproved || isApproving
                           ? { cursor: "not-allowed" }
                           : {
                               transform: "scale(1.05)",
@@ -494,13 +494,15 @@ export default function DepositModal(props: Props) {
                             }
                       }
                       _active={
-                        isApproved
+                        isApproved || isApproving
                           ? { cursor: "not-allowed" }
                           : {
                               transform: "scale(0.95)",
                             }
                       }
-                      onClick={isApproved ? undefined : handleApprove}
+                      onClick={
+                        isApproved || isApproving ? undefined : handleApprove
+                      }
                     >
                       {isApproving ? (
                         <Spinner size="sm" color="whiteAlpha.500" />
