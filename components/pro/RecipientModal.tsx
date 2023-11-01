@@ -15,9 +15,10 @@ import {
   Card,
   Checkbox,
 } from "@chakra-ui/react";
-import React, { ChangeEvent, ChangeEventHandler, useState } from "react";
+import React, { ChangeEvent, ChangeEventHandler, useContext, useState } from "react";
 import showImage from "../../assets/images/hide1.png";
 import hideImage from "../../assets/images/hide2.png";
+import { CipherTxProviderContext } from "./ProCipherTxContext";
 
 type Props = {
   isOpen: boolean;
@@ -33,6 +34,10 @@ export default function RecipientModal(props: Props) {
   const [show, setShow] = useState(false);
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const handleClick = () => setShow(!show);
+  const { publicOutAmt, totalPrivateOutAmt, setPrivateOutCoins } = useContext(
+    CipherTxProviderContext
+  );
+  
 
   const onChange: ChangeEventHandler = (event: ChangeEvent) => {
     const ele = event.target as HTMLInputElement;

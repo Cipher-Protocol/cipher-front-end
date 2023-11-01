@@ -20,7 +20,7 @@ import {
   useToast,
   Image,
 } from "@chakra-ui/react";
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useCallback, useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../../type";
 import {
   CipherCoinInfo,
@@ -39,6 +39,7 @@ import {
 import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { ConfigContext } from "../../providers/ConfigProvider";
 import { useAllowance } from "../../hooks/useAllowance";
+import { CipherTxProviderContext } from "./ProCipherTxContext";
 import downloadImg from "../../assets/images/download.png";
 
 const steps = [
@@ -73,6 +74,10 @@ export default function ConfirmModal(props: Props) {
   const { chain } = useNetwork();
   const { address } = useAccount();
   const { cipherContractInfo } = useContext(ConfigContext);
+  const { prepareProof, sendTransaction } = useContext(
+    CipherTxProviderContext
+  );
+  
   const { activeStep, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
@@ -116,7 +121,8 @@ export default function ConfirmModal(props: Props) {
 
   const checkApproval = () => {
     if (!address) {
-      throw new Error("address is undefined");
+      return
+      // throw new Error("address is undefined");
     }
     if (selectedToken.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
       setIsApproved(true);
@@ -130,6 +136,15 @@ export default function ConfirmModal(props: Props) {
   };
 
   useEffect(() => {
+    if(isOpen) {
+      checkApproval();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    console.log({
+      isApproveSuccess,
+    })
     if (isApproveSuccess) {
       checkApproval();
       setIsApproved(isApproveSuccess);
@@ -165,6 +180,22 @@ export default function ConfirmModal(props: Props) {
       });
     }
   };
+  
+  const onPrepareProof = useCallback(async () => {
+    return await prepareProof?.();
+  }, [prepareProof]);
+  useEffect(() => {
+    console.log({
+      isApproved,
+    })
+    if(isApproved) {
+      onPrepareProof();
+    }
+  }, [isApproved]);
+  
+  const onSendTransaction = useCallback(async () => {
+    return await sendTransaction?.();
+  }, [onPrepareProof, sendTransaction]);
 
   return (
     <Modal
@@ -390,6 +421,7 @@ export default function ConfirmModal(props: Props) {
                 transform: "scale(0.95)",
               }}
               transitionDuration={"0.2s"}
+              onClick={() => onSendTransaction()}
             >
               Send transaction
             </Button>
