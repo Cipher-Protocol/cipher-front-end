@@ -1,5 +1,12 @@
-import { Button, Divider, Flex, Text, useDisclosure } from "@chakra-ui/react";
-import React from "react";
+import {
+  Button,
+  Divider,
+  Flex,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
+import React, { useEffect } from "react";
 import { formatUnits } from "viem";
 import { TokenConfig } from "../../type";
 import ConfirmModal from "./ConfirmModal";
@@ -7,6 +14,7 @@ import {
   CipherCoinInfo,
   CipherTransferableCoin,
 } from "../../lib/cipher/CipherCoin";
+import { useAccount } from "wagmi";
 
 type Props = {
   publicInAmt: bigint;
@@ -29,6 +37,41 @@ export default function ConfirmBox(props: Props) {
     privateOutCoins,
   } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
+  const { address } = useAccount();
+  const [amountIsEqual, setAmountIsEqual] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (publicInAmt + totalPrivateInAmt === publicOutAmt + totalPrivateOutAmt) {
+      setAmountIsEqual(true);
+    } else {
+      setAmountIsEqual(false);
+    }
+  }, [publicInAmt, totalPrivateInAmt, publicOutAmt, totalPrivateOutAmt]);
+
+  const handleOpenModal = () => {
+    if (address === undefined) {
+      toast({
+        title: "Please connect wallet",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } else if (!amountIsEqual) {
+      toast({
+        title: "Invalid amount",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } else {
+      onOpen();
+    }
+  };
 
   return (
     <Flex
@@ -73,8 +116,7 @@ export default function ConfirmBox(props: Props) {
             )}
           </Text>
         </Flex>
-        {publicInAmt + totalPrivateInAmt ===
-        publicOutAmt + totalPrivateOutAmt ? undefined : (
+        {amountIsEqual ? undefined : (
           <Text
             className="w-full text-center"
             textColor="rgba(255, 157, 169, 1)"
@@ -97,7 +139,7 @@ export default function ConfirmBox(props: Props) {
           transform: "scale(0.95)",
         }}
         transitionDuration={"0.2s"}
-        onClick={onOpen}
+        onClick={handleOpenModal}
       >
         Send transaction
       </Button>

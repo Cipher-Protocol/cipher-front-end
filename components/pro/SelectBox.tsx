@@ -91,7 +91,6 @@ export default function SelectBox(props: Props) {
     <Flex
       className="w-full py-6 flex flex-row justify-between items-center gap-8 rounded-3xl shadow-md grid-cols-3 px-12"
       bgColor={"whiteAlpha.400"}
-      backdropFilter="blur(10px)"
     >
       {/* <SimpleBtn disabled={true} colorScheme="teal" className="w-56">
         Select relayer
