@@ -258,7 +258,12 @@ export default function WithdrawModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} size={"md"} onClose={handleCloseModal}>
+    <Modal
+      closeOnOverlayClick={false}
+      isOpen={isOpen}
+      size={"md"}
+      onClose={handleCloseModal}
+    >
       <ModalOverlay />
       <ModalContent
         bgColor={"whiteAlpha.400"}

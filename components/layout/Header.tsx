@@ -19,8 +19,8 @@ export default function Header(props: Props) {
   };
 
   return (
-    <Flex className="w-full p-4 gap-2 justify-between items-start">
-      <Box className="py-2 pl-8 w-[30%]">
+    <Flex className="w-[90%] m-auto py-4 gap-2 justify-between items-start">
+      <Box className="py-2 w-[30%]">
         <Image
           src={logo.src}
           h={8}
@@ -43,7 +43,7 @@ export default function Header(props: Props) {
           Docs
         </SimpleBtn> */}
       <ModeTab setMode={setMode} />
-      <Box className="flex flex-row pr-8 justify-end items-center w-[30%] gap-2">
+      <Box className="flex flex-row justify-end items-center w-[30%] gap-2">
         <ConnectButton
           chainStatus="icon"
           accountStatus="address"

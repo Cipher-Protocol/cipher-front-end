@@ -6,7 +6,6 @@ import {
   ModalBody,
   ModalCloseButton,
   ModalContent,
-  ModalFooter,
   ModalHeader,
   ModalOverlay,
   Spinner,
@@ -19,6 +18,7 @@ import {
   Text,
   useSteps,
   useToast,
+  Image,
 } from "@chakra-ui/react";
 import React, { use, useCallback, useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../../type";
@@ -40,6 +40,7 @@ import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { ConfigContext } from "../../providers/ConfigProvider";
 import { useAllowance } from "../../hooks/useAllowance";
 import { CipherTxProviderContext } from "./ProCipherTxContext";
+import downloadImg from "../../assets/images/download.png";
 
 const steps = [
   { title: "Approve Token", description: "Approve token for deposit" },
@@ -197,7 +198,12 @@ export default function ConfirmModal(props: Props) {
   }, [onPrepareProof, sendTransaction]);
 
   return (
-    <Modal isOpen={isOpen} size={"md"} onClose={onClose}>
+    <Modal
+      closeOnOverlayClick={false}
+      isOpen={isOpen}
+      size={"md"}
+      onClose={onClose}
+    >
       <ModalOverlay />
       <ModalContent
         bgColor={"whiteAlpha.400"}
@@ -273,7 +279,22 @@ export default function ConfirmModal(props: Props) {
                       className="flex flex-row justify-between"
                       textColor="whiteAlpha.700"
                     >
-                      <p>Private output amount: </p>
+                      <Flex className="flex flex-row items-center">
+                        <Image
+                          boxSize={"4"}
+                          src={downloadImg.src}
+                          alt="download"
+                          _hover={{
+                            cursor: "pointer",
+                            transform: "scale(1.1)",
+                          }}
+                          _active={{
+                            transform: "scale(0.9)",
+                          }}
+                          transitionDuration={"0.2s"}
+                        ></Image>
+                        <p className="mx-2">Private output amount: </p>
+                      </Flex>
                       <p>
                         {formatUnits(
                           coin?.amount || 0n,
