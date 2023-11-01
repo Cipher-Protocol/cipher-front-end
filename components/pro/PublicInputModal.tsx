@@ -60,7 +60,12 @@ export default function PublicInputModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} size={"md"} onClose={resetClose}>
+    <Modal
+      closeOnOverlayClick={false}
+      isOpen={isOpen}
+      size={"md"}
+      onClose={resetClose}
+    >
       <ModalOverlay />
       <ModalContent
         bgColor={"whiteAlpha.400"}

@@ -44,7 +44,12 @@ export default function RecipientModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} size={"md"} onClose={onClose}>
+    <Modal
+      closeOnOverlayClick={false}
+      isOpen={isOpen}
+      size={"md"}
+      onClose={onClose}
+    >
       <ModalOverlay />
       <ModalContent
         bgColor={"whiteAlpha.400"}

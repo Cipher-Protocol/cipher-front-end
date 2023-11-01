@@ -42,6 +42,7 @@ import { downloadCipher } from "../../lib/downloadCipher";
 import { assert } from "../../lib/helper";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { ConfigContext } from "../../providers/ConfigProvider";
+import SimpleBtn from "../shared/SimpleBtn";
 
 type Props = {
   isOpen: boolean;
@@ -163,7 +164,7 @@ export default function DepositModal(props: Props) {
 
   // // prepare initTokenTree
   // const { config: initTokenTreeConfig } = usePrepareContractWrite({
-  //   address: CIPHER_CONTRACT_ADDRESS,
+  //   address: cipherContractInfo?.cipherContractAddress,
   //   abi: CipherAbi.abi,
   //   functionName: "initTokenTree",
   //   args: [token.address],
@@ -351,7 +352,12 @@ export default function DepositModal(props: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} size={"md"} onClose={handleCloseModal}>
+    <Modal
+      closeOnOverlayClick={false}
+      isOpen={isOpen}
+      size={"md"}
+      onClose={handleCloseModal}
+    >
       <ModalOverlay />
       <ModalContent
         bgColor={"whiteAlpha.400"}
