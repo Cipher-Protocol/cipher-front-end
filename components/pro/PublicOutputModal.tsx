@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Flex,
   Modal,
@@ -11,35 +12,35 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import AmountSelector from "../shared/InputAmountSelector";
+import AmountSelector from "../shared/AmountSelector";
 import { TokenConfig } from "../../type";
 
 type Props = {
   balance: bigint | undefined;
   selectedToken: TokenConfig;
-  publicInAmt: bigint | undefined;
-  setPublicInAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
-  resetPublicInput: () => void;
+  publicOutAmt: bigint | undefined;
+  setPublicOutAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  resetPublicOutput: () => void;
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
 };
 
-export default function PublicInputModal(props: Props) {
+export default function PublicOutputModal(props: Props) {
   const {
     balance,
     selectedToken,
-    publicInAmt,
-    setPublicInAmt,
-    resetPublicInput,
+    publicOutAmt,
+    setPublicOutAmt,
+    resetPublicOutput,
     isOpen,
     onOpen,
     onClose,
   } = props;
   const toast = useToast();
 
-  const handleSavePubInAmt = () => {
-    if (publicInAmt === undefined || publicInAmt > balance!) {
+  const handleSavePubOutAmt = () => {
+    if (publicOutAmt === undefined) {
       toast({
         title: "Invalid amount",
         description: `Please enter a valid amount`,
@@ -55,7 +56,7 @@ export default function PublicInputModal(props: Props) {
   };
 
   const resetClose = () => {
-    resetPublicInput();
+    resetPublicOutput();
     onClose();
   };
 
@@ -69,7 +70,7 @@ export default function PublicInputModal(props: Props) {
         color={"white"}
         backdropFilter={"blur(10px)"}
       >
-        <ModalHeader fontSize={"3xl"}>Public input</ModalHeader>
+        <ModalHeader fontSize={"3xl"}>Public output</ModalHeader>
         <ModalCloseButton
           className="m-6"
           size={"lg"}
@@ -84,12 +85,11 @@ export default function PublicInputModal(props: Props) {
         />
         <ModalBody>
           <Flex className="flex flex-col justify-between gap-4 h-[20rem]">
-            <Text>Deposit {selectedToken.symbol} from your wallet</Text>
+            <Text>Withdraw {selectedToken.symbol} to your wallet</Text>
             <AmountSelector
-              amount={publicInAmt}
-              setAmount={setPublicInAmt}
+              amount={publicOutAmt}
+              setAmount={setPublicOutAmt}
               selectedToken={selectedToken}
-              balance={balance}
             />
             <Button
               className="w-full py-6"
@@ -105,7 +105,7 @@ export default function PublicInputModal(props: Props) {
                 transform: "scale(0.95)",
               }}
               transitionDuration={"0.2s"}
-              onClick={handleSavePubInAmt}
+              onClick={handleSavePubOutAmt}
             >
               Save
             </Button>

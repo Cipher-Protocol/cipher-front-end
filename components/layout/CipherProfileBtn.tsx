@@ -12,8 +12,8 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { CopyIcon, LockIcon } from "@chakra-ui/icons";
-import { CipherAccountContext } from "../providers/CipherProvider";
-import profileImage from "../assets/images/profile.png";
+import { CipherAccountContext } from "../../providers/CipherProvider";
+import profileImage from "../../assets/images/profile.png";
 import { useAccount } from "wagmi";
 
 export default function CipherProfileBtn() {

@@ -1,10 +1,8 @@
 import { Button, Flex, Image, useToast } from "@chakra-ui/react";
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import PrivateOutput from "../PrivateOutput";
 import { TokenConfig } from "../../type";
 import { CipherTxProviderContext } from "./ProCipherTxContext";
 import { CipherBaseCoin, CipherCoinInfo } from "../../lib/cipher/CipherCoin";
-import { formatUnits } from "viem";
 import PrivateOutputItem from "./PrivateOutputItem";
 import dropImg from "../../assets/images/drop.png";
 

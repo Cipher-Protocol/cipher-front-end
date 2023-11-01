@@ -22,28 +22,26 @@ import {
 } from "@chakra-ui/react";
 import { utils } from "ethers";
 import React, { useContext, useEffect, useState } from "react";
-import { TokenConfig } from "../type";
-import SimpleBtn from "./SimpleBtn";
-import CipherCard from "./CipherCard";
+import { TokenConfig } from "../../type";
+import CipherCard from "../shared/CipherCard";
 import dayjs from "dayjs";
-import { CipherBaseCoin, CipherCoinInfo } from "../lib/cipher/CipherCoin";
-import { generateCipherTx } from "../lib/cipher/CipherCore";
-import { CipherTree } from "../lib/cipher/CipherTree";
+import { CipherBaseCoin, CipherCoinInfo } from "../../lib/cipher/CipherCoin";
+import { generateCipherTx } from "../../lib/cipher/CipherCore";
+import { CipherTree } from "../../lib/cipher/CipherTree";
 import { erc20ABI, useAccount, useNetwork, useWaitForTransaction } from "wagmi";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
-import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
-import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
-import CipherAbi from "../lib/cipher/CipherAbi.json";
+import { CipherTreeProviderContext } from "../../providers/CipherTreeProvider";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
+import CipherAbi from "../../lib/cipher/CipherAbi.json";
 import {
   ProofStruct,
   PublicInfoStruct,
-} from "../lib/cipher/types/CipherContract.type";
-import { useAllowance } from "../hooks/useAllowance";
-import { downloadCipher } from "../lib/downloadCipher";
-import { assert } from "../lib/helper";
+} from "../../lib/cipher/types/CipherContract.type";
+import { useAllowance } from "../../hooks/useAllowance";
+import { downloadCipher } from "../../lib/downloadCipher";
+import { assert } from "../../lib/helper";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
-import { ConfigContext } from "../providers/ConfigProvider";
-import checkedImage from "../assets/images/checked.png";
+import { ConfigContext } from "../../providers/ConfigProvider";
 
 type Props = {
   isOpen: boolean;
@@ -74,7 +72,7 @@ export default function DepositModal(props: Props) {
     setCipherCoinInfo,
   } = props;
   const toast = useToast();
-  const { chain, chains } = useNetwork();
+  const { chain } = useNetwork();
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [proof, setProof] = useState<ProofStruct>();

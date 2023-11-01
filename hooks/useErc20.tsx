@@ -1,7 +1,6 @@
-import { erc20ABI, useAccount, useContractRead } from "wagmi";
+import { erc20ABI, useAccount } from "wagmi";
 import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
 import { useEffect, useState } from "react";
-import { BigNumber } from "ethers";
 import { readContract } from "@wagmi/core";
 
 export const useErc20 = (tokenAddr: `0x${string}` | undefined) => {

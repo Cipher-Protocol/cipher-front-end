@@ -1,6 +1,6 @@
 import { Button, Flex, Image, useToast } from "@chakra-ui/react";
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import CipherCard from "../CipherCard";
+import CipherCard from "../shared/CipherCard";
 import PrivateInputCipherCodeItem from "./PrivateInputItem";
 import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
 import { CipherTxProviderContext } from "./ProCipherTxContext";

@@ -7,7 +7,6 @@ import {
   Button,
   Image,
 } from "@chakra-ui/react";
-import { BigNumber, utils } from "ethers";
 import React, { useCallback, useEffect, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import { CipherCoinInfo } from "../../lib/cipher/CipherCoin";

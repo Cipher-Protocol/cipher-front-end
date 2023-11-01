@@ -4,20 +4,19 @@ import SelectBox from "./SelectBox";
 import { getTokenConfig } from "../../lib/getTokenConfig";
 import { TokenConfig } from "../../type";
 import PrivateInputBox from "./PrivateInputBox";
-import PublicInput from "../PublicInput";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useNetwork } from "wagmi";
 import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { useErc20 } from "../../hooks/useErc20";
 import PrivateOutputBox from "./PrivateOutputBox";
-import PublicOutput from "../PublicOutput";
 import {
   CipherTxProvider,
   CipherTxProviderContext,
 } from "./ProCipherTxContext";
-import { formatUnits } from "viem";
+import ConfirmBox from "./ConfirmBox";
 
 export default function ProContainer() {
   const { address } = useAccount();
+  const { chain } = useNetwork();
   const [tokens, setTokens] = useState<TokenConfig[]>(getTokenConfig(1));
   const [selectedToken, setSelectedToken] = useState<TokenConfig>(tokens[0]);
   const { balance: Erc20Balance } = useErc20(selectedToken?.address);
@@ -28,7 +27,11 @@ export default function ProContainer() {
   const [balance, setBalance] = useState<bigint | undefined>(
     ethBalance?.value || 0n
   );
-  const [privOutAmts, setPrivOutAmts] = useState<bigint[]>([]);
+
+  useEffect(() => {
+    const tokens = getTokenConfig(chain?.id || 1);
+    setTokens(tokens);
+  }, [chain]);
 
   useEffect(() => {
     if (!address) return;
@@ -66,6 +69,8 @@ export default function ProContainer() {
           publicOutAmt,
           setPublicInAmt,
           setPublicOutAmt,
+          privateInCoins,
+          privateOutCoins,
           totalPrivateInAmt,
           totalPrivateOutAmt,
           downloadCipherCodes,
@@ -76,6 +81,19 @@ export default function ProContainer() {
             <Flex className="flex flex-col py-10 m-auto w-4/5 h-full justify-between">
               <Flex className="flex flex-col">
                 <SelectBox
+                  balance={balance}
+                  publicInAmt={publicInAmt}
+                  setPublicInAmt={
+                    setPublicInAmt as React.Dispatch<
+                      React.SetStateAction<bigint | undefined>
+                    >
+                  }
+                  publicOutAmt={publicOutAmt}
+                  setPublicOutAmt={
+                    setPublicOutAmt as React.Dispatch<
+                      React.SetStateAction<bigint | undefined>
+                    >
+                  }
                   tokens={tokens}
                   selectedToken={selectedToken}
                   setSelectedToken={setSelectedToken}
@@ -86,7 +104,7 @@ export default function ProContainer() {
                 <Flex className="flex flex-row justify-between rounded-3xl my-8 grid-cols-2 gap-8">
                   <PrivateInputBox selectedToken={selectedToken} />
                   {/* <Box className="my-4 px-8 py-2 mx-auto bg-slate-300 rounded-3xl">
-                      <PublicInput
+                      <AmountSelector
                         pubInAmt={publicInAmt}
                         setPubInAmt={(v) =>
                           setPublicInAmt(v ? (v as bigint) : 0n)
@@ -109,76 +127,15 @@ export default function ProContainer() {
                     </Box> */}
                 </Flex>
               </Flex>
-              <Flex
-                className="w-full py-6 flex flex-row justify-between items-center gap-8 rounded-3xl shadow-md grid-cols-3 px-12 my-6"
-                bgColor={"whiteAlpha.400"}
-                backdropFilter="blur(10px)"
-              >
-                <Button
-                  className="w-full py-6"
-                  borderRadius="full"
-                  textColor={"white"}
-                  bgColor="whiteAlpha.400"
-                  _hover={{
-                    cursor: "not-allowed",
-                  }}
-                  _active={{
-                    bgColor: "whiteAlpha.400",
-                  }}
-                  transitionDuration={"0.2s"}
-                >
-                  select relayer
-                </Button>
-                <Flex className="w-full h-full flex flex-col justify-center items-center">
-                  <Flex className="w-full h-1/2 flex flex-row justify-center items-center text-white">
-                    <Text color="whiteAlpha.700" className="w-2/5 text-right">
-                      Input:{" "}
-                      {formatUnits(
-                        publicInAmt + totalPrivateInAmt,
-                        selectedToken.decimals
-                      )}
-                    </Text>
-                    <Divider
-                      orientation="vertical"
-                      className="mx-4 h-full"
-                      borderColor="whiteAlpha.700"
-                    />
-                    <Text color="whiteAlpha.700" className="w-2/5 text-left">
-                      Output:{" "}
-                      {formatUnits(
-                        publicOutAmt + totalPrivateOutAmt,
-                        selectedToken.decimals
-                      )}
-                    </Text>
-                  </Flex>
-                  {publicInAmt + totalPrivateInAmt ===
-                  publicOutAmt + totalPrivateOutAmt ? undefined : (
-                    <Text
-                      className="w-full text-center"
-                      textColor="rgba(255, 157, 169, 1)"
-                    >
-                      Amount not equal
-                    </Text>
-                  )}
-                </Flex>
-                <Button
-                  className="w-full py-6"
-                  borderRadius="full"
-                  textColor={"white"}
-                  bgColor="whiteAlpha.400"
-                  _hover={{
-                    transform: "scale(1.05)",
-                    bgColor: "white",
-                    textColor: "#6B39AB",
-                  }}
-                  _active={{
-                    transform: "scale(0.95)",
-                  }}
-                  transitionDuration={"0.2s"}
-                >
-                  Send transaction
-                </Button>
-              </Flex>
+              <ConfirmBox
+                publicInAmt={publicInAmt}
+                publicOutAmt={publicOutAmt}
+                privateInCoins={privateInCoins}
+                privateOutCoins={privateOutCoins}
+                totalPrivateInAmt={totalPrivateInAmt}
+                totalPrivateOutAmt={totalPrivateOutAmt}
+                selectedToken={selectedToken}
+              />
             </Flex>
           );
         }}

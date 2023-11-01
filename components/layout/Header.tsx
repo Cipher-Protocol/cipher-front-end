@@ -1,11 +1,11 @@
 import { Box, Flex, Image } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import React, { Dispatch, SetStateAction } from "react";
-import { Mode } from "../type";
+import { Mode } from "../../type";
 import ModeTab from "./ModeTab";
 import CipherProfileBtn from "./CipherProfileBtn";
 import { useAccount } from "wagmi";
-import logo from "../assets/images/logo1.png";
+import logo from "../../assets/images/logo1.png";
 
 type Props = {
   setMode: Dispatch<SetStateAction<Mode>>;
@@ -13,7 +13,10 @@ type Props = {
 
 export default function Header(props: Props) {
   const { setMode } = props;
-  const { isConnected } = useAccount();
+
+  const reload = () => {
+    window.location.reload();
+  };
 
   return (
     <Flex className="w-full p-4 gap-2 justify-between items-start">
@@ -30,6 +33,7 @@ export default function Header(props: Props) {
           }}
           transitionDuration={"0.2s"}
           alt="logo"
+          onClick={reload}
         />
       </Box>
       {/* <SimpleBtn colorScheme="teal" className="w-32">

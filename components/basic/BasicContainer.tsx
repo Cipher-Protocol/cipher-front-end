@@ -2,11 +2,11 @@ import { Box, Flex, Tab, TabList, Tabs } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import DepositCard from "./DepositCard";
 import WithdrawCard from "./WithdrawCard";
-import { SimpleType, TokenConfig } from "../type.d";
+import { SimpleType, TokenConfig } from "../../type.d";
 import { useNetwork } from "wagmi";
-import { getTokenConfig } from "../lib/getTokenConfig";
+import { getTokenConfig } from "../../lib/getTokenConfig";
 
-export default function Simple() {
+export default function BasicContainer() {
   const { chain } = useNetwork();
   const [tokens, setTokens] = useState<TokenConfig[]>(getTokenConfig(1));
   const [simpleType, setSimpleType] = useState(SimpleType.DEPOSIT);

@@ -1,10 +1,9 @@
 import { Button, Flex, useDisclosure, useToast } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { TokenConfig } from "../type";
-import CipherCard from "./CipherCard";
-import SimpleBtn from "./SimpleBtn";
-import TokenSelector from "./TokenSelector";
-import { decodeCipherCode } from "../lib/cipher/CipherHelper";
+import { TokenConfig } from "../../type";
+import CipherCard from "../shared/CipherCard";
+import TokenSelector from "../shared/TokenSelector";
+import { decodeCipherCode } from "../../lib/cipher/CipherHelper";
 import { useAccount } from "wagmi";
 import WithdrawModal from "./WithdrawModal";
 import { useDebounce } from "@uidotdev/usehooks";

@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import React from "react";
-import { TokenConfig } from "../type";
+import { TokenConfig } from "../../type";
 
 type Props = {
   tokens: TokenConfig[] | undefined;
@@ -54,9 +54,7 @@ export default function TokenSelector(props: Props) {
         bgColor={"whiteAlpha.500"}
         className="rounded-3xl px-2 py-2 border-none"
         backdropFilter={"blur(10px)"}
-        minW="0"
         w={"320px"}
-        zIndex={9999}
       >
         {isLoadingTokens ? (
           <Skeleton height="20px" width="85%" className="m-auto" />

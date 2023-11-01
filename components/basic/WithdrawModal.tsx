@@ -24,32 +24,28 @@ import {
 import React, { useContext, useEffect, useState } from "react";
 import {
   generateCommitment,
-  generateNullifier,
-  indicesToPathIndices,
   toHashedSalt,
-} from "../lib/cipher/CipherHelper";
-import SimpleBtn from "./SimpleBtn";
-import { TokenConfig } from "../type";
+} from "../../lib/cipher/CipherHelper";
+import { TokenConfig } from "../../type";
 import { formatUnits } from "viem";
-import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
-import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
-import { CipherTransferableCoin } from "../lib/cipher/CipherCoin";
-import { CipherTree } from "../lib/cipher/CipherTree";
-import { generateCipherTx } from "../lib/cipher/CipherCore";
+import { CipherTreeProviderContext } from "../../providers/CipherTreeProvider";
+import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
+import { CipherTree } from "../../lib/cipher/CipherTree";
+import { generateCipherTx } from "../../lib/cipher/CipherCore";
 import {
   useAccount,
   useContractWrite,
   usePrepareContractWrite,
   useWaitForTransaction,
 } from "wagmi";
-import CipherAbi from "../lib/cipher/CipherAbi.json";
+import CipherAbi from "../../lib/cipher/CipherAbi.json";
 import dayjs from "dayjs";
 import {
   ProofStruct,
   PublicInfoStruct,
-} from "../lib/cipher/types/CipherContract.type";
+} from "../../lib/cipher/types/CipherContract.type";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
-import { ConfigContext } from "../providers/ConfigProvider";
+import { ConfigContext } from "../../providers/ConfigProvider";
 
 type Props = {
   isOpen: boolean;
@@ -79,14 +75,8 @@ export default function WithdrawModal(props: Props) {
     count: steps.length,
   });
   const [failedStep, setFailedStep] = useState<number>(-1);
-  const {
-    syncAndGetCipherTree: syncTree,
-    getTreeDepth,
-    getIsNullified,
-    syncAndGetCipherTree,
-    getContractTreeRoot,
-    getUnPaidIndexFromTree,
-  } = useContext(CipherTreeProviderContext);
+  const { syncAndGetCipherTree, getContractTreeRoot, getUnPaidIndexFromTree } =
+    useContext(CipherTreeProviderContext);
   const { cipherContractInfo } = useContext(ConfigContext);
 
   const { config: withdrawConfig } = usePrepareContractWrite({

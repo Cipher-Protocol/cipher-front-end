@@ -1,7 +1,7 @@
 import { useAccount } from "wagmi";
-import Header from "../components/Header";
+import Header from "../components/layout/Header";
 import ProContainer from "../components/pro/ProContainer";
-import Simple from "../components/Simple";
+import BasicContainer from "../components/basic/BasicContainer";
 import { Mode } from "../type.d";
 import { Flex, useToast } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
@@ -47,7 +47,7 @@ export default function Page() {
         backgroundRepeat="no-repeat"
       >
         <Header setMode={setMode} />
-        {mode === Mode.SIMPLE ? <Simple /> : <ProContainer />}
+        {mode === Mode.SIMPLE ? <BasicContainer /> : <ProContainer />}
       </Flex>
     </>
   );

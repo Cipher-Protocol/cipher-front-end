@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCipherCodeItem } from "../../hooks/useCipherCodeItem";
 import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
-import CipherCard from "../CipherCard";
+import CipherCard from "../shared/CipherCard";
 
 type Props = {
   index: number;

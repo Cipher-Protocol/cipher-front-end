@@ -1,35 +1,32 @@
-import { TokenConfig } from "../type";
-import {
-  Flex,
-  Text,
-  NumberInput,
-  NumberInputField,
-  Button,
-} from "@chakra-ui/react";
-import { BigNumber, utils } from "ethers";
-import React, { useState } from "react";
+import { Button, Flex, NumberInput, NumberInputField } from "@chakra-ui/react";
+import React, { useCallback, useEffect, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
-import SimpleBtn from "./SimpleBtn";
-
-type Props = {
-  pubOutAmt: bigint | undefined;
-  setPubOutAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
-  selectedToken: TokenConfig;
-  balance: bigint | undefined;
-};
+import { TokenConfig } from "../../type";
 
 const amountTable = [0.01, 0.1, 1, 10];
 
-export default function PublicOutput(props: Props) {
-  const { pubOutAmt, setPubOutAmt, balance, selectedToken } = props;
-  const [isCustomAmt, setIsCustomAmt] = useState<boolean>(false);
-  const [selectedAmt, setSelectedAmt] = useState<number>();
+type Props = {
+  amount: bigint | undefined;
+  setAmount: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  selectedToken: TokenConfig;
+  maxAmt?: number;
+};
 
-  const handlePubOutAmt = (amt: number) => {
-    setPubOutAmt(parseUnits(amt.toString(), selectedToken.decimals));
+export default function AmountSelector(props: Props) {
+  const { amount, setAmount, selectedToken, maxAmt } = props;
+  const [selectedAmt, setSelectedAmt] = useState<number>();
+  const [isCustomAmt, setIsCustomAmt] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (amount !== undefined) return;
+    setSelectedAmt(undefined);
+  }, [amount]);
+
+  const handleAmount = (amt: number) => {
+    setAmount(parseUnits(amt.toString(), selectedToken.decimals));
   };
 
-  const renderAmtBtns = () => {
+  const renderAmtBtns = useCallback(() => {
     return (
       <Flex className="gap-2 my-1 w-full justify-between">
         {amountTable.map((amt) => (
@@ -50,7 +47,7 @@ export default function PublicOutput(props: Props) {
             bgColor={selectedAmt === amt ? "white" : "whiteAlpha.400"}
             textColor={selectedAmt === amt ? "#6B39AB" : "white"}
             onClick={() => {
-              handlePubOutAmt(amt);
+              handleAmount(amt);
               setSelectedAmt(amt);
             }}
           >
@@ -59,47 +56,25 @@ export default function PublicOutput(props: Props) {
         ))}
       </Flex>
     );
-  };
+  }, [selectedAmt]);
 
   return (
-    <Flex className="flex flex-col items-end w-full">
-      <Text fontSize="md" textColor="whiteAlpha.700">
-        Balance: &nbsp;
-        {balance
-          ? Number(
-              utils.formatUnits(
-                BigNumber.from(balance),
-                selectedToken?.decimals
-              )
-            ).toFixed(4)
-          : 0}
-      </Text>
+    <Flex className="flex flex-col w-full">
       <Flex className="gap-2 my-1 w-full justify-between">
         {isCustomAmt ? (
           <NumberInput
             variant="outline"
             borderRadius={"full"}
             w={"100%"}
+            my={1}
             textColor={"white"}
             _focus={{ borderColor: "white" }}
             focusBorderColor="transparent"
-            my={1}
             min={0}
-            max={
-              balance
-                ? Number(
-                    utils.formatUnits(
-                      BigNumber.from(balance),
-                      selectedToken?.decimals
-                    )
-                  )
-                : 0
-            }
-            onChange={(value) => handlePubOutAmt(Number(value))}
+            max={maxAmt ? maxAmt : undefined}
+            onChange={(value) => handleAmount(Number(value))}
             value={
-              pubOutAmt
-                ? Number(formatUnits(pubOutAmt, selectedToken?.decimals))
-                : 0
+              amount ? Number(formatUnits(amount, selectedToken?.decimals)) : 0
             }
           >
             <NumberInputField
@@ -115,14 +90,12 @@ export default function PublicOutput(props: Props) {
           renderAmtBtns()
         )}
       </Flex>
-
       <Button
         className="w-full my-2"
         borderRadius={"full"}
         bgColor={"whiteAlpha.400"}
         textColor={"white"}
         _hover={{
-          transform: "scale(1.05)",
           bgColor: "whiteAlpha.500",
         }}
         _active={{

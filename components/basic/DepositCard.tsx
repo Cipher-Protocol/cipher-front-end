@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Button, Flex, useDisclosure, useToast } from "@chakra-ui/react";
-import { TokenConfig } from "../type";
-import TokenSelector from "./TokenSelector";
-import SimpleBtn from "./SimpleBtn";
+import { TokenConfig } from "../../type";
+import TokenSelector from "../shared/TokenSelector";
 import dynamic from "next/dynamic";
 import DepositModal from "./DepositModal";
 import { useAccount, useBalance } from "wagmi";
-import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../configs/tokenConfig";
-import { useErc20 } from "../hooks/useErc20";
-import { CipherCoinInfo } from "../lib/cipher/CipherCoin";
-import { encodeCipherCode, toHashedSalt } from "../lib/cipher/CipherHelper";
-import { getRandomSnarkField } from "../utils/getRandom";
+import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
+import { useErc20 } from "../../hooks/useErc20";
+import { CipherCoinInfo } from "../../lib/cipher/CipherCoin";
+import { encodeCipherCode, toHashedSalt } from "../../lib/cipher/CipherHelper";
+import { getRandomSnarkField } from "../../utils/getRandom";
 
-const PublicInput = dynamic(() => import("./PublicInput"), {
+const AmountSelector = dynamic(() => import("../shared/InputAmountSelector"), {
   ssr: false,
 });
 
@@ -135,10 +134,10 @@ export default function DepositCard(props: Props) {
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
         />
-        <PublicInput
-          pubInAmt={pubInAmt}
+        <AmountSelector
+          amount={pubInAmt}
           selectedToken={selectedToken}
-          setPubInAmt={setPubInAmt}
+          setAmount={setPubInAmt}
           balance={balance}
         />
         <Button

@@ -1,27 +1,18 @@
-import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Image,
-  Flex,
-  Skeleton,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { ChevronDownIcon } from "@chakra-ui/icons";
-import React, { useEffect, useState } from "react";
+import { Button, Flex, useDisclosure, useToast } from "@chakra-ui/react";
+import React from "react";
 import { TokenConfig } from "../../type";
-import SimpleBtn from "../SimpleBtn";
-import TokenSelector from "../TokenSelector";
+import TokenSelector from "../shared/TokenSelector";
 import PublicInputModal from "./PublicInputModal";
 import { formatUnits } from "viem";
-import { useAccount, useBalance } from "wagmi";
-import { useErc20 } from "../../hooks/useErc20";
-import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
+import PublicOutputModal from "./PublicOutputModal";
+import { useAccount } from "wagmi";
 
 type Props = {
+  balance: bigint | undefined;
+  publicInAmt: bigint;
+  setPublicInAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  publicOutAmt: bigint;
+  setPublicOutAmt: React.Dispatch<React.SetStateAction<bigint | undefined>>;
   tokens: TokenConfig[] | undefined;
   selectedToken: TokenConfig;
   isLoadingTokens?: boolean;
@@ -32,6 +23,11 @@ type Props = {
 };
 export default function SelectBox(props: Props) {
   const {
+    balance,
+    publicInAmt,
+    setPublicInAmt,
+    publicOutAmt,
+    setPublicOutAmt,
     tokens,
     selectedToken,
     isLoadingTokens,
@@ -43,33 +39,52 @@ export default function SelectBox(props: Props) {
     onOpen: onOpenPublicInModal,
     onClose: onClosePublicInModal,
   } = useDisclosure();
-
+  const {
+    isOpen: isOpenPublicOutModal,
+    onOpen: onOpenPublicOutModal,
+    onClose: onClosePublicOutModal,
+  } = useDisclosure();
+  const toast = useToast();
   const { address } = useAccount();
-  const { data: ethBalance } = useBalance({
-    address: address,
-  });
-  const [balance, setBalance] = useState<bigint | undefined>(
-    ethBalance?.value || 0n
-  );
-  const { balance: Erc20Balance } = useErc20(selectedToken.address);
-  const [pubInAmt, setPubInAmt] = useState<bigint>();
-
-  useEffect(() => {
-    if (!address) return;
-    if (selectedToken?.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
-      setBalance(ethBalance?.value || 0n);
-    } else {
-      if (selectedToken === undefined || Erc20Balance === undefined) {
-        setBalance(undefined);
-      } else {
-        setBalance(Erc20Balance);
-      }
-    }
-  }, [ethBalance, Erc20Balance, address, selectedToken]);
 
   const resetPublicInput = () => {
-    setPubInAmt(undefined);
+    setPublicInAmt(0n);
     onOpenPublicInModal();
+  };
+
+  const resetPublicOutput = () => {
+    setPublicOutAmt(0n);
+    onOpenPublicOutModal();
+  };
+
+  const handleOpenPublicInModal = () => {
+    if (address === undefined) {
+      toast({
+        title: "Please connect wallet",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } else {
+      onOpenPublicInModal();
+    }
+  };
+
+  const handleOpenPublicOutModal = () => {
+    if (address === undefined) {
+      toast({
+        title: "Please connect wallet",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } else {
+      onOpenPublicOutModal();
+    }
   };
 
   return (
@@ -84,7 +99,7 @@ export default function SelectBox(props: Props) {
       {/* <SimpleBtn disabled={true} colorScheme="teal" className="w-56">
       Set Recipient
     </SimpleBtn> */}
-      {pubInAmt ? (
+      {publicInAmt ? (
         <Button
           className="w-full py-6"
           borderRadius="full"
@@ -96,7 +111,7 @@ export default function SelectBox(props: Props) {
           _active={{}}
           onClick={resetPublicInput}
         >
-          Deposit: {formatUnits(pubInAmt, selectedToken.decimals)}{" "}
+          Deposit: {formatUnits(publicInAmt, selectedToken.decimals)}{" "}
           {selectedToken.symbol}
         </Button>
       ) : (
@@ -114,7 +129,7 @@ export default function SelectBox(props: Props) {
             transform: "scale(0.95)",
           }}
           transitionDuration={"0.2s"}
-          onClick={onOpenPublicInModal}
+          onClick={handleOpenPublicInModal}
         >
           Deposit from wallet
         </Button>
@@ -125,7 +140,42 @@ export default function SelectBox(props: Props) {
         isLoadingTokens={isLoadingTokens}
         setSelectedToken={setSelectedToken}
       />
-      <Button
+      {publicOutAmt ? (
+        <Button
+          className="w-full py-6"
+          borderRadius="full"
+          textColor={"white"}
+          bgColor="whiteAlpha.400"
+          _hover={{
+            bgColor: "whiteAlpha.500",
+          }}
+          _active={{}}
+          onClick={resetPublicOutput}
+        >
+          Withdraw: {formatUnits(publicOutAmt, selectedToken.decimals)}{" "}
+          {selectedToken.symbol}
+        </Button>
+      ) : (
+        <Button
+          className="w-full py-6"
+          borderRadius="full"
+          textColor={"white"}
+          bgColor="whiteAlpha.400"
+          _hover={{
+            transform: "scale(1.05)",
+            bgColor: "white",
+            textColor: "#6B39AB",
+          }}
+          _active={{
+            transform: "scale(0.95)",
+          }}
+          transitionDuration={"0.2s"}
+          onClick={handleOpenPublicOutModal}
+        >
+          Withdraw to wallet
+        </Button>
+      )}
+      {/* <Button
         className="w-full py-6"
         borderRadius="full"
         textColor={"white"}
@@ -144,7 +194,8 @@ export default function SelectBox(props: Props) {
         }}
       >
         Prepare Proof
-      </Button>
+      </Button> */}
+
       {/* <SimpleBtn
         colorScheme={"teal"}
         className="w-56"
@@ -157,11 +208,22 @@ export default function SelectBox(props: Props) {
       <PublicInputModal
         balance={balance}
         selectedToken={selectedToken}
-        pubInAmt={pubInAmt}
-        setPubInAmt={setPubInAmt}
+        publicInAmt={publicInAmt}
+        setPublicInAmt={setPublicInAmt}
+        resetPublicInput={resetPublicInput}
         isOpen={isOpenPublicInModal}
         onOpen={onOpenPublicInModal}
         onClose={onClosePublicInModal}
+      />
+      <PublicOutputModal
+        balance={balance}
+        selectedToken={selectedToken}
+        publicOutAmt={publicOutAmt}
+        setPublicOutAmt={setPublicOutAmt}
+        resetPublicOutput={resetPublicOutput}
+        isOpen={isOpenPublicOutModal}
+        onOpen={onOpenPublicOutModal}
+        onClose={onClosePublicOutModal}
       />
     </Flex>
   );
