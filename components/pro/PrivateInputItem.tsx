@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCipherCodeItem } from "../../hooks/useCipherCodeItem";
 import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
 import CipherCard from "../shared/CipherCard";
+import { Button } from "@chakra-ui/react";
 
 type Props = {
   index: number;
@@ -24,6 +25,10 @@ export default function PrivateInputItem(props: Props) {
     }
   }, [props, transferableCoin]);
 
+  const isValid = useMemo(() => {
+    return !isLoading && transferableCoin;
+  }, [isLoading, transferableCoin])
+
   return (
     <>
       {/* <p>
@@ -38,13 +43,22 @@ export default function PrivateInputItem(props: Props) {
             onValueChange={(str) => setCipherCode(str)}
             placeholder={`Drag or enter your cipher code`}
           />
-          {/* <button
-            onClick={() => {
-              checkValid();
-            }}
-          >
-            check
-          </button> */}
+          <Button
+        className=""
+        borderRadius="full"
+        textColor={"white"}
+        bgColor="whiteAlpha.100"
+        _active={{
+          bgColor: "whiteAlpha.400",
+        }}
+        transitionDuration={"0.2s"}
+        backgroundColor={isValid ? "#d9f99d" : "#e11d48"}
+        onClick={() => {
+          checkValid();
+        }}
+      >
+        CHECK
+      </Button>
         </>
       )}
     </>
