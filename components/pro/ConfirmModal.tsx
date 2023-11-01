@@ -20,7 +20,7 @@ import {
   useSteps,
   useToast,
 } from "@chakra-ui/react";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../../type";
 import {
   CipherCoinInfo,
@@ -38,6 +38,7 @@ import {
 } from "wagmi";
 import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { ConfigContext } from "../../providers/ConfigProvider";
+import { useAllowance } from "../../hooks/useAllowance";
 
 const steps = [
   { title: "Approve Token", description: "Approve token for deposit" },
@@ -77,6 +78,11 @@ export default function ConfirmModal(props: Props) {
   });
   const [failedStep, setFailedStep] = useState<number>(-1);
   const [isApproved, setIsApproved] = useState(false);
+  const { allowance, refetchAllowance } = useAllowance(
+    cipherContractInfo?.cipherContractAddress,
+    selectedToken.address,
+    address
+  );
 
   // prepare approve
   const { config: approveConfig } = usePrepareContractWrite({
@@ -106,6 +112,37 @@ export default function ConfirmModal(props: Props) {
     useWaitForTransaction({
       hash: approveTx?.hash,
     });
+
+  const checkApproval = () => {
+    if (!address) {
+      throw new Error("address is undefined");
+    }
+    if (selectedToken.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
+      setIsApproved(true);
+      setActiveStep(1);
+      return;
+    }
+    if (allowance && allowance >= publicInAmt) {
+      setIsApproved(true);
+      setActiveStep(1);
+    }
+  };
+
+  useEffect(() => {
+    if (isApproveSuccess) {
+      checkApproval();
+      setIsApproved(isApproveSuccess);
+      setActiveStep(1);
+      toast({
+        title: "Approve success",
+        description: "",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  }, [isApproveSuccess]);
 
   const handleApprove = async () => {
     if (!address) {

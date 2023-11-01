@@ -20,7 +20,7 @@ export default function BasicContainer() {
     <Flex className="w-[90%] h-full mx-auto flex-1 flex flex-col items-center my-10 ">
       <Box
         className="bg-white/20 rounded-3xl px-10 py-12 h-120"
-        backdropFilter={"blur(10px)"}
+        // backdropFilter={"blur(10px)"}
       >
         <Tabs
           variant="soft-rounded"
