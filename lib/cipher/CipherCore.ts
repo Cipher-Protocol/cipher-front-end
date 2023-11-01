@@ -166,9 +166,11 @@ export async function generateCipherTx(
   /** Prove */
   const heightName = `h${newTree.depth}`;
   const specName = `n${privateInputLength}m${privateOutputLength}`;
-  const wasmUri = `/circuits/${heightName}/${specName}/${heightName}${specName}_js/${heightName}${specName}.wasm`;
-  const zkeyUri = `/circuits/${heightName}/${specName}/${heightName}${specName}_final.zkey`
-  const {calldata} = await prove(circuitInput, wasmUri, zkeyUri)
+  
+  const {calldata} = await prove(circuitInput, {
+    heightName,
+    specName,
+  })
 
   /** Contract calldata */
   const utxoData: ProofStruct = {
