@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useCipherCodeItem } from "../../hooks/useCipherCodeItem";
 import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
 import CipherCard from "../shared/CipherCard";
+import { Flex, Text } from "@chakra-ui/react";
 
 type Props = {
   index: number;
@@ -17,6 +18,7 @@ export default function PrivateInputItem(props: Props) {
     checkValid,
     error,
   } = useCipherCodeItem();
+  const [isValid, setIsValid] = useState<boolean>(true);
 
   useEffect(() => {
     if (props.onUpdateCoin) {
@@ -32,7 +34,7 @@ export default function PrivateInputItem(props: Props) {
       {isLoading || (!error && transferableCoin) ? (
         <p>valid cipherCode! ({cipherCode?.slice(-5)})</p>
       ) : (
-        <>
+        <Flex className="flex flex-col w-full">
           <CipherCard
             value={cipherCode}
             onValueChange={(str) => setCipherCode(str)}
@@ -45,7 +47,14 @@ export default function PrivateInputItem(props: Props) {
           >
             check
           </button> */}
-        </>
+          {isValid ? (
+            <></>
+          ) : (
+            <Text className="px-8" color="rgba(255, 157, 169, 1)">
+              Invalid cipher code!
+            </Text>
+          )}
+        </Flex>
       )}
     </>
   );

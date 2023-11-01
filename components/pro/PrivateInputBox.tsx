@@ -117,9 +117,10 @@ export default function PrivateInputBox({ selectedToken }: Props) {
       </Flex> */}
       <Flex className="flex w-full mx-auto flex-col items-center gap-2">
         {inputCoinItems.map(({ Element }, idx) => (
-          <Flex className="flex flex-row items-center w-full gap-8" key={idx}>
+          <Flex className="flex flex-row items-start w-full gap-8" key={idx}>
             {Element}
             <Image
+              className="my-2"
               boxSize={"8"}
               src={dropImg.src}
               alt="drop-image"

@@ -118,9 +118,10 @@ export default function PrivateOutputBox(props: Props) {
       </Flex> */}
       <Flex className="flex w-full mx-auto flex-col items-center gap-2">
         {outCoinInfoItems.map(({ Element }, idx) => (
-          <Flex key={idx} className="flex flex-row items-center w-full gap-8">
+          <Flex key={idx} className="flex flex-row items-start w-full gap-8">
             {Element}
             <Image
+              className="my-2"
               boxSize={"8"}
               src={dropImg.src}
               alt="drop-image"
