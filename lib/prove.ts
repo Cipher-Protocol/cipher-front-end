@@ -1,16 +1,29 @@
+import { getString } from "../utils/helper";
+
 // import { groth16 } from "snarkjs"
 const snarkjs = require("snarkjs");
 const groth16 = snarkjs["groth16"];
+const CIRCUIT_BASE_URL = getString(process.env.NEXT_PUBLIC_CIPHER_CIRCUIT_BASE_URL, {
+  defaultVal: '',
+});
+
 export async function prove(
   inputContent: any,
-  wasm: Uint8Array | string,
-  zkey: Uint8Array | string
+  {
+    heightName,
+    specName,
+  }: {
+    heightName: string;
+    specName: string;
+  }
 ) {
+  const wasmUri = `${CIRCUIT_BASE_URL}/circuits/${heightName}/${specName}/${heightName}${specName}_js/${heightName}${specName}.wasm`;
+  const zkeyUri = `${CIRCUIT_BASE_URL}/circuits/${heightName}/${specName}/${heightName}${specName}_final.zkey`
 
   const { proof, publicSignals } = await groth16.fullProve(
     inputContent,
-    wasm,
-    zkey,
+    wasmUri,
+    zkeyUri,
     console
   );
 

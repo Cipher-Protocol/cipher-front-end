@@ -31,6 +31,9 @@ export function getNumber(str: string | undefined, {
 export function getString(str: string | undefined, {
   defaultVal = undefined,
   required = false,
+}: {
+  defaultVal?: string | undefined;
+  required?: boolean;
 } = {}) {
   try {
     const val = str !== undefined && str !== '' ? str : defaultVal;
