@@ -218,9 +218,9 @@ export default function ConfirmModal(props: Props) {
               <Flex className="flex flex-col" textColor="whiteAlpha.700">
                 {privateInCoins.map((coin, index) => {
                   return (
-                    <Flex className="flex flex-row justify-between">
+                    <Flex key={index} className="flex flex-row justify-between">
                       <p>Private input amount </p>
-                      <p key={index} className="">
+                      <p className="">
                         {formatUnits(
                           coin?.coinInfo.amount || 0n,
                           selectedToken.decimals
@@ -238,11 +238,12 @@ export default function ConfirmModal(props: Props) {
                 {privateOutCoins.map((coin, index) => {
                   return (
                     <Flex
+                      key={index}
                       className="flex flex-row justify-between"
                       textColor="whiteAlpha.700"
                     >
                       <p>Private output amount: </p>
-                      <p key={index}>
+                      <p>
                         {formatUnits(
                           coin?.amount || 0n,
                           selectedToken.decimals

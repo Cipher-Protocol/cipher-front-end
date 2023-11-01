@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCipherCodeItem } from "../../hooks/useCipherCodeItem";
 import { CipherTransferableCoin } from "../../lib/cipher/CipherCoin";
 import CipherCard from "../shared/CipherCard";
@@ -25,6 +25,10 @@ export default function PrivateInputItem(props: Props) {
       props.onUpdateCoin(transferableCoin);
     }
   }, [props, transferableCoin]);
+
+  // const isValid = useMemo(() => {
+  //   return !isLoading && transferableCoin;
+  // }, [isLoading, transferableCoin])
 
   return (
     <>
