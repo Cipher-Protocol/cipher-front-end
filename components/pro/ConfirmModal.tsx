@@ -320,7 +320,9 @@ export default function ConfirmModal(props: Props) {
                     <Button
                       className="mx-auto w-40"
                       borderRadius="full"
-                      bgColor={isApproved ? "whiteAlpha.400" : "white"}
+                      bgColor={
+                        isApproved || isApproving ? "whiteAlpha.400" : "white"
+                      }
                       textColor={isApproved ? "white" : "black"}
                       _hover={
                         isApproved

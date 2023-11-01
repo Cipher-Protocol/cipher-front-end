@@ -128,18 +128,30 @@ export default function ConfirmBox(props: Props) {
       <Button
         className="w-full py-6"
         borderRadius="full"
-        textColor={"white"}
-        bgColor="whiteAlpha.400"
-        _hover={{
-          transform: "scale(1.05)",
-          bgColor: "white",
-          textColor: "#6B39AB",
-        }}
-        _active={{
-          transform: "scale(0.95)",
-        }}
+        textColor={amountIsEqual ? "black" : "whiteAlpha.400"}
+        bgColor={amountIsEqual ? "white" : "whiteAlpha.400"}
+        _hover={
+          amountIsEqual
+            ? {
+                transform: "scale(1.05)",
+                bgColor: "white",
+                textColor: "#6B39AB",
+              }
+            : {
+                cursor: "not-allowed",
+              }
+        }
+        _active={
+          amountIsEqual
+            ? {
+                transform: "scale(0.95)",
+              }
+            : {
+                cursor: "not-allowed",
+              }
+        }
         transitionDuration={"0.2s"}
-        onClick={handleOpenModal}
+        onClick={amountIsEqual ? handleOpenModal : undefined}
       >
         Send transaction
       </Button>
