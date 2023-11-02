@@ -122,7 +122,7 @@ export default function WithdrawCard(props: Props) {
             isValidCode
               ? {
                   transform: "scale(1.05)",
-                  textColor: "#6B39AB",
+                  textColor: "brand",
                 }
               : { cursor: "not-allowed" }
           }

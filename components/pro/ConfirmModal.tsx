@@ -19,8 +19,16 @@ import {
   useSteps,
   useToast,
   Image,
+  ModalFooter,
+  Checkbox,
 } from "@chakra-ui/react";
-import React, { use, useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  use,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { TokenConfig } from "../../type";
 import {
   CipherCoinInfo,
@@ -74,10 +82,8 @@ export default function ConfirmModal(props: Props) {
   const { chain } = useNetwork();
   const { address } = useAccount();
   const { cipherContractInfo } = useContext(ConfigContext);
-  const { prepareProof, sendTransaction } = useContext(
-    CipherTxProviderContext
-  );
-  
+  const { prepareProof, sendTransaction } = useContext(CipherTxProviderContext);
+  const [isChecked, setIsChecked] = useState<boolean>(false);
   const { activeStep, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
@@ -121,7 +127,7 @@ export default function ConfirmModal(props: Props) {
 
   const checkApproval = () => {
     if (!address) {
-      return
+      return;
       // throw new Error("address is undefined");
     }
     if (selectedToken.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
@@ -136,7 +142,7 @@ export default function ConfirmModal(props: Props) {
   };
 
   useEffect(() => {
-    if(isOpen) {
+    if (isOpen) {
       checkApproval();
     }
   }, [isOpen]);
@@ -144,7 +150,7 @@ export default function ConfirmModal(props: Props) {
   useEffect(() => {
     console.log({
       isApproveSuccess,
-    })
+    });
     if (isApproveSuccess) {
       checkApproval();
       setIsApproved(isApproveSuccess);
@@ -180,19 +186,17 @@ export default function ConfirmModal(props: Props) {
       });
     }
   };
-  
+
   const onPrepareProof = useCallback(async () => {
     return await prepareProof?.();
   }, [prepareProof]);
+
   useEffect(() => {
-    console.log({
-      isApproved,
-    })
-    if(isApproved) {
+    if (isApproved) {
       onPrepareProof();
     }
   }, [isApproved]);
-  
+
   const onSendTransaction = useCallback(async () => {
     return await sendTransaction?.();
   }, [onPrepareProof, sendTransaction]);
@@ -201,7 +205,7 @@ export default function ConfirmModal(props: Props) {
     <Modal
       closeOnOverlayClick={false}
       isOpen={isOpen}
-      size={"md"}
+      size="5xl"
       onClose={onClose}
     >
       <ModalOverlay />
@@ -217,205 +221,232 @@ export default function ConfirmModal(props: Props) {
           className="m-6"
           size={"lg"}
           _hover={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
           _active={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
         />
         <ModalBody>
-          <Flex className="flex flex-col gap-4">
-            <Flex className="flex flex-col justify-between">
-              <Text className="font-medium text-xl">Public amount details</Text>
-              <Flex
-                className="flex flex-row justify-between"
-                textColor="whiteAlpha.600"
-              >
-                <p>Deposit amount: </p>
-                <p>
-                  {formatUnits(publicInAmt, selectedToken.decimals)}{" "}
-                  {selectedToken.symbol}
-                </p>
-              </Flex>
-              <Flex
-                className="flex flex-row justify-between "
-                textColor="whiteAlpha.700"
-              >
-                <p>Withdraw amount: </p>
-                <p>
-                  {formatUnits(publicOutAmt, selectedToken.decimals)}{" "}
-                  {selectedToken.symbol}
-                </p>
-              </Flex>
-              <Text className="font-medium text-xl mt-4">
-                Private input details
-              </Text>
-              <Flex className="flex flex-col" textColor="whiteAlpha.700">
-                {privateInCoins.map((coin, index) => {
-                  return (
-                    <Flex key={index} className="flex flex-row justify-between">
-                      <p>Private input amount </p>
-                      <p className="">
-                        {formatUnits(
-                          coin?.coinInfo.amount || 0n,
-                          selectedToken.decimals
-                        )}{" "}
-                        {selectedToken.symbol}
-                      </p>
-                    </Flex>
-                  );
-                })}
-              </Flex>
-              <Text className="font-medium text-xl mt-4">
-                Private output details
-              </Text>
-              <Flex className="flex flex-col">
-                {privateOutCoins.map((coin, index) => {
-                  return (
-                    <Flex
-                      key={index}
-                      className="flex flex-row justify-between"
-                      textColor="whiteAlpha.700"
-                    >
-                      <Flex className="flex flex-row items-center">
-                        <Image
-                          boxSize={"4"}
-                          src={downloadImg.src}
-                          alt="download"
-                          _hover={{
-                            cursor: "pointer",
-                            transform: "scale(1.1)",
-                          }}
-                          _active={{
-                            transform: "scale(0.9)",
-                          }}
-                          transitionDuration={"0.2s"}
-                        ></Image>
-                        <p className="mx-2">Private output amount: </p>
+          <Flex className="flex flex-row justify-between my-8 mx-4 gap-20">
+            <Flex className="flex flex-col gap-4 w-full">
+              <Flex className="flex flex-col justify-between">
+                <Text className="font-medium text-2xl">
+                  Public amount details
+                </Text>
+                <Flex
+                  className="flex flex-row justify-between font-base text-lg"
+                  textColor="whiteAlpha.600"
+                >
+                  <Text>Deposit amount: </Text>
+                  <Text>
+                    {formatUnits(publicInAmt, selectedToken.decimals)}{" "}
+                    {selectedToken.symbol}
+                  </Text>
+                </Flex>
+                <Flex
+                  className="flex flex-row justify-between font-base text-lg"
+                  textColor="whiteAlpha.700"
+                >
+                  <p>Withdraw amount: </p>
+                  <p>
+                    {formatUnits(publicOutAmt, selectedToken.decimals)}{" "}
+                    {selectedToken.symbol}
+                  </p>
+                </Flex>
+                <Text className="font-medium text-2xl mt-4">
+                  Shield amount details
+                </Text>
+                <Flex
+                  className="flex flex-col font-base text-lg"
+                  textColor="whiteAlpha.700"
+                >
+                  {privateInCoins.map((coin, index) => {
+                    return (
+                      <Flex
+                        key={index}
+                        className="flex flex-row justify-between"
+                      >
+                        <p>Shield input amount </p>
+                        <p className="">
+                          {formatUnits(
+                            coin?.coinInfo.amount || 0n,
+                            selectedToken.decimals
+                          )}{" "}
+                          {selectedToken.symbol}
+                        </p>
                       </Flex>
-                      <p>
-                        {formatUnits(
-                          coin?.amount || 0n,
-                          selectedToken.decimals
-                        )}{" "}
-                        {selectedToken.symbol}
-                      </p>
-                    </Flex>
-                  );
-                })}
+                    );
+                  })}
+                </Flex>
+                <Flex className="flex flex-col font-base text-lg">
+                  {privateOutCoins.map((coin, index) => {
+                    return (
+                      <Flex
+                        key={index}
+                        className="flex flex-row justify-between"
+                        textColor="whiteAlpha.700"
+                      >
+                        <Flex className="flex flex-row items-center">
+                          {/* <Image
+                            boxSize={"4"}
+                            src={downloadImg.src}
+                            alt="download"
+                            _hover={{
+                              cursor: "pointer",
+                              transform: "scale(1.1)",
+                            }}
+                            _active={{
+                              transform: "scale(0.9)",
+                            }}
+                            transitionDuration={"0.2s"}
+                          ></Image> */}
+                          <Button boxSize={5}></Button>
+                          <p className="mx-2">Shield output amount: </p>
+                        </Flex>
+                        <p>
+                          {formatUnits(
+                            coin?.amount || 0n,
+                            selectedToken.decimals
+                          )}{" "}
+                          {selectedToken.symbol}
+                        </p>
+                      </Flex>
+                    );
+                  })}
+                </Flex>
+                <Checkbox
+                  defaultChecked={isChecked}
+                  onChange={(e) => {
+                    setIsChecked(e.target.checked);
+                  }}
+                  colorScheme="red"
+                  className="my-4"
+                  color="rgba(255, 157, 169, 1)"
+                >
+                  I have downloaded all cipher code
+                </Checkbox>
               </Flex>
             </Flex>
-            <Stepper
-              index={activeStep}
-              orientation="vertical"
-              height="200"
-              gap="0"
-              colorScheme="whiteAlpha"
-              className="my-4"
+            <Flex
+              className="flex flex-col gap-4 w-full"
+              opacity={isChecked ? 1 : 0.3}
             >
-              {steps.map((step, index) => (
-                <Step key={index}>
-                  <StepIndicator
-                    bgColor="whiteAlpha.500"
-                    border="none"
-                    boxSize="12"
-                  >
-                    {failedStep === index ? (
-                      <StepStatus
-                        complete={
-                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
-                        }
-                        incomplete={
-                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
-                        }
-                        active={
-                          <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
-                        }
-                      />
-                    ) : (
-                      <StepStatus
-                        complete={<CheckIcon boxSize={6} />}
-                        incomplete={
-                          <Text fontSize={"xl"} fontWeight={600}>
-                            {index + 1}
-                          </Text>
-                        }
-                        active={
-                          <Spinner
-                            size="md"
-                            color="whiteAlpha.500"
-                            boxSize={6}
-                          />
-                        }
-                      />
-                    )}
-                  </StepIndicator>
-
-                  <Box>
-                    <StepTitle>
-                      <Flex fontWeight={600}>{step.title}</Flex>
-                    </StepTitle>
-                    <StepDescription>
-                      <Flex
-                        fontSize={"xs"}
-                        color={"whiteAlpha.600"}
-                        fontWeight={500}
-                        lineHeight={"1"}
-                      >
-                        {step.description}
-                      </Flex>
-                    </StepDescription>
-                  </Box>
-                  {step === steps[0] ? (
-                    <Button
-                      className="mx-auto w-40"
-                      borderRadius="full"
-                      bgColor={
-                        isApproved || isApproving ? "whiteAlpha.400" : "white"
-                      }
-                      textColor={isApproved || isApproving ? "white" : "black"}
-                      _hover={
-                        isApproved || isApproving
-                          ? { cursor: "not-allowed" }
-                          : {
-                              transform: "scale(1.05)",
-                              textColor: "#6B39AB",
-                            }
-                      }
-                      _active={
-                        isApproved || isApproving
-                          ? { cursor: "not-allowed" }
-                          : {
-                              transform: "scale(0.95)",
-                            }
-                      }
-                      onClick={
-                        isApproved || isApproving ? undefined : handleApprove
-                      }
+              <Stepper
+                index={activeStep}
+                orientation="vertical"
+                height="200"
+                gap="0"
+                colorScheme="whiteAlpha"
+              >
+                {steps.map((step, index) => (
+                  <Step key={index}>
+                    <StepIndicator
+                      bgColor="whiteAlpha.500"
+                      border="none"
+                      boxSize="12"
                     >
-                      {isApproving ? (
-                        <Spinner size="sm" color="whiteAlpha.500" />
-                      ) : isApproved ? (
-                        "Approved"
+                      {failedStep === index ? (
+                        <StepStatus
+                          complete={
+                            <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                          }
+                          incomplete={
+                            <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                          }
+                          active={
+                            <CloseIcon color="whiteAlpha.600" boxSize={"5"} />
+                          }
+                        />
                       ) : (
-                        "Approve"
+                        <StepStatus
+                          complete={<CheckIcon boxSize={6} />}
+                          incomplete={
+                            <Text fontSize={"xl"} fontWeight={600}>
+                              {index + 1}
+                            </Text>
+                          }
+                          active={
+                            <Spinner
+                              size="md"
+                              color="whiteAlpha.500"
+                              boxSize={6}
+                            />
+                          }
+                        />
                       )}
-                    </Button>
-                  ) : null}
-                </Step>
-              ))}
-            </Stepper>
+                    </StepIndicator>
+
+                    <Box>
+                      <StepTitle>
+                        <Flex fontWeight={600}>{step.title}</Flex>
+                      </StepTitle>
+                      <StepDescription>
+                        <Flex
+                          fontSize={"xs"}
+                          color={"whiteAlpha.600"}
+                          fontWeight={500}
+                          lineHeight={"1"}
+                        >
+                          {step.description}
+                        </Flex>
+                      </StepDescription>
+                    </Box>
+                    {step === steps[0] ? (
+                      <Button
+                        className="mx-auto w-40"
+                        borderRadius="full"
+                        bgColor={
+                          isApproved || isApproving ? "whiteAlpha.400" : "white"
+                        }
+                        textColor={
+                          isApproved || isApproving ? "white" : "black"
+                        }
+                        _hover={
+                          isApproved || isApproving
+                            ? { cursor: "not-allowed" }
+                            : {
+                                transform: "scale(1.05)",
+                                textColor: "brand",
+                              }
+                        }
+                        _active={
+                          isApproved || isApproving
+                            ? { cursor: "not-allowed" }
+                            : {
+                                transform: "scale(0.95)",
+                              }
+                        }
+                        onClick={
+                          isApproved || isApproving ? undefined : handleApprove
+                        }
+                      >
+                        {isApproving ? (
+                          <Spinner size="sm" color="whiteAlpha.500" />
+                        ) : isApproved ? (
+                          "Approved"
+                        ) : (
+                          "Approve"
+                        )}
+                      </Button>
+                    ) : null}
+                  </Step>
+                ))}
+              </Stepper>
+            </Flex>
+          </Flex>
+          <ModalFooter>
             <Button
-              className="w-full py-6"
+              className="w-1/2 py-6 m-auto"
               borderRadius="full"
               textColor={"white"}
               bgColor="whiteAlpha.400"
               _hover={{
                 transform: "scale(1.05)",
                 bgColor: "white",
-                textColor: "#6B39AB",
+                textColor: "brand",
               }}
               _active={{
                 transform: "scale(0.95)",
@@ -425,7 +456,7 @@ export default function ConfirmModal(props: Props) {
             >
               Send transaction
             </Button>
-          </Flex>
+          </ModalFooter>
         </ModalBody>
       </ModalContent>
     </Modal>

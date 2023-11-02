@@ -21,7 +21,7 @@ export default function ModeTab(props: Props) {
         <TabList>
           <Tab
             _hover={{ bg: "whiteAlpha.400" }}
-            _selected={{ bg: "white", textColor: "#6B39AB" }}
+            _selected={{ bg: "white", textColor: "brand" }}
             textColor="white"
             className="w-36"
           >
@@ -29,7 +29,7 @@ export default function ModeTab(props: Props) {
           </Tab>
           <Tab
             _hover={{ bg: "whiteAlpha.400" }}
-            _selected={{ bg: "white", textColor: "#6B39AB" }}
+            _selected={{ bg: "white", textColor: "brand" }}
             textColor="white"
             className="w-36"
           >

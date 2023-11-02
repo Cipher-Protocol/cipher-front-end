@@ -7,7 +7,7 @@ export const rainbowkitTheme = merge(lightTheme(), {
   },
   colors: {
     accentColor: "#FFFFFF",
-    accentColorForeground: "#6B39AB",
-    connectButtonText: "#6B39AB",
+    accentColorForeground: "brand",
+    connectButtonText: "brand",
   },
 } as Theme);

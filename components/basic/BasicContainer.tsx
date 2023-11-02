@@ -31,7 +31,7 @@ export default function BasicContainer() {
           <TabList>
             <Tab
               _hover={{ bg: "whiteAlpha.400" }}
-              _selected={{ bg: "white", textColor: "#6B39AB" }}
+              _selected={{ bg: "white", textColor: "brand" }}
               textColor="white"
               className="w-40"
             >
@@ -39,7 +39,7 @@ export default function BasicContainer() {
             </Tab>
             <Tab
               _hover={{ bg: "whiteAlpha.400" }}
-              _selected={{ bg: "white", textColor: "#6B39AB" }}
+              _selected={{ bg: "white", textColor: "brand" }}
               textColor="white"
               className="w-40"
             >

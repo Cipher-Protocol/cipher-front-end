@@ -122,7 +122,7 @@ export default function SelectBox(props: Props) {
           _hover={{
             transform: "scale(1.05)",
             bgColor: "white",
-            textColor: "#6B39AB",
+            textColor: "brand",
           }}
           _active={{
             transform: "scale(0.95)",
@@ -163,7 +163,7 @@ export default function SelectBox(props: Props) {
           _hover={{
             transform: "scale(1.05)",
             bgColor: "white",
-            textColor: "#6B39AB",
+            textColor: "brand",
           }}
           _active={{
             transform: "scale(0.95)",
@@ -182,7 +182,7 @@ export default function SelectBox(props: Props) {
         _hover={{
           transform: "scale(1.05)",
           bgColor: "white",
-          textColor: "#6B39AB",
+          textColor: "brand",
         }}
         _active={{
           transform: "scale(0.95)",

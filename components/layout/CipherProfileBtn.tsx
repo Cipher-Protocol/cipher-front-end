@@ -104,7 +104,7 @@ export default function CipherProfileBtn() {
               rounded="xl"
               _hover={{
                 bgColor: "white",
-                textColor: "#6B39AB",
+                textColor: "brand",
               }}
               overflow={"scroll"}
               onClick={() => copy()}

@@ -10,7 +10,8 @@ export const useCipherAccount = () => {
     isSuccess,
     signMessageAsync: signAuthAsync,
   } = useSignMessage({
-    message: "Authenticate on Cipher Protocol",
+    message:
+      "Authentication on Cipher Protocol, sign this message to generate the unique user ID.",
   });
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [cipherAccount, setCipherAccount] = useState<CipherAccount>({

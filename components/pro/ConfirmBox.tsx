@@ -135,7 +135,7 @@ export default function ConfirmBox(props: Props) {
             ? {
                 transform: "scale(1.05)",
                 bgColor: "white",
-                textColor: "#6B39AB",
+                textColor: "brand",
               }
             : {
                 cursor: "not-allowed",

@@ -75,16 +75,16 @@ export default function PublicOutputModal(props: Props) {
         color={"white"}
         backdropFilter={"blur(10px)"}
       >
-        <ModalHeader fontSize={"3xl"}>Public output</ModalHeader>
+        <ModalHeader fontSize={"3xl"}>Withdraw</ModalHeader>
         <ModalCloseButton
           className="m-6"
           size={"lg"}
           _hover={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
           _active={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
         />
@@ -104,7 +104,7 @@ export default function PublicOutputModal(props: Props) {
               _hover={{
                 transform: "scale(1.05)",
                 bgColor: "white",
-                textColor: "#6B39AB",
+                textColor: "brand",
               }}
               _active={{
                 transform: "scale(0.95)",

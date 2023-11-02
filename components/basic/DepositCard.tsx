@@ -146,7 +146,7 @@ export default function DepositCard(props: Props) {
           bgColor="white"
           _hover={{
             transform: "scale(1.05)",
-            textColor: "#6B39AB",
+            textColor: "brand",
           }}
           _active={{
             transform: "scale(0.95)",

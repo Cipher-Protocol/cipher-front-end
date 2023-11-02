@@ -38,14 +38,14 @@ export default function AmountSelector(props: Props) {
             _hover={{
               transform: "scale(1.1)",
               bgColor: "white",
-              textColor: "#6B39AB",
+              textColor: "brand",
             }}
             _active={{
               transform: "scale(0.9)",
             }}
             transitionDuration={"0.2s"}
             bgColor={selectedAmt === amt ? "white" : "whiteAlpha.400"}
-            textColor={selectedAmt === amt ? "#6B39AB" : "white"}
+            textColor={selectedAmt === amt ? "brand" : "white"}
             onClick={() => {
               handleAmount(amt);
               setSelectedAmt(amt);

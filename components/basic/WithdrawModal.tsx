@@ -277,11 +277,11 @@ export default function WithdrawModal(props: Props) {
           className="m-6"
           size={"lg"}
           _hover={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
           _active={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
         />
@@ -391,7 +391,7 @@ export default function WithdrawModal(props: Props) {
                   ? { cursor: "not-allowed" }
                   : {
                       transform: "scale(1.05)",
-                      textColor: "#6B39AB",
+                      textColor: "brand",
                     }
               }
               _active={

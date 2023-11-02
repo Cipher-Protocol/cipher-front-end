@@ -15,7 +15,7 @@ const config: Config = {
       },
       colors: {
         // ...require("tailwindcss/colors"),
-        brand: "#6B39AB",
+        brand: "brand",
       },
     },
   },

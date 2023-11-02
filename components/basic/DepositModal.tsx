@@ -371,11 +371,11 @@ export default function DepositModal(props: Props) {
           className="m-6"
           size={"lg"}
           _hover={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
           _active={{
-            color: "#6B39AB",
+            color: "brand",
             bgColor: "white",
           }}
         />
@@ -405,7 +405,7 @@ export default function DepositModal(props: Props) {
                 textColor="black"
                 _hover={{
                   transform: "scale(1.05)",
-                  textColor: "#6B39AB",
+                  textColor: "brand",
                 }}
                 _active={{
                   transform: "scale(0.95)",
@@ -490,7 +490,7 @@ export default function DepositModal(props: Props) {
                           ? { cursor: "not-allowed" }
                           : {
                               transform: "scale(1.05)",
-                              textColor: "#6B39AB",
+                              textColor: "brand",
                             }
                       }
                       _active={
@@ -547,7 +547,7 @@ export default function DepositModal(props: Props) {
                   ? { cursor: "not-allowed" }
                   : {
                       transform: "scale(1.05)",
-                      textColor: "#6B39AB",
+                      textColor: "brand",
                     }
               }
               _active={
