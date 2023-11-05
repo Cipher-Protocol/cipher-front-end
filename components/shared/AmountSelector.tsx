@@ -15,7 +15,7 @@ type Props = {
 export default function AmountSelector(props: Props) {
   const { amount, setAmount, selectedToken, maxAmt } = props;
   const [selectedAmt, setSelectedAmt] = useState<number>();
-  const [isCustomAmt, setIsCustomAmt] = useState<boolean>(false);
+  const [isCustomizedAmt, setIsCustomizedAmt] = useState<boolean>(false);
 
   useEffect(() => {
     if (amount !== undefined) return;
@@ -61,7 +61,7 @@ export default function AmountSelector(props: Props) {
   return (
     <Flex className="flex flex-col w-full">
       <Flex className="gap-2 my-1 w-full justify-between">
-        {isCustomAmt ? (
+        {isCustomizedAmt ? (
           <NumberInput
             variant="outline"
             borderRadius={"full"}
@@ -102,9 +102,9 @@ export default function AmountSelector(props: Props) {
           transform: "scale(0.95)",
         }}
         transitionDuration={"0.2s"}
-        onClick={() => setIsCustomAmt(!isCustomAmt)}
+        onClick={() => setIsCustomizedAmt(!isCustomizedAmt)}
       >
-        {isCustomAmt ? "Select amount" : "Custom Amount"}
+        {isCustomizedAmt ? "Select amount" : "Customized Amount"}
       </Button>
     </Flex>
   );

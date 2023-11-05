@@ -102,8 +102,9 @@ export default function ProContainer() {
                   onSendTransaction={sendTransaction}
                 />
                 <Flex className="flex flex-row justify-between rounded-3xl my-8 grid-cols-2 gap-8">
-                  <PrivateInputBox selectedToken={selectedToken} />
-                  {/* <Box className="my-4 px-8 py-2 mx-auto bg-slate-300 rounded-3xl">
+                  <Flex className="w-1/2 md:w-full">
+                    <PrivateInputBox selectedToken={selectedToken} />
+                    {/* <Box className="my-4 px-8 py-2 mx-auto bg-slate-300 rounded-3xl">
                       <AmountSelector
                         pubInAmt={publicInAmt}
                         setPubInAmt={(v) =>
@@ -113,9 +114,10 @@ export default function ProContainer() {
                         balance={balance}
                       />
                     </Box> */}
-
-                  <PrivateOutputBox selectedToken={selectedToken} />
-                  {/* <Box className="my-4 py-2 px-8 mx-auto bg-slate-300 rounded-3xl">
+                  </Flex>
+                  <Flex className="w-1/2 md:w-full">
+                    <PrivateOutputBox selectedToken={selectedToken} />
+                    {/* <Box className="my-4 py-2 px-8 mx-auto bg-slate-300 rounded-3xl">
                       <PublicOutput
                         pubOutAmt={publicOutAmt}
                         setPubOutAmt={(v) =>
@@ -125,6 +127,7 @@ export default function ProContainer() {
                         balance={0n}
                       />
                     </Box> */}
+                  </Flex>
                 </Flex>
               </Flex>
               <ConfirmBox

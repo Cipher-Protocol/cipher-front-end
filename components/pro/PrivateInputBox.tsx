@@ -67,6 +67,7 @@ export default function PrivateInputBox({ selectedToken }: Props) {
         coin: undefined,
         Element: (
           <PrivateInputCipherCodeItem
+            selectedToken={selectedToken}
             key={index}
             index={index}
             onUpdateCoin={onUpdateCoin}
