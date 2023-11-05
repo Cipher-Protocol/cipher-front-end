@@ -71,7 +71,7 @@ const parseCipherCode = async (
   }
 }
 
-export const useCipherCodeItem = (): {
+export const useCipherCodeItem = (defaultCipherCode?: string): {
   isLoading: boolean;
   cipherCode?: string;
   transferableCoin?: CipherTransferableCoin;
@@ -89,7 +89,7 @@ export const useCipherCodeItem = (): {
   };
 } => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [cipherCode, setCipherCode] = useState<string>('');  
+  const [cipherCode, setCipherCode] = useState<string>(defaultCipherCode || "");  
   const [transferableCoin, setTransferableCoin] = useState<CipherTransferableCoin | undefined>(undefined);
   const [error, setError] = useState<{
     message: string;

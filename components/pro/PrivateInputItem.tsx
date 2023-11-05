@@ -7,7 +7,9 @@ import { useDebounce, useThrottle } from "@uidotdev/usehooks";
 
 type Props = {
   index: number;
+  cipherCode?: string;
   onUpdateCoin?: (coin: CipherTransferableCoin | undefined) => void;
+  onUpdateCipherCode?: (cipherCode: string) => void;
 };
 
 export default function PrivateInputItem(props: Props) {
@@ -18,16 +20,22 @@ export default function PrivateInputItem(props: Props) {
     setCipherCode,
     checkValid,
     error,
-  } = useCipherCodeItem();
+  } = useCipherCodeItem(props.cipherCode || '');
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const debouncedCipherCode = useDebounce(cipherCode, 800)
 
   useEffect(() => {
+    if(cipherCode !== props.cipherCode) {
+      setCipherCode(props.cipherCode || '');
+    }
+  }, [props]);
+
+  useEffect(() => {
     if (props.onUpdateCoin) {
       props.onUpdateCoin(transferableCoin);
     }
-  }, [props, transferableCoin]);
+  }, [transferableCoin]);
 
   useEffect(() => {
     if(!debouncedCipherCode) return;
@@ -44,6 +52,13 @@ export default function PrivateInputItem(props: Props) {
     }
   }, [error, transferableCoin]);
 
+  const handleCipherCodeChange = (str: string) => {
+    setCipherCode(str);
+    if (props.onUpdateCipherCode) {
+      props.onUpdateCipherCode(str);
+    }
+  }
+
   // const isValid = useMemo(() => {
   //   return !isLoading && transferableCoin;
   // }, [isLoading, transferableCoin])
@@ -53,7 +68,7 @@ export default function PrivateInputItem(props: Props) {
       <Flex className="flex flex-col w-full">
         <CipherCard
           value={cipherCode}
-          onValueChange={(str) => setCipherCode(str)}
+          onValueChange={(str) => handleCipherCodeChange(str)}
           placeholder={`Drag or enter your cipher code`}
         />
         {/* <button

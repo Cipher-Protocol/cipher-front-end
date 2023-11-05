@@ -1,5 +1,5 @@
 import { Button, Flex, NumberInput, NumberInputField } from "@chakra-ui/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import { TokenConfig } from "../../type";
 
@@ -14,19 +14,27 @@ type Props = {
 
 export default function AmountSelector(props: Props) {
   const { amount, setAmount, selectedToken, maxAmt } = props;
-  const [selectedAmt, setSelectedAmt] = useState<number>();
+  const [selectedAmt, setSelectedAmt] = useState<number>(amount ? Number(formatUnits(amount, selectedToken?.decimals)) : 0);
   const [isCustomAmt, setIsCustomAmt] = useState<boolean>(false);
-
   useEffect(() => {
     if (amount !== undefined) return;
-    setSelectedAmt(undefined);
+    // setSelectedAmt(undefined);
   }, [amount]);
 
-  const handleAmount = (amt: number) => {
+  const handleAmount = useCallback((amt: number) => {
     setAmount(parseUnits(amt.toString(), selectedToken.decimals));
-  };
+  }, [selectedToken.decimals, setAmount]);
 
-  const renderAmtBtns = useCallback(() => {
+  const selectedAmtBtn = useCallback((amt: number) => {
+    console.log({
+      message: '??',
+      amt: amt,
+    })
+    handleAmount(amt);
+    setSelectedAmt(amt);
+  }, [handleAmount])
+
+  const AmtBtnComponents = useMemo(() => {
     return (
       <Flex className="gap-2 my-1 w-full justify-between">
         {amountTable.map((amt) => (
@@ -46,17 +54,14 @@ export default function AmountSelector(props: Props) {
             transitionDuration={"0.2s"}
             bgColor={selectedAmt === amt ? "white" : "whiteAlpha.400"}
             textColor={selectedAmt === amt ? "brand" : "white"}
-            onClick={() => {
-              handleAmount(amt);
-              setSelectedAmt(amt);
-            }}
+            onClick={() => selectedAmtBtn(amt)}
           >
             {amt}
           </Button>
         ))}
       </Flex>
     );
-  }, [selectedAmt]);
+  }, [selectedAmt, selectedAmtBtn]);
 
   return (
     <Flex className="flex flex-col w-full">
@@ -87,7 +92,7 @@ export default function AmountSelector(props: Props) {
             />
           </NumberInput>
         ) : (
-          renderAmtBtns()
+          AmtBtnComponents
         )}
       </Flex>
       <Button
