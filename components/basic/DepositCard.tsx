@@ -8,7 +8,7 @@ import { useAccount, useBalance } from "wagmi";
 import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { useErc20 } from "../../hooks/useErc20";
 import { CipherCoinInfo } from "../../lib/cipher/CipherCoin";
-import { encodeCipherCode, toHashedSalt } from "../../lib/cipher/CipherHelper";
+import { CipherCodeInterface, encodeCipherCode, toHashedSalt } from "../../lib/cipher/CipherHelper";
 import { getRandomSnarkField } from "../../utils/getRandom";
 
 const AmountSelector = dynamic(() => import("../shared/InputAmountSelector"), {
@@ -47,7 +47,7 @@ export default function DepositCard(props: Props) {
   useEffect(() => {
     if (pubInAmt === undefined) return;
     if (selectedToken === undefined) return;
-    const data = {
+    const data: CipherCodeInterface = {
       tokenAddress: selectedToken.address,
       amount: pubInAmt,
       salt: getRandomSnarkField(),
@@ -57,9 +57,9 @@ export default function DepositCard(props: Props) {
     setCipherCode(encodedData);
     const coin: CipherCoinInfo = {
       key: {
-        hashedSaltOrUserId: toHashedSalt(data.salt.toBigInt()),
-        inSaltOrSeed: data.salt.toBigInt(),
-        inRandom: data.random.toBigInt(),
+        hashedSaltOrUserId: toHashedSalt(BigInt(data.salt!.toString())),
+        inSaltOrSeed: BigInt(data.salt!.toString()),
+        inRandom: BigInt(data.random!.toString()),
       },
       amount: pubInAmt,
     };

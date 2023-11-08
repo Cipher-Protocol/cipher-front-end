@@ -4,9 +4,11 @@ import { Observable } from "rx";
 import { CipherTree } from "../lib/cipher/CipherTree";
 import { useDebounce, useThrottle } from "@uidotdev/usehooks";
 import { CipherTreeProviderContext } from "../providers/CipherTreeProvider";
-import { decodeCipherCode, generateCommitment, toHashedSalt } from "../lib/cipher/CipherHelper";
+import { assertCipherCode, decodeCipherCode, generateCommitment, toHashedSalt } from "../lib/cipher/CipherHelper";
 import { TreeCacheItem, TreeSyncingQueueContext } from "../lib/cipher/types/CipherNewCommitment.type";
 import { throttle } from "lodash";
+import { CipherAccount } from "../type";
+import { CipherAccountContext } from "../providers/CipherProvider";
 
 const parseCipherCode = async (
   syncAndGetCipherTree: (tokenAddress: string) => Promise<{
@@ -18,7 +20,15 @@ const parseCipherCode = async (
     commitment: bigint,
     salt: bigint
   ) => Promise<number>,
-  cipherCode?: string,
+  {
+    cipherCode,
+    tokenAddress,
+    cipherAccount
+  }: {
+    cipherCode?: string,
+    tokenAddress?: string;
+    cipherAccount?: CipherAccount,
+  }
 ): Promise<{
   transferableCoin?: CipherTransferableCoin;
   error?: {
@@ -34,24 +44,46 @@ const parseCipherCode = async (
         data: { cipherCode },
       },
     };
+    if(!tokenAddress) {
+      return {
+        transferableCoin: undefined,
+        error: {
+          message: 'Invalid token address',
+          data: { tokenAddress },
+        },
+      }
+    }
+    if(!cipherAccount || (!cipherAccount.seed && !cipherAccount.userId)) {
+      return {
+        transferableCoin: undefined,
+        error: {
+          message: 'Invalid cipher account',
+          data: { cipherAccount },
+        },
+      }
+    }
     const cipherData = decodeCipherCode(cipherCode);
+    assertCipherCode(cipherData, tokenAddress, BigInt(cipherAccount.userId || '0'));
+    const saltOrSeed = cipherData.userId ? BigInt(cipherAccount.seed as string) : cipherData.salt as bigint;
+
     const commitment = generateCommitment({
       amount: cipherData.amount,
-      salt: cipherData.salt,
+      salt: saltOrSeed,
       random: cipherData.random,
     });
+    
 
     const {
       promise: treePromise,
     } = await syncAndGetCipherTree(cipherData.tokenAddress);
     const treeCache = await treePromise;
 
-    const coinIndex = await getUnPaidIndexFromTree(treeCache.cipherTree, commitment, cipherData.salt);
+    const coinIndex = await getUnPaidIndexFromTree(treeCache.cipherTree, commitment, saltOrSeed);
     const transferableCoin = new CipherTransferableCoin({
       key: {
-        inSaltOrSeed: cipherData.salt,
+        inSaltOrSeed: saltOrSeed,
         inRandom: cipherData.random,
-        hashedSaltOrUserId: toHashedSalt(cipherData.salt),
+        hashedSaltOrUserId: toHashedSalt(saltOrSeed),
       },
       amount: cipherData.amount,
     }, treeCache.cipherTree, coinIndex); 
@@ -71,7 +103,13 @@ const parseCipherCode = async (
   }
 }
 
-export const useCipherCodeItem = (defaultCipherCode?: string): {
+export const useCipherCodeItem = ({
+  selectedTokenAddress,
+  defaultCipherCode,
+}: {
+  selectedTokenAddress?: string;
+  defaultCipherCode?: string
+}): {
   isLoading: boolean;
   cipherCode?: string;
   transferableCoin?: CipherTransferableCoin;
@@ -95,6 +133,8 @@ export const useCipherCodeItem = (defaultCipherCode?: string): {
     message: string;
     data: Record<string, any>;
   } | undefined>(undefined);
+  const { cipherAccount, } = useContext(CipherAccountContext);
+
   // const debouncedCipherCode = useDebounce(cipherCode, 1000);
 
   const {
@@ -120,7 +160,11 @@ export const useCipherCodeItem = (defaultCipherCode?: string): {
       const {
         transferableCoin,
         error,
-      } = await parseCipherCode(syncAndGetCipherTree, getUnPaidIndexFromTree, cipherCode);
+      } = await parseCipherCode(syncAndGetCipherTree, getUnPaidIndexFromTree, {
+        cipherCode,
+        tokenAddress: selectedTokenAddress,
+        cipherAccount,
+      });
       setTransferableCoin(transferableCoin);
       setError(error);
       setIsLoading(false);

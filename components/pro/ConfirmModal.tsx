@@ -308,7 +308,7 @@ export default function ConfirmModal(props: Props) {
                 <Flex className="flex flex-col font-base text-lg gap-2 mt-4">
                   {privateOutCoins.map((coin, index) => {
                     return (
-                      <Flex className="flex flex-col">
+                      <Flex key={index} className="flex flex-col">
                         <Flex
                           key={index}
                           className="flex flex-row justify-between"

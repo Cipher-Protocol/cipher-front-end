@@ -27,10 +27,6 @@ export default function AmountSelector(props: Props) {
   }, [selectedToken.decimals, setAmount]);
 
   const selectedAmtBtn = useCallback((amt: number) => {
-    console.log({
-      message: '??',
-      amt: amt,
-    })
     handleAmount(amt);
     setSelectedAmt(amt);
   }, [handleAmount])

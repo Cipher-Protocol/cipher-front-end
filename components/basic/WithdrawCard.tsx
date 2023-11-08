@@ -1,12 +1,13 @@
 import { Button, Flex, useDisclosure, useToast } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../../type";
 import CipherCard from "../shared/CipherCard";
 import TokenSelector from "../shared/TokenSelector";
-import { decodeCipherCode } from "../../lib/cipher/CipherHelper";
+import { assertCipherCode, decodeCipherCode } from "../../lib/cipher/CipherHelper";
 import { useAccount } from "wagmi";
 import WithdrawModal from "./WithdrawModal";
 import { useDebounce } from "@uidotdev/usehooks";
+import { CipherAccountContext } from "../../providers/CipherProvider";
 
 type Props = {
   tokens: TokenConfig[];
@@ -26,32 +27,45 @@ export default function WithdrawCard(props: Props) {
   const [salt, setSalt] = useState<bigint>();
   const [random, setRandom] = useState<bigint>();
 
+  const { cipherAccount, } = useContext(CipherAccountContext);
+
   useEffect(() => {
     if (!tokens) return;
     setSelectedToken(tokens[0]);
   }, [tokens]);
 
   useEffect(() => {
-    if (!debouncedCipherCode) return;
+    
+    try {
+      if (!debouncedCipherCode) return;
+      const cipherCodeResult = decodeCipherCode(debouncedCipherCode);    
 
-    // 0x + 4 * 32 bytes
-    if (cipherCode.length !== 258) {
-      setIsValidCode(false);
-      return;
-    }
-    const { tokenAddress, amount, salt, random, isCode } =
-      decodeCipherCode(debouncedCipherCode);
-    if (!isCode) {
-      setIsValidCode(false);
-      return;
-    } else if (tokenAddress !== selectedToken?.address) {
-      setIsValidCode(false);
-      return;
-    } else {
-      setIsValidCode(true);
-      setPubOutAmt(amount);
-      setSalt(salt);
-      setRandom(random);
+      if (
+        assertCipherCode(cipherCodeResult, selectedToken?.address, BigInt(cipherAccount?.userId || '0'))
+      ) {
+        setIsValidCode(true);
+        setPubOutAmt(cipherCodeResult.amount);
+        setRandom(random);
+        if (cipherCodeResult.userId) {
+          const seed = BigInt(cipherAccount!.seed as string);
+          setSalt(seed);
+        } else {
+          setSalt(cipherCodeResult.salt);
+        }
+        return;
+      } else {
+        throw new Error("cipher code invalid");
+      }
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     }
   }, [debouncedCipherCode, selectedToken]);
 

@@ -24,7 +24,10 @@ export default function PrivateInputItem(props: Props) {
     setCipherCode,
     checkValid,
     error,
-  } = useCipherCodeItem(props.cipherCode || '');
+  } = useCipherCodeItem({
+    selectedTokenAddress: selectedToken.address,
+    defaultCipherCode: props.cipherCode,
+  });
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const debouncedCipherCode = useDebounce(cipherCode, 800);

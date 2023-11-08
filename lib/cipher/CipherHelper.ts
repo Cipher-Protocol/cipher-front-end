@@ -5,6 +5,22 @@ import { assert } from "../helper";
 import { CipherTree } from "./CipherTree";
 export const FIELD_SIZE_BIGINT = BigInt(SNARK_FIELD_SIZE);
 
+export interface CipherCodeInterface {
+  tokenAddress: string;
+  amount: BigNumber | string | bigint;
+  salt?: BigNumber | string | bigint;
+  random: BigNumber | string | bigint;
+  userId?: BigNumber | string | bigint;
+}
+
+export type DecodeCipherCodeResult = {
+  tokenAddress: string;
+  amount: bigint;
+  salt?: bigint;
+  random: bigint;
+  userId?: bigint;
+}
+
 export function getUtxoType(nIn: number, mOut: number): string {
   if (isNaN(nIn) || isNaN(mOut)) {
     throw new Error(`Invalid nNum=${nIn}, mNum=${mOut}`);
@@ -94,42 +110,65 @@ export function toHashedSalt(saltOrSeed: bigint) {
   return PoseidonHash([saltOrSeed]);
 }
 
-export function encodeCipherCode(data: {
-  tokenAddress: string;
-  amount: BigNumber | string | bigint;
-  salt: BigNumber | string | bigint;
-  random: BigNumber | string | bigint;
-  // leafIndex: BigNumber | string | bigint;
-}) {
+export function encodeCipherCode(data: CipherCodeInterface) {
   const cipherCode = utils.defaultAbiCoder.encode(
-    ["address", "uint256", "uint256", "uint256"],
-    [data.tokenAddress, data.amount, data.salt, data.random]
+    ["address", "uint256", "uint256", "uint256", "uint256"],
+    [data.tokenAddress, data.amount, data.salt || 0, data.random, data.userId || 0]
   );
   return cipherCode;
 }
 
-export function decodeCipherCode(cipherCode: string): {
-  tokenAddress: string;
-  amount: bigint;
-  salt: bigint;
-  random: bigint;
-  isCode: boolean;
-} {
+export function decodeCipherCode(cipherCode: string): DecodeCipherCodeResult {
   try {
-    const [tokenAddress, amount, salt, random] = utils.defaultAbiCoder.decode(
-      ["address", "uint256", "uint256", "uint256"],
+    // 0x + 5 * 32 bytes
+    if (cipherCode.length !== 2 + 5 * 64) {
+      throw new Error("cipher code length invalid");
+    }
+
+    const [tokenAddress, amount, saltOrSeed, random, userId] = utils.defaultAbiCoder.decode(
+      ["address", "uint256", "uint256", "uint256", "uint256"],
       cipherCode
-    ) as [string, BigNumber, BigNumber, BigNumber];
+    ) as [string, BigNumber, BigNumber, BigNumber, BigNumber];
+
+    if (amount.lte(0)) {
+      throw new Error("amount invalid");
+    }
+
+    if (saltOrSeed.eq(0) && userId.eq(0)) {
+      throw new Error("salt and userId must have one");
+    }
+
+    if(random.lte(0)) {
+      throw new Error("random code invalid");
+    }
+
     return {
       tokenAddress,
       amount: amount.toBigInt(),
-      salt: salt.toBigInt(),
+      salt: saltOrSeed.isZero() ? undefined : saltOrSeed.toBigInt(),
       random: random.toBigInt(),
-      isCode: true,
+      userId: userId.isZero() ? undefined : userId.toBigInt(),
     };
   } catch (e) {
     throw new Error(`Invalid cipherCode`);
   }
+}
+
+export function assertCipherCode(cipherResult: DecodeCipherCodeResult, selectedToken: string, userId: bigint) {
+  const privateInfoValid = (
+    (cipherResult.salt && !cipherResult.userId)
+    || (cipherResult.userId && userId !== 0n && userId === cipherResult.userId)
+  );
+
+  if(!privateInfoValid) {
+    throw new Error("cipher info invalid");
+  }
+
+  if (cipherResult.tokenAddress !== selectedToken) {
+    throw new Error("token address invalid");
+  }
+
+  return true;
 }
 
 export function delay(time: number) {

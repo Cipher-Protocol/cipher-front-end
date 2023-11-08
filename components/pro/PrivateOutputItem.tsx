@@ -19,6 +19,7 @@ import addUser from "../../assets/images/addUser.png";
 import RecipientModal from "./RecipientModal";
 import showImage from "../../assets/images/hide1.png";
 import hideImage from "../../assets/images/hide2.png";
+import { BigNumber } from "ethers";
 
 const amountTable = [0.01, 0.1, 1, 10];
 
@@ -66,8 +67,9 @@ export default function PrivateOutputItem(props: Props) {
     const data = {
       tokenAddress: selectedToken.address,
       amount: pubInAmt,
-      salt: getRandomSnarkField(),
+      salt: userId ? BigNumber.from(0) : getRandomSnarkField(),
       random: getRandomSnarkField(),
+      userId: userId ? BigInt(userId) : BigNumber.from(0),
     };
     const encodedData = encodeCipherCode(data);
     setCipherCode(encodedData);
@@ -201,7 +203,7 @@ export default function PrivateOutputItem(props: Props) {
         className="flex flex-row justify-between px-4"
         color="whiteAlpha.600"
       >
-        <Text className="w-full">Specified recipient's user ID:</Text>
+        <Text className="w-full">Specified recipient&apos;s user ID:</Text>
         <Text className="whitespace-nowrap px-2" overflow={"scroll"}>
           {userId ? userId : "None"}
         </Text>
