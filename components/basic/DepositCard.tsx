@@ -120,8 +120,8 @@ export default function DepositCard(props: Props) {
     }
   };
 
-  const customClose = () => {
-    console.log("custom close");
+  const customizedClose = () => {
+    console.log("customized close");
     setPubInAmt(undefined);
     onClose();
   };
@@ -160,7 +160,7 @@ export default function DepositCard(props: Props) {
       <DepositModal
         isOpen={isOpen}
         onOpen={onOpen}
-        onClose={customClose}
+        onClose={customizedClose}
         pubInAmt={pubInAmt || 0n}
         token={selectedToken}
         cipherCode={cipherCode}

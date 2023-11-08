@@ -21,6 +21,7 @@ import {
   Image,
   ModalFooter,
   Checkbox,
+  Tooltip,
 } from "@chakra-ui/react";
 import React, {
   use,
@@ -48,7 +49,7 @@ import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { ConfigContext } from "../../providers/ConfigProvider";
 import { useAllowance } from "../../hooks/useAllowance";
 import { CipherTxProviderContext } from "./ProCipherTxContext";
-import downloadImg from "../../assets/images/download.png";
+import downloadImg1 from "../../assets/images/download1.png";
 
 const steps = [
   { title: "Approve Token", description: "Approve token for deposit" },
@@ -84,6 +85,7 @@ export default function ConfirmModal(props: Props) {
   const { cipherContractInfo } = useContext(ConfigContext);
   const { prepareProof, sendTransaction } = useContext(CipherTxProviderContext);
   const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
   const { activeStep, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
@@ -142,10 +144,10 @@ export default function ConfirmModal(props: Props) {
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isChecked && isDownloaded) {
       checkApproval();
     }
-  }, [isOpen]);
+  }, [isOpen, isChecked, isDownloaded]);
 
   useEffect(() => {
     console.log({
@@ -201,12 +203,34 @@ export default function ConfirmModal(props: Props) {
     return await sendTransaction?.();
   }, [onPrepareProof, sendTransaction]);
 
+  const handleIsChecked = () => {
+    if (!isChecked) {
+      setIsChecked(!isChecked);
+    }
+  };
+
+  const handleIsDownloaded = () => {
+    if (!isDownloaded) {
+      setIsDownloaded(!isDownloaded);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsChecked(false);
+    setIsDownloaded(false);
+    setActiveStep(0);
+    setFailedStep(-1);
+    resetApprove();
+    setIsApproved(false);
+    onClose();
+  };
+
   return (
     <Modal
       closeOnOverlayClick={false}
       isOpen={isOpen}
       size="5xl"
-      onClose={onClose}
+      onClose={handleCloseModal}
     >
       <ModalOverlay />
       <ModalContent
@@ -248,7 +272,7 @@ export default function ConfirmModal(props: Props) {
                 </Flex>
                 <Flex
                   className="flex flex-row justify-between font-base text-lg"
-                  textColor="whiteAlpha.700"
+                  textColor="whiteAlpha.600"
                 >
                   <p>Withdraw amount: </p>
                   <p>
@@ -261,7 +285,7 @@ export default function ConfirmModal(props: Props) {
                 </Text>
                 <Flex
                   className="flex flex-col font-base text-lg"
-                  textColor="whiteAlpha.700"
+                  textColor="whiteAlpha.600"
                 >
                   {privateInCoins.map((coin, index) => {
                     return (
@@ -281,63 +305,94 @@ export default function ConfirmModal(props: Props) {
                     );
                   })}
                 </Flex>
-                <Flex className="flex flex-col font-base text-lg">
+                <Flex className="flex flex-col font-base text-lg gap-2 mt-4">
                   {privateOutCoins.map((coin, index) => {
                     return (
-                      <Flex
-                        key={index}
-                        className="flex flex-row justify-between"
-                        textColor="whiteAlpha.700"
-                      >
-                        <Flex className="flex flex-row items-center">
-                          {/* <Image
-                            boxSize={"4"}
-                            src={downloadImg.src}
-                            alt="download"
-                            _hover={{
-                              cursor: "pointer",
-                              transform: "scale(1.1)",
-                            }}
-                            _active={{
-                              transform: "scale(0.9)",
-                            }}
-                            transitionDuration={"0.2s"}
-                          ></Image> */}
-                          <Button boxSize={5}></Button>
-                          <p className="mx-2">Shield output amount: </p>
+                      <Flex className="flex flex-col">
+                        <Flex
+                          key={index}
+                          className="flex flex-row justify-between"
+                          textColor="whiteAlpha.600"
+                        >
+                          <Flex className="flex flex-row items-center">
+                            <Tooltip
+                              label="Download your cipher code and keep it safe!"
+                              placement="top"
+                              bgColor="white"
+                              textColor="black"
+                              borderRadius={"md"}
+                            >
+                              <Button
+                                h={6}
+                                bgColor="white"
+                                _hover={{
+                                  cursor: "pointer",
+                                  transform: "scale(1.1)",
+                                  bgColor: "white",
+                                }}
+                                _active={{
+                                  transform: "scale(0.9)",
+                                }}
+                                transitionDuration={"0.2s"}
+                              >
+                                <Image
+                                  boxSize={4}
+                                  src={downloadImg1.src}
+                                  alt="download"
+                                ></Image>
+                              </Button>
+                            </Tooltip>
+                            <p className="mx-2">Shield output amount: </p>
+                          </Flex>
+                          <p>
+                            {formatUnits(
+                              coin?.amount || 0n,
+                              selectedToken.decimals
+                            )}{" "}
+                            {selectedToken.symbol}
+                          </p>
                         </Flex>
-                        <p>
-                          {formatUnits(
-                            coin?.amount || 0n,
-                            selectedToken.decimals
-                          )}{" "}
-                          {selectedToken.symbol}
-                        </p>
+                        <Flex
+                          className="flex flex-row justify-between text-sm"
+                          color={"whiteAlpha.600"}
+                        >
+                          <Text>Specified recipient: </Text>
+                          <Text>No specified recipient </Text>
+                        </Flex>
                       </Flex>
                     );
                   })}
                 </Flex>
-                <Checkbox
-                  defaultChecked={isChecked}
-                  onChange={(e) => {
-                    setIsChecked(e.target.checked);
-                  }}
-                  colorScheme="red"
-                  className="my-4"
-                  color="rgba(255, 157, 169, 1)"
-                >
-                  I have downloaded all cipher code
-                </Checkbox>
+                <Flex className="flex flex-col my-4">
+                  <Checkbox
+                    disabled={isChecked}
+                    defaultChecked={isChecked}
+                    onChange={handleIsChecked}
+                    colorScheme="red"
+                    color="rgba(255, 157, 169, 1)"
+                  >
+                    I have checked all the details are correct
+                  </Checkbox>
+                  <Checkbox
+                    disabled={isDownloaded}
+                    defaultChecked={isDownloaded}
+                    onChange={handleIsDownloaded}
+                    colorScheme="red"
+                    color="rgba(255, 157, 169, 1)"
+                  >
+                    I have downloaded all cipher code
+                  </Checkbox>
+                </Flex>
               </Flex>
             </Flex>
             <Flex
               className="flex flex-col gap-4 w-full"
-              opacity={isChecked ? 1 : 0.3}
+              opacity={isChecked && isDownloaded ? 1 : 0.3}
             >
               <Stepper
                 index={activeStep}
                 orientation="vertical"
-                height="200"
+                height="250"
                 gap="0"
                 colorScheme="whiteAlpha"
               >

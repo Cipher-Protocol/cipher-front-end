@@ -8,6 +8,7 @@ import {
   Image,
   useDisclosure,
   Input,
+  Tooltip,
 } from "@chakra-ui/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
@@ -30,7 +31,7 @@ export default function PrivateOutputItem(props: Props) {
   const { selectedToken, onUpdateCoin } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [cipherCode, setCipherCode] = useState<string>("");
-  const [isCustomAmt, setIsCustomAmt] = useState<boolean>(false);
+  const [isCustomizedAmt, setIsCustomizedAmt] = useState<boolean>(false);
   const [pubInAmt, setPubInAmt] = useState<bigint>(0n);
   const [selectedAmt, setSelectedAmt] = useState<number>();
   const [userId, setUserId] = useState<string>();
@@ -116,107 +117,96 @@ export default function PrivateOutputItem(props: Props) {
   }, [selectedAmt]);
 
   return (
-    <Flex key={pubInAmt} className="flex flex-row items-center w-full">
-      <Flex className="gap-2 w-1/2 justify-between">
-        {isCustomAmt ? (
-          <NumberInput
-            variant="outline"
+    <Flex className="flex flex-col w-full">
+      <Flex key={pubInAmt} className="flex flex-row items-center w-full">
+        <Flex className="gap-2 w-1/2 justify-between">
+          {isCustomizedAmt ? (
+            <NumberInput
+              variant="outline"
+              borderRadius={"full"}
+              w={"100%"}
+              my={1}
+              textColor={"white"}
+              _focus={{ borderColor: "white" }}
+              focusBorderColor="transparent"
+              min={0}
+              onChange={(value) => handlePubInAmt(Number(value))}
+              value={
+                pubInAmt
+                  ? Number(formatUnits(pubInAmt, selectedToken?.decimals))
+                  : 0
+              }
+            >
+              <NumberInputField
+                placeholder="Deposit Amount"
+                borderRadius={"full"}
+                bgColor={"whiteAlpha.400"}
+                _focus={{ borderColor: "white" }}
+                px={6}
+                fontSize={"lg"}
+              />
+            </NumberInput>
+          ) : (
+            renderAmtBtns()
+          )}
+        </Flex>
+        <Flex className="w-1/2">
+          <Button
+            className="w-4/5 mx-2"
             borderRadius={"full"}
-            w={"100%"}
-            my={1}
+            bgColor={"whiteAlpha.400"}
             textColor={"white"}
-            _focus={{ borderColor: "white" }}
-            focusBorderColor="transparent"
-            min={0}
-            onChange={(value) => handlePubInAmt(Number(value))}
-            value={
-              pubInAmt
-                ? Number(formatUnits(pubInAmt, selectedToken?.decimals))
-                : 0
-            }
+            _hover={{
+              bgColor: "whiteAlpha.500",
+            }}
+            _active={{
+              transform: "scale(0.95)",
+            }}
+            transitionDuration={"0.2s"}
+            onClick={() => setIsCustomizedAmt(!isCustomizedAmt)}
           >
-            <NumberInputField
-              placeholder="Deposit Amount"
+            {isCustomizedAmt ? "Select" : "Customized"}
+          </Button>
+          <Tooltip
+            label="Specify recipient (optional)"
+            placement="top"
+            bgColor="white"
+            textColor="black"
+            borderRadius={"md"}
+          >
+            <Button
+              className="w-2/5"
               borderRadius={"full"}
               bgColor={"whiteAlpha.400"}
-              _focus={{ borderColor: "white" }}
-              px={6}
-              fontSize={"lg"}
-            />
-          </NumberInput>
-        ) : (
-          renderAmtBtns()
-        )}
-      </Flex>
-      <Flex className="w-1/2">
-        <Button
-          className="w-1/2 mx-2"
-          borderRadius={"full"}
-          bgColor={"whiteAlpha.400"}
-          textColor={"white"}
-          _hover={{
-            bgColor: "whiteAlpha.500",
-          }}
-          _active={{
-            transform: "scale(0.95)",
-          }}
-          transitionDuration={"0.2s"}
-          onClick={() => setIsCustomAmt(!isCustomAmt)}
-        >
-          {isCustomAmt ? "Select" : "Custom"}
-        </Button>
-        {userId ? (
-          <Button
-            className="w-1/2"
-            borderRadius={"full"}
-            bgColor={"whiteAlpha.400"}
-            _hover={{
-              bgColor: "whiteAlpha.500",
-            }}
-          >
-            <Input
-              type={show ? "text" : "password"}
-              placeholder="Enter recipient's user id"
-              value={userId}
-              borderRadius="3xl"
-              border="none"
-              color={"white"}
-              focusBorderColor="transparent"
-              bgColor={"transparent"}
-              className="font-medium"
-            />
-            <Image
-              boxSize="20px"
-              src={show ? showImage.src : hideImage.src}
-              onClick={handleClick}
               _hover={{
-                cursor: "pointer",
+                bgColor: "whiteAlpha.500",
               }}
-            />
-          </Button>
-        ) : (
-          <Button
-            className="w-1/2"
-            borderRadius={"full"}
-            bgColor={"whiteAlpha.400"}
-            _hover={{
-              bgColor: "whiteAlpha.500",
-            }}
-            onClick={onOpen}
-          >
-            <Image
-              w={8}
-              src={addUser.src}
-              alt="add-user"
-              _hover={{
-                transform: "scale(1.1)",
-              }}
-              _active={{ transform: "scale(0.9)" }}
-              transitionDuration={"0.2s"}
-            />
-          </Button>
-        )}
+              onClick={onOpen}
+            >
+              <Image
+                w={6}
+                src={addUser.src}
+                alt="add-user"
+                _hover={{
+                  transform: "scale(1.1)",
+                }}
+                _active={{ transform: "scale(0.9)" }}
+                transitionDuration={"0.2s"}
+              />
+            </Button>
+          </Tooltip>
+        </Flex>
       </Flex>
+      <Flex
+        className="flex flex-row justify-between px-4"
+        color="whiteAlpha.600"
+      >
+        <Text className="w-full">Specified recipient's user ID:</Text>
+        <Text className="whitespace-nowrap px-2" overflow={"scroll"}>
+          {userId ? userId : "None"}
+        </Text>
+      </Flex>
+
       <RecipientModal
         isOpen={isOpen}
         onOpen={onOpen}
