@@ -39,13 +39,17 @@ export default function WithdrawCard(props: Props) {
     try {
       if (!debouncedCipherCode) return;
       const cipherCodeResult = decodeCipherCode(debouncedCipherCode);    
-
+      console.log({
+        cipherCodeResult,
+        selectedToken,
+        cipherAccount
+      })
       if (
         assertCipherCode(cipherCodeResult, selectedToken?.address, BigInt(cipherAccount?.userId || '0'))
       ) {
         setIsValidCode(true);
         setPubOutAmt(cipherCodeResult.amount);
-        setRandom(random);
+        setRandom(cipherCodeResult.random);
         if (cipherCodeResult.userId) {
           const seed = BigInt(cipherAccount!.seed as string);
           setSalt(seed);

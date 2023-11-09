@@ -5,7 +5,7 @@ import { assert } from "../helper";
 import { CipherTree } from "./CipherTree";
 export const FIELD_SIZE_BIGINT = BigInt(SNARK_FIELD_SIZE);
 
-export interface CipherCodeInterface {
+export interface EncodeCipherCodeInterface {
   tokenAddress: string;
   amount: BigNumber | string | bigint;
   salt?: BigNumber | string | bigint;
@@ -13,7 +13,7 @@ export interface CipherCodeInterface {
   userId?: BigNumber | string | bigint;
 }
 
-export type DecodeCipherCodeResult = {
+export interface DecodeCipherCodeResult {
   tokenAddress: string;
   amount: bigint;
   salt?: bigint;
@@ -110,7 +110,7 @@ export function toHashedSalt(saltOrSeed: bigint) {
   return PoseidonHash([saltOrSeed]);
 }
 
-export function encodeCipherCode(data: CipherCodeInterface) {
+export function encodeCipherCode(data: EncodeCipherCodeInterface) {
   const cipherCode = utils.defaultAbiCoder.encode(
     ["address", "uint256", "uint256", "uint256", "uint256"],
     [data.tokenAddress, data.amount, data.salt || 0, data.random, data.userId || 0]
@@ -159,6 +159,10 @@ export function assertCipherCode(cipherResult: DecodeCipherCodeResult, selectedT
     (cipherResult.salt && !cipherResult.userId)
     || (cipherResult.userId && userId !== 0n && userId === cipherResult.userId)
   );
+
+  if(userId === 0n) {
+    throw new Error("please connect wallet first");
+  }
 
   if(!privateInfoValid) {
     throw new Error("cipher info invalid");

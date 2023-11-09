@@ -93,7 +93,7 @@ export default function PublicOutputModal(props: Props) {
             <Text>Withdraw {selectedToken.symbol} to your wallet</Text>
             <AmountSelector
               amount={publicOutAmt}
-              setAmount={setPublicOutAmt}
+              onAmountChange={setPublicOutAmt}
               selectedToken={selectedToken}
             />
             <Button

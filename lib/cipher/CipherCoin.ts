@@ -84,3 +84,29 @@ export class CipherTransferableCoin extends CipherBaseCoin {
     );
   }
 }
+
+export class CipherOwnershipCoin extends CipherBaseCoin {
+  readonly tree!: CipherTree;
+  readonly leafId!: number;
+
+  constructor(coinInfo: CipherCoinInfo, tree: CipherTree, leafId: number) {
+    super(coinInfo);
+    this.tree = tree;
+    this.leafId = leafId;
+    assert(this.coinInfo.key.hashedSaltOrUserId, "hashedSaltOrUserId should not be null");
+  }
+
+  getPathIndices() {
+    const { indices } = this.tree.genMerklePath(Number(this.leafId));
+    return indicesToPathIndices(indices);
+  }
+
+  getPathElements() {
+    const { pathElements } = this.tree.genMerklePath(Number(this.leafId));
+    assert(
+      pathElements.every((v) => v.length === 1),
+      "pathElements each length should be 1"
+    );
+    return pathElements.map((v) => v[0]);
+  }
+}

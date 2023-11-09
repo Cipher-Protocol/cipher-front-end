@@ -181,6 +181,12 @@ export default function WithdrawModal(props: Props) {
       salt: salt,
       random: random,
     });
+    console.log({
+      commitment,
+      amount: pubOutAmt,
+      salt,
+      random,
+    });
 
     // if (coinLeafIndexs.length === 0) {
     //   toast({
@@ -199,8 +205,8 @@ export default function WithdrawModal(props: Props) {
       coinLeafIndex = await getUnPaidIndexFromTree(tree, commitment, salt);
     } catch (error: any) {
       toast({
-        title: "Cipher code is used",
-        description: "",
+        title: "Cipher code invalid",
+        description: error.message,
         status: "error",
         duration: 5000,
         position: "top",

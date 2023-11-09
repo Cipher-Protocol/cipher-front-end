@@ -8,7 +8,7 @@ import { useAccount, useBalance } from "wagmi";
 import { DEFAULT_NATIVE_TOKEN_ADDRESS } from "../../configs/tokenConfig";
 import { useErc20 } from "../../hooks/useErc20";
 import { CipherCoinInfo } from "../../lib/cipher/CipherCoin";
-import { CipherCodeInterface, encodeCipherCode, toHashedSalt } from "../../lib/cipher/CipherHelper";
+import { EncodeCipherCodeInterface, encodeCipherCode, generateCommitment, toHashedSalt } from "../../lib/cipher/CipherHelper";
 import { getRandomSnarkField } from "../../utils/getRandom";
 
 const AmountSelector = dynamic(() => import("../shared/InputAmountSelector"), {
@@ -47,22 +47,34 @@ export default function DepositCard(props: Props) {
   useEffect(() => {
     if (pubInAmt === undefined) return;
     if (selectedToken === undefined) return;
-    const data: CipherCodeInterface = {
+    const salt = getRandomSnarkField();
+    const random = getRandomSnarkField();
+    const data: EncodeCipherCodeInterface = {
       tokenAddress: selectedToken.address,
       amount: pubInAmt,
-      salt: getRandomSnarkField(),
-      random: getRandomSnarkField(),
+      salt,
+      random,
     };
     const encodedData = encodeCipherCode(data);
     setCipherCode(encodedData);
     const coin: CipherCoinInfo = {
       key: {
-        hashedSaltOrUserId: toHashedSalt(BigInt(data.salt!.toString())),
-        inSaltOrSeed: BigInt(data.salt!.toString()),
-        inRandom: BigInt(data.random!.toString()),
+        hashedSaltOrUserId: toHashedSalt(salt.toBigInt()),
+        inSaltOrSeed: salt.toBigInt(),
+        inRandom: random.toBigInt(),
       },
       amount: pubInAmt,
     };
+    console.log({
+      amount: pubInAmt,
+      salt,
+      random,
+      commitment: generateCommitment({
+        amount: pubInAmt,
+        random: random.toBigInt(),
+        salt: salt.toBigInt(),
+      })
+    })
     setCipherCoinInfo(coin);
   }, [pubInAmt, selectedToken]);
 
@@ -134,10 +146,10 @@ export default function DepositCard(props: Props) {
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
         />
+        <h1>{pubInAmt?.toString()}</h1>
         <AmountSelector
-          amount={pubInAmt}
           selectedToken={selectedToken}
-          setAmount={setPubInAmt}
+          onAmountChange={setPubInAmt}
           balance={balance}
         />
         <Button

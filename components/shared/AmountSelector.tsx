@@ -6,37 +6,54 @@ import { TokenConfig } from "../../type";
 const amountTable = [0.01, 0.1, 1, 10];
 
 type Props = {
-  amount: bigint | undefined;
-  setAmount: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  // amount: bigint | undefined;
+  onAmountChange: React.Dispatch<React.SetStateAction<bigint | undefined>>;
   selectedToken: TokenConfig;
   maxAmt?: number;
 };
 
 export default function AmountSelector(props: Props) {
-  const { amount, setAmount, selectedToken, maxAmt } = props;
-  const [selectedAmt, setSelectedAmt] = useState<number>();
+  const { onAmountChange, selectedToken, maxAmt } = props;
+  const [amount, setAmount] = useState<bigint | undefined>(undefined);
+
+  const [numberInputValue, setNumberInputValue] = useState<string | undefined>();
+  // const [selectedAmt, setSelectedAmt] = useState<number | undefined>(undefined);
   const [isCustomizedAmt, setIsCustomizedAmt] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (amount !== undefined) return;
-    // setSelectedAmt(undefined);
-  }, [amount]);
+  const _setAmount = (amt: bigint) => {
+    onAmountChange(amt);
+    setAmount(amt);
+  }
 
-  const handleAmount = useCallback((amt: number) => {
-    setAmount(parseUnits(amt.toString(), selectedToken.decimals));
-  }, [selectedToken.decimals, setAmount]);
+  const handleNumberInputChange = useCallback((val: string) => {
+    const decimalRegex = new RegExp(`^-?\\d+(\\.\\d{0,${selectedToken.decimals}})?$`);
+    if(decimalRegex.test(val)) {
+      const rawAmount = parseUnits(val, selectedToken.decimals);
+      _setAmount(rawAmount);
+      setNumberInputValue(val);
+    } else {
+      _setAmount(0n);
+      setNumberInputValue('');
+    }
+  }, [onAmountChange, selectedToken.decimals]);
 
-  const selectedAmtBtn = useCallback((amt: number) => {
-    handleAmount(amt);
-    setSelectedAmt(amt);
-  }, [handleAmount])
+  const handleSelectedAmtBtnClicked = useCallback((amt: number) => {
+    const rawAmount = parseUnits(amt.toString(), selectedToken.decimals);
+    _setAmount(rawAmount);
+    setNumberInputValue(amt?.toString());
+  }, [selectedToken.decimals])
+
+  const isSelectedBtnActive = useCallback((selectedAmt: number) => {
+    const rawAmount = parseUnits(selectedAmt.toString(), selectedToken.decimals);
+    return rawAmount === BigInt(amount || 0);
+  }, [amount, selectedToken.decimals]);
 
   const AmtBtnComponents = useMemo(() => {
     return (
       <Flex className="gap-2 my-1 w-full justify-between">
-        {amountTable.map((amt) => (
+        {amountTable.map((selectedAmt) => (
           <Button
-            key={amt}
+            key={selectedAmt}
             borderRadius="2xl"
             w={"22%"}
             fontSize={"sm"}
@@ -49,16 +66,16 @@ export default function AmountSelector(props: Props) {
               transform: "scale(0.9)",
             }}
             transitionDuration={"0.2s"}
-            bgColor={selectedAmt === amt ? "white" : "whiteAlpha.400"}
-            textColor={selectedAmt === amt ? "brand" : "white"}
-            onClick={() => selectedAmtBtn(amt)}
+            bgColor={isSelectedBtnActive(selectedAmt) ? "white" : "whiteAlpha.400"}
+            textColor={isSelectedBtnActive(selectedAmt) ? "brand" : "white"}
+            onClick={() => handleSelectedAmtBtnClicked(selectedAmt)}
           >
-            {amt}
+            {selectedAmt}
           </Button>
         ))}
       </Flex>
     );
-  }, [selectedAmt, selectedAmtBtn]);
+  }, [handleSelectedAmtBtnClicked, isSelectedBtnActive]);
 
   return (
     <Flex className="flex flex-col w-full">
@@ -74,9 +91,9 @@ export default function AmountSelector(props: Props) {
             focusBorderColor="transparent"
             min={0}
             max={maxAmt ? maxAmt : undefined}
-            onChange={(value) => handleAmount(Number(value))}
+            onChange={(value) => handleNumberInputChange(value)}
             value={
-              amount ? Number(formatUnits(amount, selectedToken?.decimals)) : 0
+              numberInputValue
             }
           >
             <NumberInputField

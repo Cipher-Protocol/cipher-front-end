@@ -2,6 +2,7 @@ import {
   CipherCoinInfo,
   CipherTransferableCoin,
   CipherBaseCoin,
+  CipherOwnershipCoin,
 } from "./CipherCoin";
 import { PoseidonHash } from "../poseidonHash";
 import {
@@ -85,7 +86,7 @@ export async function generateCipherTx(
   }: CipherTxRequest,
   publicInfo: PublicInfoStruct
 ) {
-  const transferableCoins: CipherTransferableCoin[] = [];
+  const transferableCoins: CipherOwnershipCoin[] = [];
   const newTree = tree.copyCipherTree();
   const currentRoot = newTree.root;
 
@@ -133,13 +134,16 @@ export async function generateCipherTx(
   for (let index = 0; index < privateOutputLength; index++) {
     const coin = privateOutCoins[index];
     assert(coin.coinInfo.key.inRandom, "inRandom should not be null");
-    assert(coin.coinInfo.key.inSaltOrSeed, "inSaltOrSeed should not be null");
-    const coinInfo = getCoinInfoFromAmt(coin.coinInfo.amount, {
-      inRandom: coin.coinInfo.key.inRandom,
-      inSaltOrSeed: coin.coinInfo.key.inSaltOrSeed,
-    });
+    assert(coin.coinInfo.key.hashedSaltOrUserId, "hashedSaltOrUserId should not be null");
     const leafId = newTree.nextIndex;
-    const payableCoin = new CipherTransferableCoin(coinInfo, newTree, leafId);
+    const payableCoin = new CipherOwnershipCoin({
+      amount: coin.coinInfo.amount,
+      key: {
+        inSaltOrSeed: coin.coinInfo.key.inSaltOrSeed,
+        hashedSaltOrUserId: coin.coinInfo.key.hashedSaltOrUserId,
+        inRandom: coin.coinInfo.key.inRandom,
+      }
+    }, newTree, leafId);
     newTree.insert(payableCoin.getCommitment());
     transferableCoins.push(payableCoin);
   }

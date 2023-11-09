@@ -10,7 +10,7 @@ import {
   Input,
   Tooltip,
 } from "@chakra-ui/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { formatUnits, parseUnits } from "viem";
 import { CipherCoinInfo } from "../../lib/cipher/CipherCoin";
 import { getRandomSnarkField } from "../../utils/getRandom";
@@ -20,6 +20,7 @@ import RecipientModal from "./RecipientModal";
 import showImage from "../../assets/images/hide1.png";
 import hideImage from "../../assets/images/hide2.png";
 import { BigNumber } from "ethers";
+import { useDebounce } from "@uidotdev/usehooks";
 
 const amountTable = [0.01, 0.1, 1, 10];
 
@@ -34,10 +35,9 @@ export default function PrivateOutputItem(props: Props) {
   const [cipherCode, setCipherCode] = useState<string>("");
   const [isCustomizedAmt, setIsCustomizedAmt] = useState<boolean>(false);
   const [pubInAmt, setPubInAmt] = useState<bigint>(0n);
-  const [selectedAmt, setSelectedAmt] = useState<number>();
+  const [numberInputValue, setNumberInputValue] = useState<string | undefined>();
   const [userId, setUserId] = useState<string>();
   const [show, setShow] = useState(false);
-  const handleClick = () => setShow(!show);
   const [cipherCoinInfo, setCipherCoinInfo] = useState<CipherCoinInfo>({
     key: {
       hashedSaltOrUserId: 0n,
@@ -46,27 +46,25 @@ export default function PrivateOutputItem(props: Props) {
     },
     amount: 0n,
   });
+  const debouncedPubInAmt = useDebounce(pubInAmt, 600);
 
-  const handlePubInAmt = (amt: number) => {
-    setPubInAmt(parseUnits(amt.toString(), selectedToken.decimals));
-  };
-
-  useEffect(() => {
-    if (pubInAmt !== undefined) return;
-    setSelectedAmt(undefined);
-  }, [pubInAmt]);
-
-  useEffect(() => {
-    if (onUpdateCoin) {
-      onUpdateCoin(cipherCoinInfo);
+  const handleNumberInputChange = (val: string) => {
+    const decimalRegex = new RegExp(`^-?\\d+(\\.\\d{0,${selectedToken.decimals}})?$`);
+    if(decimalRegex.test(val)) {
+      setNumberInputValue(val);
+      const rawAmount = parseUnits(val, selectedToken.decimals);
+      setPubInAmt(rawAmount);
+    } else {
+      setNumberInputValue('');
+      setPubInAmt(0n);
     }
-  }, [onUpdateCoin, cipherCoinInfo]);
+  };
 
   useEffect(() => {
     if (selectedToken === undefined) return;
     const data = {
       tokenAddress: selectedToken.address,
-      amount: pubInAmt,
+      amount: debouncedPubInAmt,
       salt: userId ? BigNumber.from(0) : getRandomSnarkField(),
       random: getRandomSnarkField(),
       userId: userId ? BigInt(userId) : BigNumber.from(0),
@@ -81,49 +79,33 @@ export default function PrivateOutputItem(props: Props) {
         inSaltOrSeed: data.salt.toBigInt(),
         inRandom: data.random.toBigInt(),
       },
-      amount: pubInAmt,
+      amount: debouncedPubInAmt,
     };
     setCipherCoinInfo(coin);
-  }, [userId, pubInAmt, selectedToken]);
+    if (onUpdateCoin) {
+      onUpdateCoin(coin);
+    }
+  }, [userId, debouncedPubInAmt, selectedToken, onUpdateCoin]);
 
-  const renderAmtBtns = useCallback(() => {
-    return (
-      <Flex className="gap-2 my-1 w-full justify-between">
-        {amountTable.map((amt) => (
-          <Button
-            key={amt}
-            borderRadius="3xl"
-            w={"22%"}
-            fontSize={"sm"}
-            _hover={{
-              transform: "scale(1.1)",
-              bgColor: "white",
-              textColor: "brand",
-            }}
-            _active={{
-              transform: "scale(0.9)",
-            }}
-            transitionDuration={"0.2s"}
-            bgColor={selectedAmt === amt ? "white" : "whiteAlpha.400"}
-            textColor={selectedAmt === amt ? "brand" : "white"}
-            onClick={() => {
-              handlePubInAmt(amt);
-              setSelectedAmt(amt);
-            }}
-          >
-            {amt}
-          </Button>
-        ))}
-      </Flex>
-    );
-  }, [selectedAmt]);
+
+  const isSelectedBtnActive = (selectedAmt: number) => {
+    const rawAmount = parseUnits(selectedAmt.toString(), selectedToken.decimals);
+    return rawAmount === pubInAmt ? 1 : 0;
+  }
+
+  const handleSelectedAmtBtnClicked = (amt: number) => {
+    setNumberInputValue(amt?.toString());
+    const rawAmount = parseUnits(amt.toString(), selectedToken.decimals);
+    setPubInAmt(rawAmount);
+  }
 
   return (
     <Flex className="flex flex-col w-full">
-      <Flex key={pubInAmt} className="flex flex-row items-center w-full">
+      <Flex className="flex flex-row items-center w-full">
         <Flex className="gap-2 w-1/2 justify-between">
           {isCustomizedAmt ? (
             <NumberInput
+              autoFocus={true}
               variant="outline"
               borderRadius={"full"}
               w={"100%"}
@@ -132,12 +114,8 @@ export default function PrivateOutputItem(props: Props) {
               _focus={{ borderColor: "white" }}
               focusBorderColor="transparent"
               min={0}
-              onChange={(value) => handlePubInAmt(Number(value))}
-              value={
-                pubInAmt
-                  ? Number(formatUnits(pubInAmt, selectedToken?.decimals))
-                  : 0
-              }
+              onChange={(value) => handleNumberInputChange(value)}
+              value={numberInputValue}
             >
               <NumberInputField
                 placeholder="Deposit Amount"
@@ -149,7 +127,30 @@ export default function PrivateOutputItem(props: Props) {
               />
             </NumberInput>
           ) : (
-            renderAmtBtns()
+            <Flex className="gap-2 my-1 w-full justify-between">
+              {amountTable.map((selectedAmt) => (
+                <Button
+                  key={selectedAmt}
+                  borderRadius="3xl"
+                  w={"22%"}
+                  fontSize={"sm"}
+                  _hover={{
+                    transform: "scale(1.1)",
+                    bgColor: "white",
+                    textColor: "brand",
+                  }}
+                  _active={{
+                    transform: "scale(0.9)",
+                  }}
+                  transitionDuration={"0.2s"}
+                  bgColor={isSelectedBtnActive(selectedAmt) ? "white" : "whiteAlpha.400"}
+                  textColor={isSelectedBtnActive(selectedAmt) ? "brand" : "white"}
+                  onClick={() => handleSelectedAmtBtnClicked(selectedAmt)}
+                >
+                  {selectedAmt}
+                </Button>
+              ))}
+            </Flex>
           )}
         </Flex>
         <Flex className="w-1/2">

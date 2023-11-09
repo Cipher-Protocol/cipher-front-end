@@ -6,17 +6,16 @@ import AmountSelector from "./AmountSelector";
 import { formatUnits } from "viem";
 
 type Props = {
-  amount: bigint | undefined;
-  setAmount: React.Dispatch<React.SetStateAction<bigint | undefined>>;
+  onAmountChange: React.Dispatch<React.SetStateAction<bigint | undefined>>;
   selectedToken: TokenConfig;
   balance: bigint | undefined;
 };
 
 export default function InputAmountSelector(props: Props) {
-  const { amount, setAmount, balance, selectedToken } = props;
+  const { onAmountChange, balance, selectedToken } = props;
 
   return (
-    <Flex key={amount} className="flex flex-col items-end w-full">
+    <Flex className="flex flex-col items-end w-full">
       <Text fontSize="md" textColor="whiteAlpha.700">
         Balance: &nbsp;
         {balance
@@ -24,8 +23,7 @@ export default function InputAmountSelector(props: Props) {
           : 0}
       </Text>
       <AmountSelector
-        amount={amount}
-        setAmount={setAmount}
+        onAmountChange={onAmountChange}
         selectedToken={selectedToken}
         maxAmt={
           balance ? Number(formatUnits(balance, selectedToken?.decimals)) : 0
