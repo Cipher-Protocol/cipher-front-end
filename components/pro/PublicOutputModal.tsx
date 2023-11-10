@@ -92,7 +92,7 @@ export default function PublicOutputModal(props: Props) {
           <Flex className="flex flex-col justify-between gap-4 h-[20rem]">
             <Text>Withdraw {selectedToken.symbol} to your wallet</Text>
             <AmountSelector
-              amount={publicOutAmt}
+              // amount={publicOutAmt}
               onAmountChange={setPublicOutAmt}
               selectedToken={selectedToken}
             />

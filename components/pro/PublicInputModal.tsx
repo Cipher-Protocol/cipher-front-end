@@ -91,8 +91,8 @@ export default function PublicInputModal(props: Props) {
           <Flex className="flex flex-col justify-between gap-4 h-[20rem]">
             <Text>Deposit {selectedToken.symbol} from your wallet</Text>
             <AmountSelector
-              amount={publicInAmt}
-              setAmount={setPublicInAmt}
+              // amount={publicInAmt}
+              onAmountChange={setPublicInAmt}
               selectedToken={selectedToken}
               balance={balance}
             />

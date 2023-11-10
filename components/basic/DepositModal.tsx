@@ -93,6 +93,8 @@ export default function DepositModal(props: Props) {
     address
   );
 
+  console.log("public in amt", pubInAmt);
+
   const handleCloseModal = () => {
     setIsDownloaded(false);
     setIsApproved(false);
@@ -389,7 +391,7 @@ export default function DepositModal(props: Props) {
           <Flex className="flex flex-col my-2 items-center">
             <CipherCard value={cipherHex} />
             <Flex
-              fontSize={"xs"}
+              fontSize={"sm"}
               fontWeight={"bold"}
               className="flex flex-col w-full my-4"
               color="rgba(255, 157, 169, 1)"

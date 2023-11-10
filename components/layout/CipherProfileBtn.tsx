@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   Flex,
   IconButton,
@@ -17,7 +17,7 @@ import profileImage from "../../assets/images/profile.png";
 import { useAccount } from "wagmi";
 
 export default function CipherProfileBtn() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { isOpen, onToggle, onClose } = useDisclosure();
   const { cipherAccount, isAuthenticated, signAuthAsync } =
     useContext(CipherAccountContext);

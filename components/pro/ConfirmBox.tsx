@@ -6,7 +6,7 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { formatUnits } from "viem";
 import { TokenConfig } from "../../type";
 import ConfirmModal from "./ConfirmModal";
@@ -39,7 +39,16 @@ export default function ConfirmBox(props: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const { address } = useAccount();
-  const [amountIsEqual, setAmountIsEqual] = React.useState<boolean>(false);
+  const [amountIsEqual, setAmountIsEqual] = useState<boolean>(false);
+  const [amountIsValid, setAmountIsValid] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (amountIsEqual && publicInAmt + totalPrivateInAmt !== 0n) {
+      setAmountIsValid(true);
+    } else {
+      setAmountIsValid(false);
+    }
+  }, [amountIsEqual, publicInAmt, totalPrivateInAmt]);
 
   useEffect(() => {
     if (publicInAmt + totalPrivateInAmt === publicOutAmt + totalPrivateOutAmt) {
@@ -59,7 +68,7 @@ export default function ConfirmBox(props: Props) {
         isClosable: true,
         position: "top",
       });
-    } else if (!amountIsEqual) {
+    } else if (!amountIsValid) {
       toast({
         title: "Invalid amount",
         description: "",
@@ -128,10 +137,10 @@ export default function ConfirmBox(props: Props) {
       <Button
         className="w-full py-6"
         borderRadius="full"
-        textColor={amountIsEqual ? "black" : "whiteAlpha.400"}
-        bgColor={amountIsEqual ? "white" : "whiteAlpha.400"}
+        textColor={amountIsValid ? "black" : "whiteAlpha.400"}
+        bgColor={amountIsValid ? "white" : "whiteAlpha.400"}
         _hover={
-          amountIsEqual
+          amountIsValid
             ? {
                 transform: "scale(1.05)",
                 bgColor: "white",
@@ -142,7 +151,7 @@ export default function ConfirmBox(props: Props) {
               }
         }
         _active={
-          amountIsEqual
+          amountIsValid
             ? {
                 transform: "scale(0.95)",
               }
@@ -151,7 +160,7 @@ export default function ConfirmBox(props: Props) {
               }
         }
         transitionDuration={"0.2s"}
-        onClick={amountIsEqual ? handleOpenModal : undefined}
+        onClick={amountIsValid ? handleOpenModal : undefined}
       >
         Send transaction
       </Button>

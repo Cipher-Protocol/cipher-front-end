@@ -23,13 +23,7 @@ import {
   Checkbox,
   Tooltip,
 } from "@chakra-ui/react";
-import React, {
-  use,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../../type";
 import {
   CipherCoinInfo,
@@ -50,6 +44,7 @@ import { ConfigContext } from "../../providers/ConfigProvider";
 import { useAllowance } from "../../hooks/useAllowance";
 import { CipherTxProviderContext } from "./ProCipherTxContext";
 import downloadImg1 from "../../assets/images/download1.png";
+import { downloadCipher } from "../../lib/downloadCipher";
 
 const steps = [
   { title: "Approve Token", description: "Approve token for deposit" },
@@ -190,7 +185,21 @@ export default function ConfirmModal(props: Props) {
   };
 
   const onPrepareProof = useCallback(async () => {
-    return await prepareProof?.();
+    setActiveStep(2);
+    try {
+      await prepareProof?.();
+      setActiveStep(3);
+    } catch (err) {
+      setFailedStep(2);
+      toast({
+        title: "Prepare proof failed",
+        description: "",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
   }, [prepareProof]);
 
   useEffect(() => {
@@ -200,7 +209,7 @@ export default function ConfirmModal(props: Props) {
   }, [isApproved]);
 
   const onSendTransaction = useCallback(async () => {
-    return await sendTransaction?.();
+    await sendTransaction?.();
   }, [onPrepareProof, sendTransaction]);
 
   const handleIsChecked = () => {
@@ -334,6 +343,7 @@ export default function ConfirmModal(props: Props) {
                                   transform: "scale(0.9)",
                                 }}
                                 transitionDuration={"0.2s"}
+                                //TODO: download cipher code
                               >
                                 <Image
                                   boxSize={4}
@@ -496,18 +506,30 @@ export default function ConfirmModal(props: Props) {
             <Button
               className="w-1/2 py-6 m-auto"
               borderRadius="full"
-              textColor={"white"}
-              bgColor="whiteAlpha.400"
-              _hover={{
-                transform: "scale(1.05)",
-                bgColor: "white",
-                textColor: "brand",
-              }}
-              _active={{
-                transform: "scale(0.95)",
-              }}
+              textColor={activeStep === 3 ? "black" : "whiteAlpha.400"}
+              bgColor={activeStep === 3 ? "white" : "whiteAlpha.400"}
+              _hover={
+                activeStep === 3
+                  ? {
+                      transform: "scale(1.05)",
+                      bgColor: "white",
+                      textColor: "brand",
+                    }
+                  : {
+                      cursor: "not-allowed",
+                    }
+              }
+              _active={
+                activeStep === 3
+                  ? {
+                      transform: "scale(0.95)",
+                    }
+                  : {
+                      cursor: "not-allowed",
+                    }
+              }
               transitionDuration={"0.2s"}
-              onClick={() => onSendTransaction()}
+              onClick={activeStep === 3 ? onSendTransaction : undefined}
             >
               Send transaction
             </Button>

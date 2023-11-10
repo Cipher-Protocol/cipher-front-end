@@ -78,7 +78,10 @@ export default function ProContainer() {
           prepareProof,
         }) => {
           return (
-            <Flex className="flex flex-col py-10 m-auto w-4/5 h-full justify-between">
+            <Flex
+              className="flex flex-col py-10 m-auto w-4/5 h-full justify-between "
+              overflow={"scroll"}
+            >
               <Flex className="flex flex-col">
                 <SelectBox
                   balance={balance}

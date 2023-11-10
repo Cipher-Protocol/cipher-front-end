@@ -16,37 +16,54 @@ export default function AmountSelector(props: Props) {
   const { onAmountChange, selectedToken, maxAmt } = props;
   const [amount, setAmount] = useState<bigint | undefined>(undefined);
 
-  const [numberInputValue, setNumberInputValue] = useState<string | undefined>();
+  const [numberInputValue, setNumberInputValue] = useState<
+    string | undefined
+  >();
   // const [selectedAmt, setSelectedAmt] = useState<number | undefined>(undefined);
   const [isCustomizedAmt, setIsCustomizedAmt] = useState<boolean>(false);
 
   const _setAmount = (amt: bigint) => {
     onAmountChange(amt);
     setAmount(amt);
-  }
+  };
 
-  const handleNumberInputChange = useCallback((val: string) => {
-    const decimalRegex = new RegExp(`^-?\\d+(\\.\\d{0,${selectedToken.decimals}})?$`);
-    if(decimalRegex.test(val)) {
-      const rawAmount = parseUnits(val, selectedToken.decimals);
+  const handleNumberInputChange = useCallback(
+    (val: string) => {
+      const decimalRegex = new RegExp(
+        `^-?\\d+(\\.\\d{0,${selectedToken.decimals}})?$`
+      );
+      if (decimalRegex.test(val)) {
+        const rawAmount = parseUnits(val, selectedToken.decimals);
+        console.log(rawAmount);
+        _setAmount(rawAmount);
+        setNumberInputValue(val);
+      } else {
+        _setAmount(0n);
+        setNumberInputValue("");
+      }
+    },
+    [onAmountChange, selectedToken.decimals]
+  );
+
+  const handleSelectedAmtBtnClicked = useCallback(
+    (amt: number) => {
+      const rawAmount = parseUnits(amt.toString(), selectedToken.decimals);
       _setAmount(rawAmount);
-      setNumberInputValue(val);
-    } else {
-      _setAmount(0n);
-      setNumberInputValue('');
-    }
-  }, [onAmountChange, selectedToken.decimals]);
+      setNumberInputValue(amt?.toString());
+    },
+    [selectedToken.decimals]
+  );
 
-  const handleSelectedAmtBtnClicked = useCallback((amt: number) => {
-    const rawAmount = parseUnits(amt.toString(), selectedToken.decimals);
-    _setAmount(rawAmount);
-    setNumberInputValue(amt?.toString());
-  }, [selectedToken.decimals])
-
-  const isSelectedBtnActive = useCallback((selectedAmt: number) => {
-    const rawAmount = parseUnits(selectedAmt.toString(), selectedToken.decimals);
-    return rawAmount === BigInt(amount || 0);
-  }, [amount, selectedToken.decimals]);
+  const isSelectedBtnActive = useCallback(
+    (selectedAmt: number) => {
+      const rawAmount = parseUnits(
+        selectedAmt.toString(),
+        selectedToken.decimals
+      );
+      return rawAmount === BigInt(amount || 0);
+    },
+    [amount, selectedToken.decimals]
+  );
 
   const AmtBtnComponents = useMemo(() => {
     return (
@@ -66,7 +83,9 @@ export default function AmountSelector(props: Props) {
               transform: "scale(0.9)",
             }}
             transitionDuration={"0.2s"}
-            bgColor={isSelectedBtnActive(selectedAmt) ? "white" : "whiteAlpha.400"}
+            bgColor={
+              isSelectedBtnActive(selectedAmt) ? "white" : "whiteAlpha.400"
+            }
             textColor={isSelectedBtnActive(selectedAmt) ? "brand" : "white"}
             onClick={() => handleSelectedAmtBtnClicked(selectedAmt)}
           >
@@ -92,9 +111,7 @@ export default function AmountSelector(props: Props) {
             min={0}
             max={maxAmt ? maxAmt : undefined}
             onChange={(value) => handleNumberInputChange(value)}
-            value={
-              numberInputValue
-            }
+            value={numberInputValue}
           >
             <NumberInputField
               placeholder="Deposit Amount"
