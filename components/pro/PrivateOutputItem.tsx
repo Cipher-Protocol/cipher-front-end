@@ -35,7 +35,9 @@ export default function PrivateOutputItem(props: Props) {
   const [cipherCode, setCipherCode] = useState<string>("");
   const [isCustomizedAmt, setIsCustomizedAmt] = useState<boolean>(false);
   const [pubInAmt, setPubInAmt] = useState<bigint>(0n);
-  const [numberInputValue, setNumberInputValue] = useState<string | undefined>();
+  const [numberInputValue, setNumberInputValue] = useState<
+    string | undefined
+  >();
   const [userId, setUserId] = useState<string>();
   const [show, setShow] = useState(false);
   const [cipherCoinInfo, setCipherCoinInfo] = useState<CipherCoinInfo>({
@@ -49,13 +51,15 @@ export default function PrivateOutputItem(props: Props) {
   const debouncedPubInAmt = useDebounce(pubInAmt, 600);
 
   const handleNumberInputChange = (val: string) => {
-    const decimalRegex = new RegExp(`^-?\\d+(\\.\\d{0,${selectedToken.decimals}})?$`);
-    if(decimalRegex.test(val)) {
+    const decimalRegex = new RegExp(
+      `^-?\\d+(\\.\\d{0,${selectedToken.decimals}})?$`
+    );
+    if (decimalRegex.test(val)) {
       setNumberInputValue(val);
       const rawAmount = parseUnits(val, selectedToken.decimals);
       setPubInAmt(rawAmount);
     } else {
-      setNumberInputValue('');
+      setNumberInputValue("");
       setPubInAmt(0n);
     }
   };
@@ -87,17 +91,19 @@ export default function PrivateOutputItem(props: Props) {
     }
   }, [userId, debouncedPubInAmt, selectedToken, onUpdateCoin]);
 
-
   const isSelectedBtnActive = (selectedAmt: number) => {
-    const rawAmount = parseUnits(selectedAmt.toString(), selectedToken.decimals);
+    const rawAmount = parseUnits(
+      selectedAmt.toString(),
+      selectedToken.decimals
+    );
     return rawAmount === pubInAmt ? 1 : 0;
-  }
+  };
 
   const handleSelectedAmtBtnClicked = (amt: number) => {
     setNumberInputValue(amt?.toString());
     const rawAmount = parseUnits(amt.toString(), selectedToken.decimals);
     setPubInAmt(rawAmount);
-  }
+  };
 
   return (
     <Flex className="flex flex-col w-full">
@@ -143,8 +149,14 @@ export default function PrivateOutputItem(props: Props) {
                     transform: "scale(0.9)",
                   }}
                   transitionDuration={"0.2s"}
-                  bgColor={isSelectedBtnActive(selectedAmt) ? "white" : "whiteAlpha.400"}
-                  textColor={isSelectedBtnActive(selectedAmt) ? "brand" : "white"}
+                  bgColor={
+                    isSelectedBtnActive(selectedAmt)
+                      ? "white"
+                      : "whiteAlpha.400"
+                  }
+                  textColor={
+                    isSelectedBtnActive(selectedAmt) ? "brand" : "white"
+                  }
                   onClick={() => handleSelectedAmtBtnClicked(selectedAmt)}
                 >
                   {selectedAmt}
@@ -202,7 +214,7 @@ export default function PrivateOutputItem(props: Props) {
       </Flex>
       <Flex
         className="flex flex-row justify-between px-4"
-        color="whiteAlpha.600"
+        color="whiteAlpha.700"
       >
         <Text className="w-full">Specified recipient&apos;s user ID:</Text>
         <Text className="whitespace-nowrap px-2" overflow={"scroll"}>

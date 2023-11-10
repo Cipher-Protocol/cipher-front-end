@@ -3,7 +3,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { TokenConfig } from "../../type";
 import CipherCard from "../shared/CipherCard";
 import TokenSelector from "../shared/TokenSelector";
-import { assertCipherCode, decodeCipherCode } from "../../lib/cipher/CipherHelper";
+import {
+  assertCipherCode,
+  decodeCipherCode,
+} from "../../lib/cipher/CipherHelper";
 import { useAccount } from "wagmi";
 import WithdrawModal from "./WithdrawModal";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -27,7 +30,7 @@ export default function WithdrawCard(props: Props) {
   const [salt, setSalt] = useState<bigint>();
   const [random, setRandom] = useState<bigint>();
 
-  const { cipherAccount, } = useContext(CipherAccountContext);
+  const { cipherAccount } = useContext(CipherAccountContext);
 
   useEffect(() => {
     if (!tokens) return;
@@ -35,17 +38,20 @@ export default function WithdrawCard(props: Props) {
   }, [tokens]);
 
   useEffect(() => {
-    
     try {
       if (!debouncedCipherCode) return;
-      const cipherCodeResult = decodeCipherCode(debouncedCipherCode);    
+      const cipherCodeResult = decodeCipherCode(debouncedCipherCode);
       console.log({
         cipherCodeResult,
         selectedToken,
-        cipherAccount
-      })
+        cipherAccount,
+      });
       if (
-        assertCipherCode(cipherCodeResult, selectedToken?.address, BigInt(cipherAccount?.userId || '0'))
+        assertCipherCode(
+          cipherCodeResult,
+          selectedToken?.address,
+          BigInt(cipherAccount?.userId || "0")
+        )
       ) {
         setIsValidCode(true);
         setPubOutAmt(cipherCodeResult.amount);
@@ -60,7 +66,6 @@ export default function WithdrawCard(props: Props) {
       } else {
         throw new Error("cipher code invalid");
       }
-
     } catch (error: any) {
       toast({
         title: "Error",
@@ -134,8 +139,8 @@ export default function WithdrawCard(props: Props) {
           disabled={!isValidCode}
           borderRadius={"full"}
           className="w-full py-6 mt-2"
-          bgColor={isValidCode ? "white" : "whiteAlpha.200"}
-          textColor={isValidCode ? "black" : "whiteAlpha.400"}
+          bgColor={isValidCode ? "white" : "whiteAlpha.400"}
+          textColor={isValidCode ? "black" : "white"}
           _hover={
             isValidCode
               ? {

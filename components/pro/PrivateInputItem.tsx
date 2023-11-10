@@ -33,8 +33,8 @@ export default function PrivateInputItem(props: Props) {
   const debouncedCipherCode = useDebounce(cipherCode, 800);
 
   useEffect(() => {
-    if(cipherCode !== props.cipherCode) {
-      setCipherCode(props.cipherCode || '');
+    if (cipherCode !== props.cipherCode) {
+      setCipherCode(props.cipherCode || "");
     }
   }, [props]);
 
@@ -64,7 +64,7 @@ export default function PrivateInputItem(props: Props) {
     if (props.onUpdateCipherCode) {
       props.onUpdateCipherCode(str);
     }
-  }
+  };
 
   // const isValid = useMemo(() => {
   //   return !isLoading && transferableCoin;
@@ -88,7 +88,7 @@ export default function PrivateInputItem(props: Props) {
         {isValid ? (
           <Flex
             className="flex flex-row justify-between px-8"
-            color="whiteAlpha.600"
+            color="whiteAlpha.700"
           >
             <Text>Shield amount:</Text>
             <Text>

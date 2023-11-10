@@ -137,7 +137,7 @@ export default function ConfirmBox(props: Props) {
       <Button
         className="w-full py-6"
         borderRadius="full"
-        textColor={amountIsValid ? "black" : "whiteAlpha.400"}
+        textColor={amountIsValid ? "black" : "white"}
         bgColor={amountIsValid ? "white" : "whiteAlpha.400"}
         _hover={
           amountIsValid

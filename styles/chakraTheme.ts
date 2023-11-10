@@ -9,7 +9,8 @@ export const chakraTheme = extendTheme({
     },
   },
   colors: {
-    brand: "#6B39AB",
+    // brand: "#6B39AB",
+    brand: "black",
     success: "#4DFFA9",
     warning: "#D1FF4D",
     alert: "##FF54B0",

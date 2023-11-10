@@ -82,7 +82,7 @@ export default function ConfirmModal(props: Props) {
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
   const { activeStep, setActiveStep } = useSteps({
-    index: 0,
+    index: -1,
     count: steps.length,
   });
   const [failedStep, setFailedStep] = useState<number>(-1);
@@ -127,6 +127,7 @@ export default function ConfirmModal(props: Props) {
       return;
       // throw new Error("address is undefined");
     }
+
     if (selectedToken.address === DEFAULT_NATIVE_TOKEN_ADDRESS) {
       setIsApproved(true);
       setActiveStep(1);
@@ -140,14 +141,12 @@ export default function ConfirmModal(props: Props) {
 
   useEffect(() => {
     if (isOpen && isChecked && isDownloaded) {
+      setActiveStep(0);
       checkApproval();
     }
   }, [isOpen, isChecked, isDownloaded]);
 
   useEffect(() => {
-    console.log({
-      isApproveSuccess,
-    });
     if (isApproveSuccess) {
       checkApproval();
       setIsApproved(isApproveSuccess);
