@@ -17,8 +17,8 @@ export async function prove(
     specName: string;
   }
 ) {
-  const wasmUri = `${CIRCUIT_BASE_URL}/circuits/${heightName}/${specName}/${heightName}${specName}_js/${heightName}${specName}.wasm`;
-  const zkeyUri = `${CIRCUIT_BASE_URL}/circuits/${heightName}/${specName}/${heightName}${specName}_final.zkey`
+  const wasmUri = `${CIRCUIT_BASE_URL}/${heightName}/${specName}/${heightName}${specName}_js/${heightName}${specName}.wasm`;
+  const zkeyUri = `${CIRCUIT_BASE_URL}/${heightName}/${specName}/${heightName}${specName}_final.zkey`
 
   const { proof, publicSignals } = await groth16.fullProve(
     inputContent,
